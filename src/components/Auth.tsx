@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { PasswordInput } from './PasswordInput';
 
 // Вход и регистрация по email + паролю. Это пример — Codex поможет улучшить (Google-вход и т.д.).
 export function Auth() {
@@ -39,13 +40,11 @@ export function Auth() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <input
-          type="password"
-          placeholder="пароль (6+ символов)"
+        <PasswordInput
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={setPassword}
+          placeholder="пароль (6+ символов)"
           minLength={6}
-          required
         />
         <button type="submit" disabled={busy}>
           {busy ? '…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}
