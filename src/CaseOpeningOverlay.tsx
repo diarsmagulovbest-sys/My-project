@@ -15,7 +15,7 @@ type ReelItem = LootItem & {
 type CaseOpeningOverlayProps = {
   caseName: string;
   items: LootItem[];
-  onClose: () => void;
+  onClaim: (item: LootItem) => void;
 };
 
 const easingMap = {
@@ -79,7 +79,7 @@ function buildReelItems(items: LootItem[], winner: LootItem) {
 export default function CaseOpeningOverlay({
   caseName,
   items,
-  onClose,
+  onClaim,
 }: CaseOpeningOverlayProps) {
   const winner = useMemo(() => weightedPick(items), [items]);
   const { reelItems, stopOffset, viewportWidth, indicatorCenter } = useMemo(
@@ -181,7 +181,7 @@ export default function CaseOpeningOverlay({
         <div className="opening-header">
           <span>{caseName}</span>
           {isFinished ? (
-            <button type="button" className="overlay-close overlay-claim" onClick={onClose}>
+            <button type="button" className="overlay-close overlay-claim" onClick={() => onClaim(winner)}>
               Claim
             </button>
           ) : null}

@@ -13,7 +13,7 @@ type CaseModel2DProps = {
 
 const caseLabelMap: Record<CaseId, string> = {
   cargo: 'GL',
-  customs: 'CU',
+  customs: 'AP',
   captain: 'CP',
   legendary: 'LT',
 };

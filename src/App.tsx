@@ -3,11 +3,17 @@ import CaseModel2D from './CaseModel2D';
 import CaseOpeningOverlay from './CaseOpeningOverlay';
 
 type CaseId = 'cargo' | 'customs' | 'captain' | 'legendary';
+type Page = 'menu' | 'gamble' | 'inventory';
 
 type LootItem = {
   id: string;
   name: string;
   chance: string;
+};
+
+type InventoryItem = LootItem & {
+  inventoryId: string;
+  caseName: string;
 };
 
 type CaseDefinition = {
@@ -27,40 +33,40 @@ const caseDefinitions: CaseDefinition[] = [
     label: 'Dock Standard',
     headline: 'Container Drop',
     description:
-      'Базовый портовый кейс с логистическим лутом, документами и инструментами для груза.',
+      'Базовый грузовой кейс с понятным лутом: контейнеры, коробки, погрузчики, сканеры и редкие предметы склада.',
     price: 'FREE',
     loot: [
-      { id: 'straps', name: 'Ремни для крепления груза', chance: '28%' },
-      { id: 'manifest', name: 'Транспортная накладная', chance: '20%' },
-      { id: 'seal', name: 'Пломба контейнера', chance: '15%' },
-      { id: 'hook', name: 'Погрузочный крюк', chance: '11%' },
-      { id: 'scanner', name: 'Портативный сканер груза', chance: '8%' },
-      { id: 'lock', name: 'Усиленный контейнерный замок', chance: '6%' },
-      { id: 'tracker', name: 'Трекер для контейнера', chance: '4.5%' },
-      { id: 'cooler', name: 'Холодильный модуль', chance: '3%' },
-      { id: 'gold-seal', name: 'Золотая пломба капитана', chance: '2%' },
-      { id: 'legend-key', name: 'Легендарный ключ от спецконтейнера', chance: '0.5%' },
+      { id: 'straps', name: 'Грузовая палета', chance: '28%' },
+      { id: 'manifest', name: 'Большая коробка', chance: '20%' },
+      { id: 'seal', name: 'Контейнер', chance: '15%' },
+      { id: 'hook', name: 'Погрузчик', chance: '11%' },
+      { id: 'scanner', name: 'Сканер груза', chance: '8%' },
+      { id: 'lock', name: 'Складской замок', chance: '6%' },
+      { id: 'tracker', name: 'Грузовой трекер', chance: '4.5%' },
+      { id: 'cooler', name: 'Холодильный контейнер', chance: '3%' },
+      { id: 'gold-seal', name: 'Золотой контейнер', chance: '2%' },
+      { id: 'legend-key', name: 'Ключ от склада', chance: '0.5%' },
     ],
   },
   {
     id: 'customs',
-    name: 'Customs Case',
-    label: 'Border Control',
-    headline: 'Inspection Drop',
+    name: 'Airport Case',
+    label: 'Airport Security',
+    headline: 'Runway Drop',
     description:
-      'Кейс таможни с пропусками, штампами, сканерами и служебными предметами досмотра.',
+      'Кейс в тематике аэропорта с понятным лутом: самолеты, чемоданы, посадочные талоны, сканеры и редкие предметы со взлетной полосы.',
     price: '120',
     loot: [
-      { id: 'stamp', name: 'Таможенный штамп', chance: '30%' },
-      { id: 'declaration', name: 'Декларация груза', chance: '22%' },
-      { id: 'badge', name: 'Инспекторский бейдж', chance: '16%' },
-      { id: 'gloves', name: 'Перчатки досмотра', chance: '11%' },
+      { id: 'airplane', name: 'Самолет', chance: '30%' },
+      { id: 'suitcase', name: 'Чемодан', chance: '22%' },
+      { id: 'boarding-pass', name: 'Посадочный талон', chance: '16%' },
+      { id: 'passport', name: 'Паспорт', chance: '11%' },
       { id: 'xray-scanner', name: 'Ручной X-ray сканер', chance: '8%' },
-      { id: 'secure-pass', name: 'Пропуск в зону досмотра', chance: '6%' },
-      { id: 'customs-chip', name: 'Чип контроля контейнера', chance: '4%' },
-      { id: 'evidence-box', name: 'Бокс для улик', chance: '2%' },
-      { id: 'gold-badge', name: 'Золотой знак инспектора', chance: '0.8%' },
-      { id: 'master-clearance', name: 'Мастер-разрешение терминала', chance: '0.2%' },
+      { id: 'control-tower', name: 'Диспетчерская башня', chance: '6%' },
+      { id: 'runway-light', name: 'Огни взлетной полосы', chance: '4%' },
+      { id: 'black-box', name: 'Черный ящик', chance: '2%' },
+      { id: 'gold-plane', name: 'Золотой самолет', chance: '0.8%' },
+      { id: 'airport-bomb', name: 'Аэропортовая бомба', chance: '0.2%' },
     ],
   },
   {
@@ -69,19 +75,19 @@ const caseDefinitions: CaseDefinition[] = [
     label: 'Harbor Elite',
     headline: 'Captain Drop',
     description:
-      'Редкий морской кейс капитана с элитными пломбами, навигацией и усиленным контейнерным снаряжением.',
+      'Редкий морской кейс с понятным лутом: корабли, якоря, компасы, карты и капитанские сокровища.',
     price: '450',
     loot: [
-      { id: 'nav-map', name: 'Карта морского маршрута', chance: '26%' },
-      { id: 'captain-seal', name: 'Пломба капитана', chance: '19%' },
-      { id: 'signal-lamp', name: 'Сигнальная лампа', chance: '14%' },
-      { id: 'anchor-hook', name: 'Якорный крюк', chance: '11%' },
-      { id: 'steel-lock', name: 'Стальной капитанский замок', chance: '9%' },
-      { id: 'sonar-tracker', name: 'Сонарный трекер', chance: '7%' },
-      { id: 'captain-compass', name: 'Капитанский компас', chance: '5%' },
-      { id: 'ocean-core', name: 'Ядро океанского модуля', chance: '4%' },
-      { id: 'royal-seal', name: 'Королевская пломба порта', chance: '3%' },
-      { id: 'captain-key', name: 'Легендарный ключ капитана', chance: '2%' },
+      { id: 'nav-map', name: 'Карта сокровищ', chance: '26%' },
+      { id: 'captain-seal', name: 'Капитанская медаль', chance: '19%' },
+      { id: 'signal-lamp', name: 'Маяк', chance: '14%' },
+      { id: 'anchor-hook', name: 'Якорь', chance: '11%' },
+      { id: 'steel-lock', name: 'Морской сундук', chance: '9%' },
+      { id: 'sonar-tracker', name: 'Радар корабля', chance: '7%' },
+      { id: 'captain-compass', name: 'Компас', chance: '5%' },
+      { id: 'ocean-core', name: 'Жемчужина океана', chance: '4%' },
+      { id: 'royal-seal', name: 'Золотая корона', chance: '3%' },
+      { id: 'captain-key', name: 'Ключ капитана', chance: '2%' },
     ],
   },
   {
@@ -90,28 +96,94 @@ const caseDefinitions: CaseDefinition[] = [
     label: 'Terminal Mythic',
     headline: 'Terminal Jackpot',
     description:
-      'Легендарный терминальный кейс с самыми редкими технологичными предметами и золотыми артефактами порта.',
+      'Легендарный кейс терминала с понятным лутом: дроны, карты доступа, кристаллы, сейфы и мифические ключи.',
     price: '1200',
     loot: [
-      { id: 'neon-core', name: 'Неоновое ядро терминала', chance: '24%' },
-      { id: 'quantum-pass', name: 'Квантовый пропуск порта', chance: '18%' },
-      { id: 'terminal-key', name: 'Ключ терминального сектора', chance: '14%' },
-      { id: 'plasma-scanner', name: 'Плазменный сканер', chance: '11%' },
-      { id: 'data-cube', name: 'Куб данных контейнера', chance: '9%' },
-      { id: 'mythic-seal', name: 'Мифическая пломба', chance: '7%' },
-      { id: 'vault-lock', name: 'Замок хранилища', chance: '6%' },
-      { id: 'drone-chip', name: 'Чип дрона терминала', chance: '5%' },
-      { id: 'crown-badge', name: 'Корона терминала', chance: '4%' },
-      { id: 'omega-key', name: 'Омега-ключ спецдока', chance: '2%' },
+      { id: 'neon-core', name: 'Неоновый кристалл', chance: '24%' },
+      { id: 'quantum-pass', name: 'VIP карта доступа', chance: '18%' },
+      { id: 'terminal-key', name: 'Ключ терминала', chance: '14%' },
+      { id: 'plasma-scanner', name: 'Лазерный сканер', chance: '11%' },
+      { id: 'data-cube', name: 'Куб данных', chance: '9%' },
+      { id: 'mythic-seal', name: 'Мифический жетон', chance: '7%' },
+      { id: 'vault-lock', name: 'Сейф', chance: '6%' },
+      { id: 'drone-chip', name: 'Дрон', chance: '5%' },
+      { id: 'crown-badge', name: 'Корона джекпота', chance: '4%' },
+      { id: 'omega-key', name: 'Омега-ключ', chance: '2%' },
     ],
   },
 ];
 
 export default function App() {
+  const [page, setPage] = useState<Page>('menu');
   const [selectedCaseId, setSelectedCaseId] = useState<CaseId | null>(null);
   const [isOpening, setIsOpening] = useState(false);
+  const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const selectedCase =
     caseDefinitions.find((entry) => entry.id === selectedCaseId) ?? caseDefinitions[0];
+
+  const claimItem = (item: LootItem) => {
+    setInventoryItems((currentItems) => [
+      {
+        ...item,
+        inventoryId: `${selectedCase.id}-${item.id}-${Date.now()}-${Math.random()
+          .toString(16)
+          .slice(2)}`,
+        caseName: selectedCase.name,
+      },
+      ...currentItems,
+    ]);
+    setIsOpening(false);
+  };
+
+  if (page === 'menu') {
+    return (
+      <main className="menu-page">
+        <section className="menu-shell" aria-label="Main menu">
+          <button className="menu-action gamble-action" type="button" onClick={() => setPage('gamble')}>
+            Gamble
+          </button>
+          <button
+            className="menu-action inventory-action"
+            type="button"
+            onClick={() => setPage('inventory')}
+          >
+            Inventory
+          </button>
+        </section>
+      </main>
+    );
+  }
+
+  if (page === 'inventory') {
+    return (
+      <main className="inventory-page">
+        <section className="inventory-shell">
+          <button className="back-button" type="button" onClick={() => setPage('menu')}>
+            Back
+          </button>
+          <div className="inventory-header">
+            <span className="catalog-kicker">Inventory</span>
+            <h1>Inventory</h1>
+          </div>
+          {inventoryItems.length > 0 ? (
+            <div className="loot-list inventory-list" aria-label="Claimed items">
+              {inventoryItems.map((item) => (
+                <div className="loot-card" key={item.inventoryId}>
+                  <div className={`loot-icon loot-${item.id}`} aria-hidden="true" />
+                  <span>{item.name}</span>
+                  <strong>{item.chance}</strong>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="inventory-empty">
+              <p>Your items will appear here.</p>
+            </div>
+          )}
+        </section>
+      </main>
+    );
+  }
 
   if (selectedCaseId) {
     return (
@@ -159,7 +231,7 @@ export default function App() {
           <CaseOpeningOverlay
             caseName={selectedCase.name}
             items={selectedCase.loot}
-            onClose={() => setIsOpening(false)}
+            onClaim={claimItem}
           />
         ) : null}
       </main>
@@ -169,6 +241,9 @@ export default function App() {
   return (
     <main className="catalog-page">
       <section className="catalog-shell">
+        <button className="back-button catalog-back" type="button" onClick={() => setPage('menu')}>
+          Back
+        </button>
         <div className="catalog-copy">
           <span className="catalog-kicker">Port Cases</span>
           <h1>Choose a drop</h1>
