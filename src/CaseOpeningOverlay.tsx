@@ -22,6 +22,11 @@ const easingMap = {
   easeOutQuint: (t: number) => 1 - Math.pow(1 - t, 5),
 };
 
+function getSpinProgress(t: number) {
+  // Fast early travel with one continuous, smooth slowdown into the stop.
+  return 1 - Math.pow(1 - t, 3.35);
+}
+
 function weightedPick(items: LootItem[]) {
   const weighted = items.map((item) => ({
     item,
@@ -93,13 +98,6 @@ export default function CaseOpeningOverlay({
     const config = CASE_OPENING_CONFIG;
     const easing = easingMap[config.EASING_TYPE];
     const spinDistance = stopOffset - config.BOUNCE_AMOUNT_PX;
-    const accelMs = config.ANIMATION_DURATION_MS * config.ACCELERATION_RATIO;
-    const decelMs = config.ANIMATION_DURATION_MS * config.DECELERATION_RATIO;
-    const cruiseMs = Math.max(0, config.ANIMATION_DURATION_MS - accelMs - decelMs);
-
-    const accelDistance = spinDistance * 0.08;
-    const decelDistance = spinDistance * 0.34;
-    const cruiseDistance = spinDistance - accelDistance - decelDistance;
 
     let frameId = 0;
     let bounceFrameId = 0;
@@ -132,25 +130,9 @@ export default function CaseOpeningOverlay({
 
     const animate = (now: number) => {
       const elapsed = now - startTime;
-
-      if (elapsed < accelMs) {
-        const progress = accelMs === 0 ? 1 : elapsed / accelMs;
-        setOffset(accelDistance * Math.pow(progress, 2));
-        frameId = requestAnimationFrame(animate);
-        return;
-      }
-
-      if (elapsed < accelMs + cruiseMs) {
-        const progress = cruiseMs === 0 ? 1 : (elapsed - accelMs) / cruiseMs;
-        setOffset(accelDistance + cruiseDistance * progress);
-        frameId = requestAnimationFrame(animate);
-        return;
-      }
-
       if (elapsed < config.ANIMATION_DURATION_MS) {
-        const progress =
-          decelMs === 0 ? 1 : (elapsed - accelMs - cruiseMs) / decelMs;
-        setOffset(accelDistance + cruiseDistance + decelDistance * easing(progress));
+        const progress = elapsed / config.ANIMATION_DURATION_MS;
+        setOffset(spinDistance * getSpinProgress(progress));
         frameId = requestAnimationFrame(animate);
         return;
       }
