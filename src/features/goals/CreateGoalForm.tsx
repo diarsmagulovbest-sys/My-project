@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Button } from '../../components/common/Button';
+import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
 import type { CreateGoalInput, TimePeriod } from '../../types/goal';
 
 type CreateGoalFormProps = {
@@ -149,7 +150,18 @@ export function CreateGoalForm({
             Отмена
           </Button>
           <Button disabled={!canSubmit || isSubmitting} type="submit">
-            {isSubmitting ? 'AI готовит план...' : 'Создать цель'}
+            {isSubmitting ? (
+              <ProgressiveFluxLoader
+                className="progressive-flux-loader-compact"
+                phases={[
+                  { at: 0, label: 'анализ' },
+                  { at: 45, label: 'план' },
+                  { at: 80, label: 'готово' },
+                ]}
+              />
+            ) : (
+              'Создать цель'
+            )}
           </Button>
         </div>
       </form>

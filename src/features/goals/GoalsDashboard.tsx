@@ -29,6 +29,14 @@ function getStatusLabel(status: GoalStatus) {
   return labels[status];
 }
 
+function getNextAction(goal: GoalSummary | undefined) {
+  if (!goal) {
+    return 'Создай первую цель, и AI-наставник предложит маленький шаг на сегодня.';
+  }
+
+  return goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? 'Открой цель и создай дорожную карту.';
+}
+
 export function GoalsDashboard({
   error = null,
   goals,
@@ -41,31 +49,50 @@ export function GoalsDashboard({
     goals.length > 0
       ? Math.round(goals.reduce((total, goal) => total + goal.progress, 0) / goals.length)
       : 0;
+  const focusGoal = goals.find((goal) => goal.status === 'active') ?? goals[0];
+  const nextAction = getNextAction(focusGoal);
 
   return (
     <div className="page-stack">
-      <header className="page-header">
-        <div>
-          <span className="eyebrow">Dashboard</span>
-          <h1>Твои цели</h1>
-          <p>Здесь будет список целей, текущие задачи и общий прогресс.</p>
+      <section className="mentor-home" aria-label="AI-наставник">
+        <div className="mentor-card">
+          <div className="mentor-orb" aria-hidden="true">
+            AI
+          </div>
+          <div className="mentor-copy">
+            <span className="eyebrow">AI-наставник</span>
+            <h1>Что делаем сегодня?</h1>
+            <p>{nextAction}</p>
+            <div className="mentor-actions">
+              {focusGoal ? (
+                <Button onClick={() => onOpenGoal(focusGoal.id)}>Открыть цель</Button>
+              ) : (
+                <Button onClick={onCreateClick}>Создать цель</Button>
+              )}
+              <Button variant="secondary" onClick={onCreateClick}>
+                Новая цель
+              </Button>
+            </div>
+          </div>
         </div>
-        <Button onClick={onCreateClick}>Создать цель</Button>
-      </header>
 
-      <section className="stats-grid" aria-label="Статистика целей">
-        <div className="stat-tile">
-          <span>Всего целей</span>
-          <strong>{goals.length}</strong>
-        </div>
-        <div className="stat-tile">
-          <span>Активные</span>
-          <strong>{activeGoals}</strong>
-        </div>
-        <div className="stat-tile">
-          <span>Средний прогресс</span>
-          <strong>{averageProgress}%</strong>
-        </div>
+        <aside className="mentor-side-panel" aria-label="Быстрый прогресс">
+          <div>
+            <span>Фокус</span>
+            <strong>{focusGoal?.title ?? 'Нет цели'}</strong>
+          </div>
+          <div className="mentor-progress">
+            <span>Общий прогресс</span>
+            <strong>{averageProgress}%</strong>
+            <div className="progress-bar" aria-hidden="true">
+              <span style={{ width: `${averageProgress}%` }} />
+            </div>
+          </div>
+          <div className="mentor-stats-row">
+            <span>{goals.length} целей</span>
+            <span>{activeGoals} активных</span>
+          </div>
+        </aside>
       </section>
 
       {isLoading ? (
@@ -83,47 +110,59 @@ export function GoalsDashboard({
       ) : null}
 
       {!isLoading && !error && goals.length === 0 ? (
-        <section className="state-panel">
+        <section className="state-panel empty-goals-panel">
           <h2>Пока нет целей</h2>
-          <p>Создай первую цель, чтобы увидеть здесь дорожную карту и сегодняшнее задание.</p>
+          <p>Опиши, чему хочешь научиться. AI-наставник сразу подготовит первый понятный шаг.</p>
           <Button onClick={onCreateClick}>Создать цель</Button>
         </section>
       ) : null}
 
       {!isLoading && !error && goals.length > 0 ? (
-        <section className="goal-grid" aria-label="Список целей">
-          {goals.map((goal) => (
-            <article className="goal-card" key={goal.id}>
-              <div className="goal-card-top">
-                <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status)}</span>
-                <span className="date-label">до {formatDate(goal.targetDate)}</span>
-              </div>
-              <h2>{goal.title}</h2>
-              <p>{goal.description || 'Описание можно будет уточнить перед генерацией плана.'}</p>
+        <>
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Мои цели</span>
+              <h2>Продолжай в своём темпе</h2>
+            </div>
+            <Button variant="secondary" onClick={onCreateClick}>
+              Создать цель
+            </Button>
+          </div>
 
-              <div className="progress-row" aria-label={`Прогресс ${goal.progress}%`}>
-                <span>Прогресс</span>
-                <strong>{goal.progress}%</strong>
-              </div>
-              <div className="progress-bar" aria-hidden="true">
-                <span style={{ width: `${goal.progress}%` }} />
-              </div>
+          <section className="goal-grid" aria-label="Список целей">
+            {goals.map((goal) => (
+              <article className="goal-card" key={goal.id}>
+                <div className="goal-card-top">
+                  <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status)}</span>
+                  <span className="date-label">до {formatDate(goal.targetDate)}</span>
+                </div>
+                <h2>{goal.title}</h2>
+                <p>{goal.description || 'Описание можно будет уточнить перед генерацией плана.'}</p>
 
-              <div className="today-box">
-                <span>Сегодня</span>
-                <strong>
-                  {goal.todayTask?.title ??
-                    goal.aiAnalysis?.firstSmallAction ??
-                    'Задание появится после создания плана'}
-                </strong>
-              </div>
+                <div className="progress-row" aria-label={`Прогресс ${goal.progress}%`}>
+                  <span>Прогресс</span>
+                  <strong>{goal.progress}%</strong>
+                </div>
+                <div className="progress-bar" aria-hidden="true">
+                  <span style={{ width: `${goal.progress}%` }} />
+                </div>
 
-              <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                Открыть
-              </Button>
-            </article>
-          ))}
-        </section>
+                <div className="today-box">
+                  <span>Сегодня</span>
+                  <strong>
+                    {goal.todayTask?.title ??
+                      goal.aiAnalysis?.firstSmallAction ??
+                      'Задание появится после создания плана'}
+                  </strong>
+                </div>
+
+                <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                  Открыть
+                </Button>
+              </article>
+            ))}
+          </section>
+        </>
       ) : null}
     </div>
   );

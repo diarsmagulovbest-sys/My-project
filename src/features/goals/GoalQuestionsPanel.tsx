@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/common/Button';
+import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
 import type { Goal } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
 import { generateClarifyingQuestions } from './generateQuestions';
@@ -143,8 +144,14 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
 
       {isLoading ? (
         <div className="inline-state">
-          <strong>Готовим вопросы...</strong>
-          <p>Gemini анализирует цель через Supabase Edge Function.</p>
+          <ProgressiveFluxLoader
+            phases={[
+              { at: 0, label: 'анализ цели' },
+              { at: 40, label: 'подбор вопросов' },
+              { at: 75, label: 'проверка' },
+              { at: 100, label: 'готово' },
+            ]}
+          />
         </div>
       ) : null}
 

@@ -17,11 +17,15 @@ type GeminiResponse = {
         text?: string;
       }>;
     };
+    finishReason?: string;
   }>;
   error?: {
     code?: number;
     message?: string;
     status?: string;
+  };
+  promptFeedback?: {
+    blockReason?: string;
   };
 };
 
@@ -33,11 +37,13 @@ type GeminiReadResult = {
 
 class HttpError extends Error {
   code: string;
+  details: Record<string, unknown>;
   status: number;
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: string, message: string, details: Record<string, unknown> = {}) {
     super(message);
     this.code = code;
+    this.details = details;
     this.status = status;
   }
 }
@@ -45,6 +51,7 @@ class HttpError extends Error {
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const MODEL = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const MAX_GEMINI_ATTEMPTS = 3;
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -78,6 +85,30 @@ function getUpstreamMessage(data: GeminiResponse, body: string) {
   return data.error?.message ?? sanitizeLogText(body);
 }
 
+function getGeminiClientMessage(status: number, upstreamMessage: string) {
+  if (status === 400) {
+    return `Gemini rejected the request: ${upstreamMessage}`;
+  }
+
+  if (status === 401 || status === 403) {
+    return `Gemini API key is not allowed to make this request: ${upstreamMessage}`;
+  }
+
+  if (status === 404) {
+    return `Gemini model or endpoint was not found: ${upstreamMessage}`;
+  }
+
+  if (status === 429) {
+    return `Gemini rate limit was reached. Wait a little and try again: ${upstreamMessage}`;
+  }
+
+  if (status >= 500) {
+    return `Gemini is temporarily unavailable. Try again soon: ${upstreamMessage}`;
+  }
+
+  return `Gemini API returned an error: ${upstreamMessage}`;
+}
+
 function writeLog(
   level: 'error' | 'info',
   event: string,
@@ -90,6 +121,16 @@ function writeLog(
   };
 
   console[level](JSON.stringify(payload));
+}
+
+function wait(milliseconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
+}
+
+function shouldRetryGeminiStatus(status: number) {
+  return status === 429 || status >= 500;
 }
 
 async function readJsonBody(req: Request): Promise<AiRequestBody> {
@@ -147,17 +188,53 @@ Deno.serve(async (req) => {
       );
     }
 
-    const geminiResponse = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_API_KEY,
+    let geminiResponse: Response | null = null;
+    let networkErrorMessage = '';
+    const geminiRequestBody = JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
       },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        systemInstruction: system ? { parts: [{ text: system }] } : undefined,
-      }),
+      systemInstruction: system ? { parts: [{ text: system }] } : undefined,
     });
+
+    for (let attempt = 1; attempt <= MAX_GEMINI_ATTEMPTS; attempt += 1) {
+      try {
+        geminiResponse = await fetch(GEMINI_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': GEMINI_API_KEY,
+          },
+          body: geminiRequestBody,
+        });
+
+        if (
+          attempt < MAX_GEMINI_ATTEMPTS
+          && shouldRetryGeminiStatus(geminiResponse.status)
+        ) {
+          await wait(350 * attempt);
+          continue;
+        }
+
+        break;
+      } catch (error) {
+        networkErrorMessage = error instanceof Error ? error.message : 'Network request failed.';
+
+        if (attempt < MAX_GEMINI_ATTEMPTS) {
+          await wait(350 * attempt);
+          continue;
+        }
+      }
+    }
+
+    if (!geminiResponse) {
+      throw new HttpError(
+        502,
+        'gemini_network_error',
+        `Could not reach Gemini API: ${networkErrorMessage || 'Network request failed.'}`,
+      );
+    }
 
     const {
       body: geminiResponseBody,
@@ -166,22 +243,46 @@ Deno.serve(async (req) => {
     } = await readGeminiResponse(geminiResponse);
 
     if (!geminiResponse.ok) {
+      const upstreamMessage = getUpstreamMessage(geminiData, geminiResponseBody);
+      const upstreamErrorCode = geminiData.error?.status ?? geminiData.error?.code ?? null;
+
       writeLog('error', 'gemini_request_failed', {
         endpoint: GEMINI_API_URL,
         ...getBodySummary(body),
         responseContentType: geminiResponseContentType,
-        upstreamErrorCode: geminiData.error?.status ?? geminiData.error?.code ?? null,
-        upstreamMessage: getUpstreamMessage(geminiData, geminiResponseBody),
+        upstreamErrorCode,
+        upstreamMessage,
         upstreamStatus: geminiResponse.status,
       });
 
-      throw new HttpError(502, 'gemini_request_failed', 'Gemini API returned an error.');
+      throw new HttpError(
+        502,
+        'gemini_request_failed',
+        getGeminiClientMessage(geminiResponse.status, upstreamMessage),
+        {
+          upstreamErrorCode,
+          upstreamStatus: geminiResponse.status,
+        },
+      );
     }
 
     const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 
     if (!text.trim()) {
-      throw new HttpError(502, 'gemini_empty_response', 'Gemini returned an empty response.');
+      const finishReason = geminiData.candidates?.[0]?.finishReason ?? null;
+      const blockReason = geminiData.promptFeedback?.blockReason ?? null;
+
+      throw new HttpError(
+        502,
+        'gemini_empty_response',
+        blockReason
+          ? `Gemini blocked the response: ${blockReason}. Try rephrasing the goal.`
+          : `Gemini returned an empty response${finishReason ? ` (${finishReason})` : ''}. Try again.`,
+        {
+          blockReason,
+          finishReason,
+        },
+      );
     }
 
     writeLog('info', 'ai_success', {
@@ -202,6 +303,13 @@ Deno.serve(async (req) => {
       status,
     });
 
-    return jsonResponse({ code, error: message }, status);
+    return jsonResponse(
+      {
+        code,
+        error: message,
+        ...(error instanceof HttpError ? error.details : {}),
+      },
+      status,
+    );
   }
 });

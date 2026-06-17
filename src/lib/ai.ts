@@ -5,6 +5,8 @@ type AiFunctionResponse = {
   code?: string;
   error?: string;
   text?: string;
+  upstreamErrorCode?: number | string | null;
+  upstreamStatus?: number;
 };
 
 type InvokeAiInput = {
@@ -23,12 +25,29 @@ function isAiFunctionResponse(value: unknown): value is AiFunctionResponse {
   return typeof value === 'object' && value !== null;
 }
 
+function getReadableAiError(value: AiFunctionResponse) {
+  if (!value.error) {
+    return null;
+  }
+
+  const details = [
+    value.upstreamStatus ? `status ${value.upstreamStatus}` : null,
+    value.upstreamErrorCode ? String(value.upstreamErrorCode) : null,
+  ].filter(Boolean);
+
+  return details.length > 0 ? `${value.error} (${details.join(', ')})` : value.error;
+}
+
 async function getFunctionErrorMessage(error: unknown) {
   if (error instanceof FunctionsHttpError) {
     const value: unknown = await error.context.json().catch(() => null);
 
-    if (isAiFunctionResponse(value) && typeof value.error === 'string') {
-      return value.code ? `${value.error} (${value.code})` : value.error;
+    if (isAiFunctionResponse(value)) {
+      const readableError = getReadableAiError(value);
+
+      if (readableError) {
+        return readableError;
+      }
     }
   }
 
@@ -45,7 +64,7 @@ export async function invokeAi({ prompt, system }: InvokeAiInput): Promise<strin
   }
 
   if (data?.error) {
-    throw new Error(data.error);
+    throw new Error(getReadableAiError(data) ?? data.error);
   }
 
   if (!data?.text?.trim()) {

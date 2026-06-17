@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
+import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
 import { fetchGoalQuestions } from '../goals/questionsApi';
 import type { Goal, GoalStatus } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
@@ -344,7 +345,18 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
 
       <div className="question-actions">
         <Button disabled={isGenerating || !canGenerateRoadmap} onClick={() => void handleGenerate()}>
-          {isGenerating ? 'Генерируем...' : 'Сгенерировать дорожную карту'}
+          {isGenerating ? (
+            <ProgressiveFluxLoader
+              className="progressive-flux-loader-compact"
+              phases={[
+                { at: 0, label: 'этапы' },
+                { at: 45, label: 'задачи' },
+                { at: 80, label: 'готово' },
+              ]}
+            />
+          ) : (
+            'Сгенерировать дорожную карту'
+          )}
         </Button>
       </div>
     </section>
