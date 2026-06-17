@@ -1,0 +1,27 @@
+export type TimePeriod = 'day' | 'week';
+
+export type GoalStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
+
+export type Goal = {
+  availableTime: number;
+  createdAt: string;
+  currentLevel: string;
+  description: string;
+  id: string;
+  progress: number;
+  status: GoalStatus;
+  targetDate: string;
+  timePeriod: TimePeriod;
+  title: string;
+  updatedAt: string;
+  userId: string;
+};
+
+export type CreateGoalInput = {
+  availableTime: number;
+  currentLevel: string;
+  description: string;
+  targetDate: string;
+  timePeriod: TimePeriod;
+  title: string;
+};
