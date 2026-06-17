@@ -12,7 +12,7 @@ export const clarifyingQuestionSchema = z
 
 export const clarifyingQuestionsResponseSchema = z
   .object({
-    questions: z.array(clarifyingQuestionSchema).min(3).max(7),
+    questions: z.array(clarifyingQuestionSchema).min(5).max(6),
   })
   .strict();
 

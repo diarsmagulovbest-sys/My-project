@@ -1,14 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { fetchGoalQuestions } from '../goals/questionsApi';
-import type { Goal } from '../../types/goal';
+import type { Goal, GoalStatus } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
-import type { RoadmapStage } from '../../types/roadmap';
+import type {
+  RoadmapStage,
+  RoadmapStageStatus,
+  RoadmapTask,
+  RoadmapTaskStatus,
+} from '../../types/roadmap';
 import { generateRoadmap } from './generateRoadmap';
-import { createRoadmap, fetchRoadmap } from './roadmapApi';
+import { createRoadmap, fetchRoadmap, setRoadmapTaskCompletion } from './roadmapApi';
 
 type RoadmapViewProps = {
   goal: Goal;
+  onGoalProgressChange?: (progress: number, status: GoalStatus) => void;
 };
 
 const pendingRoadmapRequests = new Map<string, Promise<RoadmapStage[]>>();
@@ -32,6 +38,61 @@ function getAnsweredQuestions(questions: GoalQuestion[]) {
   return questions.filter((question) => question.answer.trim());
 }
 
+function getGoalProgress(stages: RoadmapStage[]) {
+  const tasks = stages.flatMap((stage) => stage.tasks);
+
+  if (tasks.length === 0) {
+    return 0;
+  }
+
+  const completedTasks = tasks.filter((task) => task.status === 'completed');
+
+  return Math.round((completedTasks.length / tasks.length) * 100);
+}
+
+function getGoalStatus(progress: number): GoalStatus {
+  return progress === 100 ? 'completed' : 'active';
+}
+
+function getStageStatus(stage: RoadmapStage, firstOpenStageId: string | null): RoadmapStageStatus {
+  if (stage.tasks.length > 0 && stage.tasks.every((task) => task.status === 'completed')) {
+    return 'completed';
+  }
+
+  return stage.id === firstOpenStageId ? 'active' : 'locked';
+}
+
+function updateStageStatuses(stages: RoadmapStage[]) {
+  const firstOpenStage = stages.find((stage) =>
+    stage.tasks.some((task) => task.status !== 'completed'),
+  );
+
+  return stages.map((stage) => ({
+    ...stage,
+    status: getStageStatus(stage, firstOpenStage?.id ?? null),
+  }));
+}
+
+function getOptimisticStages(stages: RoadmapStage[], taskId: string, isCompleted: boolean) {
+  const now = new Date().toISOString();
+  const nextTaskStatus: RoadmapTaskStatus = isCompleted ? 'completed' : 'todo';
+  const nextStages = stages.map((stage) => ({
+    ...stage,
+    tasks: stage.tasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            completedAt: isCompleted ? now : null,
+            status: nextTaskStatus,
+            updatedAt: now,
+          }
+        : task,
+    ),
+  }));
+
+  return updateStageStatuses(nextStages);
+}
+
 async function generateAndSaveRoadmap(goal: Goal, questions: GoalQuestion[]) {
   const pendingRequest = pendingRoadmapRequests.get(goal.id);
 
@@ -50,17 +111,23 @@ async function generateAndSaveRoadmap(goal: Goal, questions: GoalQuestion[]) {
   return nextRequest;
 }
 
-export function RoadmapView({ goal }: RoadmapViewProps) {
+export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [questions, setQuestions] = useState<GoalQuestion[]>([]);
   const [stages, setStages] = useState<RoadmapStage[]>([]);
+  const desiredTaskCompletionRef = useRef(new Map<string, boolean>());
+  const savingTaskIdsRef = useRef(new Set<string>());
 
   const answeredQuestions = useMemo(() => getAnsweredQuestions(questions), [questions]);
   const canGenerateRoadmap =
     questions.length > 0 && answeredQuestions.length === questions.length && stages.length === 0;
   const totalTasks = stages.reduce((count, stage) => count + stage.tasks.length, 0);
+  const completedTasks = stages.reduce(
+    (count, stage) => count + stage.tasks.filter((task) => task.status === 'completed').length,
+    0,
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -126,6 +193,51 @@ export function RoadmapView({ goal }: RoadmapViewProps) {
     }
   };
 
+  const persistLatestTaskCompletion = async (taskId: string) => {
+    if (savingTaskIdsRef.current.has(taskId)) {
+      return;
+    }
+
+    savingTaskIdsRef.current.add(taskId);
+
+    try {
+      while (desiredTaskCompletionRef.current.has(taskId)) {
+        const desiredCompletion = desiredTaskCompletionRef.current.get(taskId);
+
+        if (desiredCompletion === undefined) {
+          break;
+        }
+
+        const result = await setRoadmapTaskCompletion(goal.id, taskId, desiredCompletion);
+        const latestDesiredCompletion = desiredTaskCompletionRef.current.get(taskId);
+
+        if (latestDesiredCompletion === desiredCompletion) {
+          desiredTaskCompletionRef.current.delete(taskId);
+          setStages(result.stages);
+          onGoalProgressChange?.(result.goalProgress, result.goalStatus);
+        }
+      }
+    } catch (caughtError) {
+      desiredTaskCompletionRef.current.delete(taskId);
+      setError(getErrorMessage(caughtError));
+    } finally {
+      savingTaskIdsRef.current.delete(taskId);
+    }
+  };
+
+  const handleToggleTaskCompletion = (task: RoadmapTask) => {
+    const isCompleted = task.status !== 'completed';
+    const optimisticStages = getOptimisticStages(stages, task.id, isCompleted);
+    const optimisticProgress = getGoalProgress(optimisticStages);
+    const optimisticStatus = getGoalStatus(optimisticProgress);
+
+    setError(null);
+    setStages(optimisticStages);
+    onGoalProgressChange?.(optimisticProgress, optimisticStatus);
+    desiredTaskCompletionRef.current.set(task.id, isCompleted);
+    void persistLatestTaskCompletion(task.id);
+  };
+
   if (isLoading) {
     return (
       <section className="roadmap-panel">
@@ -146,10 +258,15 @@ export function RoadmapView({ goal }: RoadmapViewProps) {
               <span className="eyebrow">Дорожная карта</span>
               <h2>План готов</h2>
               <p>
-                {stages.length} этапов и {totalTasks} задач сохранены в Supabase.
+                Выполнено {completedTasks} из {totalTasks} задач.
               </p>
             </div>
           </div>
+          {error ? (
+            <div className="form-error questions-error" role="alert">
+              <span>{error}</span>
+            </div>
+          ) : null}
         </section>
 
         <section className="roadmap-grid" aria-label="Дорожная карта">
@@ -172,7 +289,16 @@ export function RoadmapView({ goal }: RoadmapViewProps) {
               <div className="task-list">
                 {stage.tasks.map((task) => (
                   <div className="task-row" key={task.id}>
-                    <span className={task.status === 'completed' ? 'task-check task-done' : 'task-check'} />
+                    <button
+                      aria-label={
+                        task.status === 'completed'
+                          ? `Снять отметку выполнения с задачи «${task.title}»`
+                          : `Отметить задачу «${task.title}» выполненной`
+                      }
+                      className={task.status === 'completed' ? 'task-check task-done' : 'task-check'}
+                      onClick={() => void handleToggleTaskCompletion(task)}
+                      type="button"
+                    />
                     <div>
                       <strong>{task.title}</strong>
                       <p>{task.description}</p>

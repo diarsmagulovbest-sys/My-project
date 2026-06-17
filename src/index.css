@@ -780,6 +780,28 @@ textarea {
   margin-top: 2px;
   border: 2px solid #b8c4d8;
   border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.task-check:hover:not(:disabled),
+.task-check:focus-visible {
+  border-color: #4169e1;
+  box-shadow: 0 0 0 4px rgba(65, 105, 225, 0.14);
+  outline: none;
+}
+
+.task-check:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.task-check:disabled {
+  cursor: default;
 }
 
 .task-done {

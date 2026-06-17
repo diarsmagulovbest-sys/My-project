@@ -180,6 +180,13 @@ export default function App() {
             <RoadmapView
               goal={selectedGoal}
               key={`${selectedGoal.id}-${roadmapRefreshKey}`}
+              onGoalProgressChange={(progress, status) => {
+                setGoals((currentGoals) =>
+                  currentGoals.map((goal) =>
+                    goal.id === selectedGoal.id ? { ...goal, progress, status } : goal,
+                  ),
+                );
+              }}
             />
           }
         />

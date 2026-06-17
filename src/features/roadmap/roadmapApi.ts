@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import type { Goal } from '../../types/goal';
+import type { Goal, GoalStatus } from '../../types/goal';
 import type {
   RoadmapStage,
   RoadmapStageStatus,
@@ -52,6 +52,12 @@ type CreateRoadmapTaskRow = {
   stage_id: string;
   status: RoadmapTaskStatus;
   title: string;
+};
+
+type CompleteTaskResult = {
+  goalProgress: number;
+  goalStatus: GoalStatus;
+  stages: RoadmapStage[];
 };
 
 const roadmapStageColumns = `
@@ -140,6 +146,74 @@ function groupTasksByStage(tasks: RoadmapTask[]) {
   }, {});
 }
 
+function getGoalProgress(stages: RoadmapStage[]) {
+  const tasks = stages.flatMap((stage) => stage.tasks);
+
+  if (tasks.length === 0) {
+    return 0;
+  }
+
+  const completedTasks = tasks.filter((task) => task.status === 'completed');
+
+  return Math.round((completedTasks.length / tasks.length) * 100);
+}
+
+function getGoalStatus(progress: number): GoalStatus {
+  return progress === 100 ? 'completed' : 'active';
+}
+
+function getStageStatus(stage: RoadmapStage, firstOpenStageId: string | null): RoadmapStageStatus {
+  if (stage.tasks.length > 0 && stage.tasks.every((task) => task.status === 'completed')) {
+    return 'completed';
+  }
+
+  return stage.id === firstOpenStageId ? 'active' : 'locked';
+}
+
+async function updateGoalProgress(goalId: string, progress: number) {
+  const status = getGoalStatus(progress);
+  const { error } = await supabase
+    .from('goals')
+    .update({ progress, status })
+    .eq('id', goalId)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return status;
+}
+
+async function updateStageStatuses(stages: RoadmapStage[]) {
+  const firstOpenStage = stages.find((stage) =>
+    stage.tasks.some((task) => task.status !== 'completed'),
+  );
+  const updates = stages.map((stage) => {
+    const nextStatus = getStageStatus(stage, firstOpenStage?.id ?? null);
+
+    if (stage.status === nextStatus) {
+      return Promise.resolve();
+    }
+
+    return supabase
+      .from('roadmap_stages')
+      .update({ status: nextStatus })
+      .eq('id', stage.id)
+      .eq('goal_id', stage.goalId)
+      .select('id')
+      .single()
+      .then(({ error }) => {
+        if (error) {
+          throw new Error(error.message);
+        }
+      });
+  });
+
+  await Promise.all(updates);
+}
+
 export async function fetchRoadmap(goalId: string): Promise<RoadmapStage[]> {
   const { data: stageRows, error: stagesError } = await supabase
     .from('roadmap_stages')
@@ -220,4 +294,38 @@ export async function createRoadmap(goal: Goal, roadmap: RoadmapResponse): Promi
   }
 
   return fetchRoadmap(goal.id);
+}
+
+export async function setRoadmapTaskCompletion(
+  goalId: string,
+  taskId: string,
+  isCompleted: boolean,
+): Promise<CompleteTaskResult> {
+  const { error } = await supabase
+    .from('tasks')
+    .update({
+      completed_at: isCompleted ? new Date().toISOString() : null,
+      status: isCompleted ? 'completed' : 'todo',
+    })
+    .eq('id', taskId)
+    .eq('goal_id', goalId)
+    .select('id')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const stagesAfterTaskUpdate = await fetchRoadmap(goalId);
+  await updateStageStatuses(stagesAfterTaskUpdate);
+
+  const stages = await fetchRoadmap(goalId);
+  const goalProgress = getGoalProgress(stages);
+  const goalStatus = await updateGoalProgress(goalId, goalProgress);
+
+  return {
+    goalProgress,
+    goalStatus,
+    stages,
+  };
 }
