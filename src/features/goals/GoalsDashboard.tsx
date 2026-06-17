@@ -1,14 +1,5 @@
 import { Button } from '../../components/common/Button';
-import type { Goal, GoalStatus } from '../../types/goal';
-
-type TaskPreview = {
-  id: string;
-  title: string;
-};
-
-type GoalSummary = Goal & {
-  todayTask?: TaskPreview;
-};
+import type { GoalStatus, GoalSummary } from '../../types/goal';
 
 type GoalsDashboardProps = {
   error?: string | null;
@@ -120,7 +111,11 @@ export function GoalsDashboard({
 
               <div className="today-box">
                 <span>Сегодня</span>
-                <strong>{goal.todayTask?.title ?? 'Задание появится после создания плана'}</strong>
+                <strong>
+                  {goal.todayTask?.title ??
+                    goal.aiAnalysis?.firstSmallAction ??
+                    'Задание появится после создания плана'}
+                </strong>
               </div>
 
               <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>

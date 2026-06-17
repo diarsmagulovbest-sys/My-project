@@ -50,6 +50,16 @@ export const roadmapResponseSchema = z
   })
   .strict();
 
+export const goalAiAnalysisResponseSchema = z
+  .object({
+    clarificationQuestions: z.array(shortText).min(1).max(6),
+    estimatedUserLevel: shortText,
+    firstSmallAction: shortText,
+    goalSummary: longText,
+    steps: z.array(shortText).min(3).max(5),
+  })
+  .strict();
+
 export const mentorResponseSchema = z
   .object({
     message: longText,
@@ -61,6 +71,7 @@ export const mentorResponseSchema = z
 export type ClarifyingQuestion = z.infer<typeof clarifyingQuestionSchema>;
 export type ClarifyingQuestionsResponse = z.infer<typeof clarifyingQuestionsResponseSchema>;
 export type Feasibility = z.infer<typeof feasibilitySchema>;
+export type GoalAiAnalysisResponse = z.infer<typeof goalAiAnalysisResponseSchema>;
 export type RoadmapTask = z.infer<typeof roadmapTaskSchema>;
 export type RoadmapStage = z.infer<typeof roadmapStageSchema>;
 export type RoadmapResponse = z.infer<typeof roadmapResponseSchema>;
@@ -97,6 +108,10 @@ export function validateClarifyingQuestionsResponse(value: unknown) {
 
 export function validateRoadmapResponse(value: unknown) {
   return validateAiResponse(roadmapResponseSchema, value);
+}
+
+export function validateGoalAiAnalysisResponse(value: unknown) {
+  return validateAiResponse(goalAiAnalysisResponseSchema, value);
 }
 
 export function validateMentorResponse(value: unknown) {

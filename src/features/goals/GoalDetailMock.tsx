@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
-import type { Goal } from '../../types/goal';
+import type { GoalSummary } from '../../types/goal';
 
 type TaskStatus = 'todo' | 'completed';
 
@@ -21,7 +21,7 @@ type GoalStage = {
 };
 
 type GoalDetailMockProps = {
-  goal: Goal & {
+  goal: GoalSummary & {
     stages?: GoalStage[];
   };
   onBack: () => void;
@@ -42,6 +42,13 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
   const allTasks = stages.flatMap((stage) => stage.tasks);
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
   const completedTasks = allTasks.filter((task) => task.status === 'completed');
+  const aiAnalysis = goal.aiAnalysis;
+  const todayTitle = currentTask?.title ?? aiAnalysis?.firstSmallAction ?? 'Следующий шаг: дорожная карта';
+  const todayDescription =
+    currentTask?.description ??
+    (aiAnalysis
+      ? 'Это первый маленький шаг от AI-наставника. Его можно сделать уже сегодня.'
+      : 'Сейчас можно сгенерировать план ниже. Отмечать задачи выполненными будем на следующем этапе.');
 
   return (
     <div className="page-stack">
@@ -77,16 +84,53 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
         </div>
       </section>
 
+      {aiAnalysis ? (
+        <section className="ai-analysis-panel" aria-label="AI-анализ цели">
+          <div>
+            <span className="eyebrow">AI-наставник</span>
+            <h2>Стартовый план</h2>
+            <p>{aiAnalysis.goalSummary}</p>
+          </div>
+
+          <div className="ai-analysis-grid">
+            <div>
+              <span>Уровень</span>
+              <strong>{aiAnalysis.estimatedUserLevel}</strong>
+            </div>
+            <div>
+              <span>Сегодня</span>
+              <strong>{aiAnalysis.firstSmallAction}</strong>
+            </div>
+          </div>
+
+          <div className="ai-analysis-columns">
+            <div>
+              <h3>Шаги</h3>
+              <ol>
+                {aiAnalysis.steps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+            </div>
+            <div>
+              <h3>Вопросы</h3>
+              <ul>
+                {aiAnalysis.clarificationQuestions.map((question) => (
+                  <li key={question}>{question}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {questionsPanel}
 
       <section className="task-focus">
         <div>
           <span className="eyebrow">Сегодняшнее задание</span>
-          <h2>{currentTask?.title ?? 'Следующий шаг: дорожная карта'}</h2>
-          <p>
-            {currentTask?.description ??
-              'Сейчас можно сгенерировать план ниже. Отмечать задачи выполненными будем на следующем этапе.'}
-          </p>
+          <h2>{todayTitle}</h2>
+          <p>{todayDescription}</p>
         </div>
         <Button disabled={!currentTask || currentTask.status === 'completed'}>
           Отметить выполненным

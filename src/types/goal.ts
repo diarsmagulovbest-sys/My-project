@@ -17,6 +17,28 @@ export type Goal = {
   userId: string;
 };
 
+export type GoalAiAnalysis = {
+  clarificationQuestions: string[];
+  createdAt: string;
+  estimatedUserLevel: string;
+  firstSmallAction: string;
+  goalId: string;
+  goalSummary: string;
+  id: string;
+  steps: string[];
+  userId: string;
+};
+
+export type GoalTaskPreview = {
+  id: string;
+  title: string;
+};
+
+export type GoalSummary = Goal & {
+  aiAnalysis?: GoalAiAnalysis;
+  todayTask?: GoalTaskPreview;
+};
+
 export type CreateGoalInput = {
   availableTime: number;
   currentLevel: string;

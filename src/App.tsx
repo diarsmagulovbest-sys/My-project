@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Auth from './components/Auth';
 import { AppLayout } from './components/layout/AppLayout';
 import { CreateGoalForm } from './features/goals/CreateGoalForm';
 import { GoalDetailMock } from './features/goals/GoalDetailMock';
 import { GoalQuestionsPanel } from './features/goals/GoalQuestionsPanel';
+import { generateGoalAnalysis } from './features/goals/generateGoalAnalysis';
 import { createGoal, fetchGoals } from './features/goals/goalsApi';
 import { GoalsDashboard } from './features/goals/GoalsDashboard';
 import { RoadmapView } from './features/roadmap/RoadmapView';
 import { supabase } from './lib/supabase';
-import type { CreateGoalInput, Goal } from './types/goal';
+import type { CreateGoalInput, GoalSummary } from './types/goal';
 
 type AppPage = 'dashboard' | 'create' | 'detail';
 
@@ -21,20 +22,29 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activePage, setActivePage] = useState<AppPage>('dashboard');
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [goals, setGoals] = useState<GoalSummary[]>([]);
   const [selectedGoalId, setSelectedGoalId] = useState<string>('');
   const [isGoalsLoading, setIsGoalsLoading] = useState(false);
   const [goalsError, setGoalsError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   const [roadmapRefreshKey, setRoadmapRefreshKey] = useState(0);
+  const latestGoalsLoadIdRef = useRef(0);
 
   const loadGoals = useCallback(async (userId: string) => {
+    const loadId = latestGoalsLoadIdRef.current + 1;
+    latestGoalsLoadIdRef.current = loadId;
+
     setIsGoalsLoading(true);
     setGoalsError(null);
 
     try {
       const nextGoals = await fetchGoals(userId);
+
+      if (latestGoalsLoadIdRef.current !== loadId) {
+        return;
+      }
+
       setGoals(nextGoals);
       setSelectedGoalId((currentGoalId) => {
         if (nextGoals.some((goal) => goal.id === currentGoalId)) {
@@ -44,9 +54,15 @@ export default function App() {
         return nextGoals[0]?.id ?? '';
       });
     } catch (error) {
+      if (latestGoalsLoadIdRef.current !== loadId) {
+        return;
+      }
+
       setGoalsError(getErrorMessage(error));
     } finally {
-      setIsGoalsLoading(false);
+      if (latestGoalsLoadIdRef.current === loadId) {
+        setIsGoalsLoading(false);
+      }
     }
   }, []);
 
@@ -101,9 +117,11 @@ export default function App() {
 
     setIsCreatingGoal(true);
     setCreateError(null);
+    latestGoalsLoadIdRef.current += 1;
 
     try {
-      const newGoal = await createGoal(session.user.id, input);
+      const aiAnalysis = await generateGoalAnalysis(input);
+      const newGoal = await createGoal(session.user.id, input, aiAnalysis);
 
       setGoals((currentGoals) => [newGoal, ...currentGoals]);
       setSelectedGoalId(newGoal.id);

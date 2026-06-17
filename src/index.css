@@ -337,6 +337,7 @@ textarea {
 .page-header h1,
 .detail-header h1,
 .task-focus h2,
+.ai-analysis-panel h2,
 .history-panel h2,
 .state-panel h2,
 .goal-card h2,
@@ -354,6 +355,7 @@ textarea {
 .page-header p,
 .detail-header p,
 .task-focus p,
+.ai-analysis-panel p,
 .history-panel p,
 .state-panel p,
 .goal-card p,
@@ -378,6 +380,7 @@ textarea {
 .state-panel,
 .questions-panel,
 .roadmap-panel,
+.ai-analysis-panel,
 .task-focus,
 .stage-panel,
 .history-panel {
@@ -422,10 +425,62 @@ textarea {
 .state-panel,
 .questions-panel,
 .roadmap-panel,
+.ai-analysis-panel,
 .task-focus,
 .history-panel,
 .form-panel {
   padding: 22px;
+}
+
+.ai-analysis-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.ai-analysis-grid,
+.ai-analysis-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.ai-analysis-grid div {
+  display: grid;
+  gap: 8px;
+  border-radius: 14px;
+  background: #f4f7fb;
+  padding: 16px;
+}
+
+.ai-analysis-grid span {
+  color: #647086;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ai-analysis-grid strong {
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.ai-analysis-columns h3 {
+  margin: 0 0 10px;
+  color: #111827;
+  font-size: 18px;
+}
+
+.ai-analysis-columns ol,
+.ai-analysis-columns ul {
+  margin: 0;
+  padding-left: 22px;
+  color: #3f4b5f;
+  line-height: 1.55;
+}
+
+.ai-analysis-columns li + li {
+  margin-top: 8px;
 }
 
 .goal-card {
@@ -842,6 +897,8 @@ textarea {
 
   .goal-grid,
   .roadmap-grid,
+  .ai-analysis-grid,
+  .ai-analysis-columns,
   .stats-grid,
   .detail-summary {
     grid-template-columns: 1fr;
@@ -861,6 +918,7 @@ textarea {
   .state-panel,
   .questions-panel,
   .roadmap-panel,
+  .ai-analysis-panel,
   .task-focus,
   .history-panel {
     padding: 18px;

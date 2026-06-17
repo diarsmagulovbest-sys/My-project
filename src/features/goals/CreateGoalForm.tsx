@@ -149,7 +149,7 @@ export function CreateGoalForm({
             Отмена
           </Button>
           <Button disabled={!canSubmit || isSubmitting} type="submit">
-            {isSubmitting ? 'Создаём...' : 'Создать цель'}
+            {isSubmitting ? 'AI готовит план...' : 'Создать цель'}
           </Button>
         </div>
       </form>
