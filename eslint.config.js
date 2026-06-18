@@ -9,6 +9,7 @@ export default tseslint.config(
     ignores: [
       'dist',
       'node_modules',
+      'ThemeToggle.tsx',
       '*.tsbuildinfo',
       'vite.config.js',
       'vite.config.d.ts',

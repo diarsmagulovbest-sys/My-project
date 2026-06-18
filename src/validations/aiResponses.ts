@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { mentorProfileIds } from '../features/mentor/mentorProfiles';
 
 const shortText = z.string().trim().min(1).max(500);
 const longText = z.string().trim().min(1).max(3000);
@@ -60,6 +61,14 @@ export const goalAiAnalysisResponseSchema = z
   })
   .strict();
 
+export const mentorProfileClassificationResponseSchema = z
+  .object({
+    confidence: z.number().min(0).max(1),
+    mentorProfileId: z.enum(mentorProfileIds),
+    reason: shortText,
+  })
+  .strict();
+
 export const mentorResponseSchema = z
   .object({
     message: longText,
@@ -72,6 +81,9 @@ export type ClarifyingQuestion = z.infer<typeof clarifyingQuestionSchema>;
 export type ClarifyingQuestionsResponse = z.infer<typeof clarifyingQuestionsResponseSchema>;
 export type Feasibility = z.infer<typeof feasibilitySchema>;
 export type GoalAiAnalysisResponse = z.infer<typeof goalAiAnalysisResponseSchema>;
+export type MentorProfileClassificationResponse = z.infer<
+  typeof mentorProfileClassificationResponseSchema
+>;
 export type RoadmapTask = z.infer<typeof roadmapTaskSchema>;
 export type RoadmapStage = z.infer<typeof roadmapStageSchema>;
 export type RoadmapResponse = z.infer<typeof roadmapResponseSchema>;
@@ -112,6 +124,10 @@ export function validateRoadmapResponse(value: unknown) {
 
 export function validateGoalAiAnalysisResponse(value: unknown) {
   return validateAiResponse(goalAiAnalysisResponseSchema, value);
+}
+
+export function validateMentorProfileClassificationResponse(value: unknown) {
+  return validateAiResponse(mentorProfileClassificationResponseSchema, value);
 }
 
 export function validateMentorResponse(value: unknown) {

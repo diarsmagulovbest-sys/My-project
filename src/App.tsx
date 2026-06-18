@@ -10,9 +10,13 @@ import { generateGoalAnalysis } from './features/goals/generateGoalAnalysis';
 import { goalLimitsConfig } from './features/goals/goalLimits';
 import { createGoal, deleteGoal, fetchGoals } from './features/goals/goalsApi';
 import { GoalsDashboard } from './features/goals/GoalsDashboard';
+import { classifyGoalMentorProfile } from './features/mentor/classifyGoalMentorProfile';
+import { getDefaultMentorProfile } from './features/mentor/mentorProfiles';
 import { AchievementsPage } from './features/navigation/AchievementsPage';
+import { SecretPage } from './features/navigation/SecretPage';
 import { SettingsPage } from './features/navigation/SettingsPage';
 import { RoadmapView } from './features/roadmap/RoadmapView';
+import { useLanguage } from './lib/language';
 import { supabase } from './lib/supabase';
 import type { CreateGoalInput, GoalSummary } from './types/goal';
 import type { AppNavTarget, AppPage, DetailSectionId } from './types/navigation';
@@ -28,7 +32,18 @@ function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Неизвестная ошибка';
 }
 
+async function getSafeMentorProfileId(input: CreateGoalInput) {
+  try {
+    const classification = await classifyGoalMentorProfile(input);
+
+    return classification.mentorProfileId;
+  } catch {
+    return getDefaultMentorProfile().mentorProfileId;
+  }
+}
+
 export default function App() {
+  const { language, t } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activePage, setActivePage] = useState<AppPage>('today');
@@ -146,12 +161,12 @@ export default function App() {
 
   const handleCreateGoal = async (input: CreateGoalInput) => {
     if (!session) {
-      setCreateError('Нужно войти в аккаунт.');
+      setCreateError(language === 'ru' ? 'Нужно войти в аккаунт.' : 'You need to sign in.');
       return;
     }
 
     if (isGoalLimitReached) {
-      setCreateError(`Можно создать максимум ${maxGoalsPerUser} целей. Удали одну из текущих целей, чтобы создать новую.`);
+      setCreateError(t.createGoalLimitReachedDescription(maxGoalsPerUser));
       setActivePage('create');
       return;
     }
@@ -161,8 +176,10 @@ export default function App() {
     latestGoalsLoadIdRef.current += 1;
 
     try {
+      const mentorProfileIdPromise = getSafeMentorProfileId(input);
       const aiAnalysis = await generateGoalAnalysis(input);
-      const newGoal = await createGoal(session.user.id, input, aiAnalysis);
+      const mentorProfileId = await mentorProfileIdPromise;
+      const newGoal = await createGoal(session.user.id, input, aiAnalysis, mentorProfileId);
 
       setGoals((currentGoals) => [newGoal, ...currentGoals]);
       setSelectedGoalId(newGoal.id);
@@ -200,7 +217,7 @@ export default function App() {
   if (isAuthLoading) {
     return (
       <main className="center-page">
-        <p className="loading-text">Загрузка...</p>
+        <p className="loading-text">{t.loading}</p>
       </main>
     );
   }
@@ -287,9 +304,9 @@ export default function App() {
 
       {isGoalSectionPage && !selectedGoal ? (
         <section className="state-panel">
-          <h2>No goal selected</h2>
-          <p>Create a goal first, then this sidebar tab will open the matching goal feature.</p>
-          <Button onClick={() => setActivePage('create')}>Create goal</Button>
+          <h2>{t.noGoalSelected}</h2>
+          <p>{t.noGoalSelectedDescription}</p>
+          <Button onClick={() => setActivePage('create')}>{t.createGoal}</Button>
         </section>
       ) : null}
 
@@ -306,16 +323,17 @@ export default function App() {
           canDeleteGoals={canDeleteGoals}
           isGoalLimitEnabled={isGoalLimitEnabled}
           maxGoals={maxGoalsPerUser}
-          onOpenGoals={() => setActivePage('goals')}
-          onSignOut={() => void supabase.auth.signOut()}
+          onOpenSecret={() => setActivePage('secret')}
           userEmail={session.user.email}
         />
       ) : null}
 
+      {activePage === 'secret' ? <SecretPage /> : null}
+
       {activePage === 'detail' && !selectedGoal ? (
         <section className="state-panel">
-          <h2>Цель не найдена</h2>
-          <p>Возможно, она была удалена или недоступна текущему пользователю.</p>
+          <h2>{t.noGoalFound}</h2>
+          <p>{t.noGoalFoundDescription}</p>
         </section>
       ) : null}
     </AppLayout>

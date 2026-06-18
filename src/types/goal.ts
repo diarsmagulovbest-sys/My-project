@@ -1,3 +1,5 @@
+import type { MentorProfileId } from '../features/mentor/mentorProfiles';
+
 export type TimePeriod = 'day' | 'week';
 
 export type GoalStatus = 'draft' | 'active' | 'paused' | 'completed' | 'archived';
@@ -8,6 +10,7 @@ export type Goal = {
   currentLevel: string;
   description: string;
   id: string;
+  mentorProfileId: MentorProfileId;
   progress: number;
   status: GoalStatus;
   targetDate: string;

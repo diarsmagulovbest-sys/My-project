@@ -3,6 +3,7 @@
 //
 // Setup:
 //   npm run ai:secret -- GEMINI_API_KEY=your_key
+//   npm run ai:secret -- GEMINI_API_KEY_2=your_backup_key
 //   npm run ai:deploy
 
 type AiRequestBody = {
@@ -49,9 +50,14 @@ class HttpError extends Error {
 }
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+const GEMINI_API_KEY_2 = Deno.env.get('GEMINI_API_KEY_2') ?? Deno.env.get('GEMINI_API_KEY_FALLBACK');
 const MODEL = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const MAX_GEMINI_ATTEMPTS = 3;
+const GEMINI_API_KEYS = [
+  { label: 'primary', value: GEMINI_API_KEY },
+  { label: 'secondary', value: GEMINI_API_KEY_2 },
+].filter((key): key is { label: string; value: string } => Boolean(key.value));
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -76,7 +82,10 @@ function getBodySummary(body: AiRequestBody | null) {
 }
 
 function sanitizeLogText(value: string) {
-  const redactedKeyText = GEMINI_API_KEY ? value.replaceAll(GEMINI_API_KEY, '[redacted]') : value;
+  const redactedKeyText = GEMINI_API_KEYS.reduce(
+    (text, key) => text.replaceAll(key.value, '[redacted]'),
+    value,
+  );
 
   return redactedKeyText.length > 2000 ? `${redactedKeyText.slice(0, 2000)}...` : redactedKeyText;
 }
@@ -133,6 +142,10 @@ function shouldRetryGeminiStatus(status: number) {
   return status === 429 || status >= 500;
 }
 
+function shouldSwitchGeminiKey(status: number) {
+  return status === 429;
+}
+
 async function readJsonBody(req: Request): Promise<AiRequestBody> {
   try {
     return (await req.json()) as AiRequestBody;
@@ -180,7 +193,7 @@ Deno.serve(async (req) => {
     const prompt = getPrompt(body);
     const system = getSystem(body);
 
-    if (!GEMINI_API_KEY) {
+    if (GEMINI_API_KEYS.length === 0) {
       throw new HttpError(
         500,
         'missing_gemini_api_key',
@@ -190,6 +203,7 @@ Deno.serve(async (req) => {
 
     let geminiResponse: Response | null = null;
     let networkErrorMessage = '';
+    let usedKeyLabel = GEMINI_API_KEYS[0].label;
     const geminiRequestBody = JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
@@ -198,33 +212,55 @@ Deno.serve(async (req) => {
       systemInstruction: system ? { parts: [{ text: system }] } : undefined,
     });
 
-    for (let attempt = 1; attempt <= MAX_GEMINI_ATTEMPTS; attempt += 1) {
-      try {
-        geminiResponse = await fetch(GEMINI_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-goog-api-key': GEMINI_API_KEY,
-          },
-          body: geminiRequestBody,
-        });
+    for (let keyIndex = 0; keyIndex < GEMINI_API_KEYS.length; keyIndex += 1) {
+      const geminiKey = GEMINI_API_KEYS[keyIndex];
+      usedKeyLabel = geminiKey.label;
 
-        if (
-          attempt < MAX_GEMINI_ATTEMPTS
-          && shouldRetryGeminiStatus(geminiResponse.status)
-        ) {
-          await wait(350 * attempt);
-          continue;
+      for (let attempt = 1; attempt <= MAX_GEMINI_ATTEMPTS; attempt += 1) {
+        try {
+          geminiResponse = await fetch(GEMINI_API_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': geminiKey.value,
+            },
+            body: geminiRequestBody,
+          });
+
+          if (
+            shouldSwitchGeminiKey(geminiResponse.status)
+            && keyIndex < GEMINI_API_KEYS.length - 1
+          ) {
+            writeLog('info', 'gemini_key_rate_limited', {
+              attempt,
+              keySlot: geminiKey.label,
+              upstreamStatus: geminiResponse.status,
+            });
+            await wait(200);
+            break;
+          }
+
+          if (
+            attempt < MAX_GEMINI_ATTEMPTS
+            && shouldRetryGeminiStatus(geminiResponse.status)
+          ) {
+            await wait(350 * attempt);
+            continue;
+          }
+
+          break;
+        } catch (error) {
+          networkErrorMessage = error instanceof Error ? error.message : 'Network request failed.';
+
+          if (attempt < MAX_GEMINI_ATTEMPTS) {
+            await wait(350 * attempt);
+            continue;
+          }
         }
+      }
 
+      if (geminiResponse?.ok || !shouldSwitchGeminiKey(geminiResponse?.status ?? 0)) {
         break;
-      } catch (error) {
-        networkErrorMessage = error instanceof Error ? error.message : 'Network request failed.';
-
-        if (attempt < MAX_GEMINI_ATTEMPTS) {
-          await wait(350 * attempt);
-          continue;
-        }
       }
     }
 
@@ -250,6 +286,7 @@ Deno.serve(async (req) => {
         endpoint: GEMINI_API_URL,
         ...getBodySummary(body),
         responseContentType: geminiResponseContentType,
+        keySlot: usedKeyLabel,
         upstreamErrorCode,
         upstreamMessage,
         upstreamStatus: geminiResponse.status,
@@ -287,6 +324,7 @@ Deno.serve(async (req) => {
 
     writeLog('info', 'ai_success', {
       ...getBodySummary(body),
+      keySlot: usedKeyLabel,
       responseLength: text.length,
     });
 

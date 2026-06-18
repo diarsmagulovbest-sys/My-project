@@ -8,7 +8,7 @@ export type SidebarPage =
   | 'achievements'
   | 'settings';
 
-export type AppPage = SidebarPage | 'create' | 'detail';
+export type AppPage = SidebarPage | 'create' | 'detail' | 'secret';
 
 export type DetailSectionId = 'summary' | 'mentor' | 'roadmap' | 'tasks' | 'progress';
 

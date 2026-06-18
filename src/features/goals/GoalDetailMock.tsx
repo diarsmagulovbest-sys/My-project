@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
 import type { GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
@@ -34,12 +34,47 @@ type GoalDetailMockProps = {
   roadmapPanel?: ReactNode;
 };
 
+type CollapsibleGoalSectionProps = {
+  children: ReactNode;
+  defaultOpen?: boolean;
+  eyebrow?: string;
+  forceOpen?: boolean;
+  summary?: string;
+  title: string;
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('ru', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   }).format(new Date(value));
+}
+
+function CollapsibleGoalSection({
+  children,
+  defaultOpen = false,
+  eyebrow,
+  forceOpen = false,
+  summary,
+  title,
+}: CollapsibleGoalSectionProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const visibleOpen = forceOpen || isOpen;
+
+  return (
+    <details className="goal-collapsible" open={visibleOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
+      <summary className="goal-collapsible-summary">
+        <span className="goal-collapsible-copy">
+          {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+          <strong>{title}</strong>
+          {summary ? <small>{summary}</small> : null}
+        </span>
+        <span className="goal-collapsible-indicator" aria-hidden="true" />
+      </summary>
+      <div className="goal-collapsible-body">{children}</div>
+    </details>
+  );
 }
 
 export function GoalDetailMock({
@@ -53,9 +88,9 @@ export function GoalDetailMock({
   roadmapPanel,
 }: GoalDetailMockProps) {
   const mentorRef = useRef<HTMLDivElement | null>(null);
-  const progressRef = useRef<HTMLElement | null>(null);
+  const progressRef = useRef<HTMLDivElement | null>(null);
   const roadmapRef = useRef<HTMLDivElement | null>(null);
-  const tasksRef = useRef<HTMLElement | null>(null);
+  const tasksRef = useRef<HTMLDivElement | null>(null);
   const stages = goal.stages ?? [];
   const allTasks = stages.flatMap((stage) => stage.tasks);
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
@@ -104,131 +139,171 @@ export function GoalDetailMock({
         </div>
       </header>
 
-      <section className="detail-summary" ref={progressRef} aria-label="Сводка цели">
-        <div>
-          <span>Срок</span>
-          <strong>{formatDate(goal.targetDate)}</strong>
-        </div>
-        <div>
-          <span>Время</span>
-          <strong>
-            {goal.availableTime} мин. {goal.timePeriod === 'day' ? 'в день' : 'в неделю'}
-          </strong>
-        </div>
-        <div>
-          <span>Прогресс</span>
-          <strong>{goal.progress}%</strong>
-        </div>
-        <div>
-          <span>Уровень</span>
-          <strong>{goal.currentLevel || 'Не указан'}</strong>
-        </div>
-      </section>
-
-      <div className="detail-section-anchor" ref={mentorRef}>
-        {aiAnalysis ? (
-          <section className="ai-analysis-panel" aria-label="AI-анализ цели">
+      <div ref={progressRef}>
+        <CollapsibleGoalSection
+          defaultOpen
+          eyebrow="Сводка"
+          forceOpen={activeSection === 'progress'}
+          summary={`${goal.progress}% прогресса`}
+          title="Основная информация"
+        >
+          <section className="detail-summary" aria-label="Сводка цели">
             <div>
-              <span className="eyebrow">AI-наставник</span>
-              <h2>Стартовый план</h2>
-              <p>{aiAnalysis.goalSummary}</p>
+              <span>Срок</span>
+              <strong>{formatDate(goal.targetDate)}</strong>
             </div>
-
-            <div className="ai-analysis-grid">
-              <div>
-                <span>Уровень</span>
-                <strong>{aiAnalysis.estimatedUserLevel}</strong>
-              </div>
-              <div>
-                <span>Сегодня</span>
-                <strong>{aiAnalysis.firstSmallAction}</strong>
-              </div>
+            <div>
+              <span>Время</span>
+              <strong>
+                {goal.availableTime} мин. {goal.timePeriod === 'day' ? 'в день' : 'в неделю'}
+              </strong>
             </div>
-
-            <div className="ai-analysis-columns">
-              <div>
-                <h3>Шаги</h3>
-                <ol>
-                  {aiAnalysis.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-              </div>
-              <div>
-                <h3>Вопросы</h3>
-                <ul>
-                  {aiAnalysis.clarificationQuestions.map((question) => (
-                    <li key={question}>{question}</li>
-                  ))}
-                </ul>
-              </div>
+            <div>
+              <span>Прогресс</span>
+              <strong>{goal.progress}%</strong>
+            </div>
+            <div>
+              <span>Уровень</span>
+              <strong>{goal.currentLevel || 'Не указан'}</strong>
             </div>
           </section>
-        ) : null}
-
-        {questionsPanel}
+        </CollapsibleGoalSection>
       </div>
 
-      <section className="task-focus" ref={tasksRef}>
-        <div>
-          <span className="eyebrow">Сегодняшнее задание</span>
-          <h2>{todayTitle}</h2>
-          <p>{todayDescription}</p>
-        </div>
-        <Button disabled={!currentTask || currentTask.status === 'completed'}>
-          Отметить выполненным
-        </Button>
-      </section>
+      <div className="detail-section-anchor" ref={mentorRef}>
+        <CollapsibleGoalSection
+          eyebrow="AI-наставник"
+          forceOpen={activeSection === 'mentor'}
+          summary="План и уточняющие вопросы"
+          title="Наставник"
+        >
+          {aiAnalysis ? (
+            <section className="ai-analysis-panel" aria-label="AI-анализ цели">
+              <div>
+                <span className="eyebrow">AI-наставник</span>
+                <h2>Стартовый план</h2>
+                <p>{aiAnalysis.goalSummary}</p>
+              </div>
+
+              <div className="ai-analysis-grid">
+                <div>
+                  <span>Уровень</span>
+                  <strong>{aiAnalysis.estimatedUserLevel}</strong>
+                </div>
+                <div>
+                  <span>Сегодня</span>
+                  <strong>{aiAnalysis.firstSmallAction}</strong>
+                </div>
+              </div>
+
+              <div className="ai-analysis-columns">
+                <div>
+                  <h3>Шаги</h3>
+                  <ol>
+                    {aiAnalysis.steps.map((step) => (
+                      <li key={step}>{step}</li>
+                    ))}
+                  </ol>
+                </div>
+                <div>
+                  <h3>Вопросы</h3>
+                  <ul>
+                    {aiAnalysis.clarificationQuestions.map((question) => (
+                      <li key={question}>{question}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          ) : null}
+
+          {questionsPanel}
+        </CollapsibleGoalSection>
+      </div>
+
+      <div ref={tasksRef}>
+        <CollapsibleGoalSection
+          defaultOpen
+          eyebrow="Фокус"
+          forceOpen={activeSection === 'tasks'}
+          summary={todayTitle}
+          title="Сегодняшнее задание"
+        >
+          <section className="task-focus">
+            <div>
+              <span className="eyebrow">Сегодняшнее задание</span>
+              <h2>{todayTitle}</h2>
+              <p>{todayDescription}</p>
+            </div>
+            <Button disabled={!currentTask || currentTask.status === 'completed'}>
+              Отметить выполненным
+            </Button>
+          </section>
+        </CollapsibleGoalSection>
+      </div>
 
       <div className="detail-section-anchor" ref={roadmapRef}>
-        {roadmapPanel ??
-          (stages.length > 0 ? (
-            <section className="roadmap-grid" aria-label="Дорожная карта">
-            {stages.map((stage, index) => (
-              <article className="stage-panel" key={stage.id}>
-                <div className="stage-heading">
-                  <span>Этап {index + 1}</span>
-                  <strong>{stage.title}</strong>
-                  <p>{stage.description}</p>
-                </div>
-                <div className="task-list">
-                  {stage.tasks.map((task) => (
-                    <div className="task-row" key={task.id}>
-                      <span className={task.status === 'completed' ? 'task-check task-done' : 'task-check'} />
-                      <div>
-                        <strong>{task.title}</strong>
-                        <small>{task.estimatedMinutes} минут</small>
-                      </div>
+        <CollapsibleGoalSection
+          eyebrow="План"
+          forceOpen={activeSection === 'roadmap'}
+          summary={stages.length > 0 ? `${stages.length} этапов` : 'Можно сгенерировать план'}
+          title="Дорожная карта"
+        >
+          {roadmapPanel ??
+            (stages.length > 0 ? (
+              <section className="roadmap-grid" aria-label="Дорожная карта">
+                {stages.map((stage, index) => (
+                  <article className="stage-panel" key={stage.id}>
+                    <div className="stage-heading">
+                      <span>Этап {index + 1}</span>
+                      <strong>{stage.title}</strong>
+                      <p>{stage.description}</p>
                     </div>
-                  ))}
-                </div>
-              </article>
+                    <div className="task-list">
+                      {stage.tasks.map((task) => (
+                        <div className="task-row" key={task.id}>
+                          <span className={task.status === 'completed' ? 'task-check task-done' : 'task-check'} />
+                          <div>
+                            <strong>{task.title}</strong>
+                            <small>{task.estimatedMinutes} минут</small>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </section>
+            ) : (
+              <section className="state-panel">
+                <h2>Дорожная карта пока пустая</h2>
+                <p>На этом этапе цель уже хранится в Supabase. Этапы и задачи будут добавлены позже.</p>
+              </section>
             ))}
-            </section>
-          ) : (
-            <section className="state-panel">
-              <h2>Дорожная карта пока пустая</h2>
-              <p>На этом этапе цель уже хранится в Supabase. Этапы и задачи будут добавлены позже.</p>
-            </section>
-          ))}
+        </CollapsibleGoalSection>
       </div>
 
-      <section className="history-panel">
-        <div>
-          <h2>История</h2>
-          <p>
-            Выполнено задач: <strong>{completedTasks.length}</strong> из <strong>{allTasks.length}</strong>
-          </p>
-        </div>
-        <div className="locked-actions">
-          <Button disabled variant="secondary">
-            Мне нужна помощь
-          </Button>
-          <Button disabled variant="secondary">
-            Изменить план
-          </Button>
-        </div>
-      </section>
+      <CollapsibleGoalSection
+        eyebrow="История"
+        summary={`${completedTasks.length} из ${allTasks.length} задач выполнено`}
+        title="История и действия"
+      >
+        <section className="history-panel">
+          <div>
+            <h2>История</h2>
+            <p>
+              Выполнено задач: <strong>{completedTasks.length}</strong> из <strong>{allTasks.length}</strong>
+            </p>
+          </div>
+          <div className="locked-actions">
+            <Button disabled variant="secondary">
+              Мне нужна помощь
+            </Button>
+            <Button disabled variant="secondary">
+              Изменить план
+            </Button>
+          </div>
+        </section>
+      </CollapsibleGoalSection>
     </div>
   );
 }

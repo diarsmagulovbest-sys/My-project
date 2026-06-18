@@ -1,0 +1,37 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path
+    d="M19 7.9c1.1-3 5.1-2.8 6.2.1l5.4 13.1-15.6-2.8 4-10.4Z"
+    fill="url(#topWing)"
+  />
+  <path
+    d="M6.8 21.1c-3 1.2-3 5.5 0 6.6l14.6 5.3-2.2-16.3-12.4 4.4Z"
+    fill="url(#leftWing)"
+  />
+  <path
+    d="M13.8 31.3c-2.4 3.2-3 7-.9 8.7 2 1.7 5.6.2 7.7-2.9l7.3-10.3-9.4-3.6-4.7 8.1Z"
+    fill="url(#bottomWing)"
+  />
+  <path
+    d="M20.2 18.8c5.4-3.4 12.9-5.3 18.9-4.7 3.6.3 5 4.7 2.2 7.1L26.9 41.4c-2.1 3-6.7 1.8-7.2-1.8l-2.1-13.7c-.5-3 .4-5.7 2.6-7.1Z"
+    fill="url(#mainWing)"
+  />
+  <defs>
+    <linearGradient id="topWing" x1="18.9" x2="30.2" y1="5.5" y2="23.6" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38DFFF"/>
+      <stop offset="1" stop-color="#159FFF"/>
+    </linearGradient>
+    <linearGradient id="leftWing" x1="4.8" x2="23.4" y1="25.8" y2="25.8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#43E2FF"/>
+      <stop offset="1" stop-color="#1BA5FF"/>
+    </linearGradient>
+    <linearGradient id="bottomWing" x1="12" x2="26.4" y1="41.7" y2="27" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38CAFF"/>
+      <stop offset="1" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="mainWing" x1="18.5" x2="42.4" y1="39.3" y2="15.5" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2264F2"/>
+      <stop offset=".55" stop-color="#287CFF"/>
+      <stop offset="1" stop-color="#314FE8"/>
+    </linearGradient>
+  </defs>
+</svg>

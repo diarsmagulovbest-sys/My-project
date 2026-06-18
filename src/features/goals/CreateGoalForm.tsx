@@ -1,6 +1,8 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { Button } from '../../components/common/Button';
+import { CalendarPicker } from '../../components/common/CalendarPicker';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
+import { useLanguage } from '../../lib/language';
 import type { CreateGoalInput, TimePeriod } from '../../types/goal';
 
 type CreateGoalFormProps = {
@@ -24,6 +26,7 @@ export function CreateGoalForm({
   onCancel,
   onCreate,
 }: CreateGoalFormProps) {
+  const { language, t } = useLanguage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -66,49 +69,47 @@ export function CreateGoalForm({
     <div className="page-stack">
       <header className="page-header">
         <div>
-          <span className="eyebrow">Новая цель</span>
-          <h1>Создать цель</h1>
-          <p>Заполни основу. На следующих этапах AI будет задавать уточняющие вопросы.</p>
+          <span className="eyebrow">{t.newGoal}</span>
+          <h1>{t.createGoal}</h1>
+          <p>{t.createGoalDescription}</p>
         </div>
       </header>
 
       <form className="form-panel" onSubmit={handleSubmit}>
         <label className="form-field">
-          <span>Название цели</span>
+          <span>{t.goalTitle}</span>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
-            placeholder="Например: научиться собирать кубик Рубика"
+            placeholder={t.goalTitlePlaceholder}
           />
-          {wasSubmitted && title.trim().length < 3 ? (
-            <small>Напиши цель чуть подробнее, минимум 3 символа.</small>
-          ) : null}
+          {wasSubmitted && title.trim().length < 3 ? <small>{t.goalTitleHelp}</small> : null}
         </label>
 
         <label className="form-field">
-          <span>Описание</span>
+          <span>{t.description}</span>
           <textarea
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="Что именно ты хочешь получить в результате?"
+            placeholder={t.descriptionPlaceholder}
             rows={4}
           />
         </label>
 
         <div className="form-grid">
-          <label className="form-field">
-            <span>Желаемый срок</span>
-            <input
-              min={today}
-              type="date"
+          <div className="form-field">
+            <span>{t.targetDate}</span>
+            <CalendarPicker
+              ariaLabel={t.targetDateAria}
+              error={wasSubmitted && !targetDate ? t.dateRequired : null}
+              minValue={today}
+              onChange={setTargetDate}
               value={targetDate}
-              onChange={(event) => setTargetDate(event.target.value)}
             />
-            {wasSubmitted && !targetDate ? <small>Выбери дату.</small> : null}
-          </label>
+          </div>
 
           <label className="form-field">
-            <span>Свободное время</span>
+            <span>{language === 'ru' ? 'Свободное время' : 'Available time'}</span>
             <input
               min={1}
               type="number"
@@ -116,37 +117,37 @@ export function CreateGoalForm({
               onChange={(event) => setAvailableTime(event.target.value)}
             />
             {wasSubmitted && (!Number.isFinite(parsedTime) || parsedTime <= 0) ? (
-              <small>Укажи число больше нуля.</small>
+              <small>{t.timePositive}</small>
             ) : null}
           </label>
         </div>
 
         <fieldset className="segmented-field">
-          <legend>Единица времени</legend>
+          <legend>{t.timePeriod}</legend>
           <div>
             <button
               className={timePeriod === 'day' ? 'segment segment-active' : 'segment'}
               type="button"
               onClick={() => setTimePeriod('day')}
             >
-              В день
+              {t.timePeriodDay}
             </button>
             <button
               className={timePeriod === 'week' ? 'segment segment-active' : 'segment'}
               type="button"
               onClick={() => setTimePeriod('week')}
             >
-              В неделю
+              {t.timePeriodWeek}
             </button>
           </div>
         </fieldset>
 
         <label className="form-field">
-          <span>Текущий уровень</span>
+          <span>{t.currentLevel}</span>
           <textarea
             value={currentLevel}
             onChange={(event) => setCurrentLevel(event.target.value)}
-            placeholder="Например: новичок, уже пробовал пару раз, знаю основы"
+            placeholder={t.currentLevelPlaceholder}
             rows={3}
           />
         </label>
@@ -159,26 +160,26 @@ export function CreateGoalForm({
 
         {!canCreateMoreGoals ? (
           <div className="form-error" role="alert">
-            Можно создать максимум {maxGoals} целей. Продолжай работу с текущими целями.
+            {t.createGoalLimit(maxGoals)}
           </div>
         ) : null}
 
         <div className="form-actions">
           <Button disabled={isSubmitting} variant="ghost" onClick={onCancel}>
-            Отмена
+            {t.cancel}
           </Button>
           <Button disabled={!canSubmit || isSubmitting} type="submit">
             {isSubmitting ? (
               <ProgressiveFluxLoader
                 className="progressive-flux-loader-compact"
                 phases={[
-                  { at: 0, label: 'анализ' },
-                  { at: 45, label: 'план' },
-                  { at: 80, label: 'готово' },
+                  { at: 0, label: language === 'ru' ? 'анализ' : 'analysis' },
+                  { at: 45, label: language === 'ru' ? 'план' : 'plan' },
+                  { at: 80, label: language === 'ru' ? 'готово' : 'ready' },
                 ]}
               />
             ) : (
-              'Создать цель'
+              t.createGoal
             )}
           </Button>
         </div>

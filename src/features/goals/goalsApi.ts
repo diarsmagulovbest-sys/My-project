@@ -7,6 +7,7 @@ import type {
   GoalSummary,
   TimePeriod,
 } from '../../types/goal';
+import type { MentorProfileId } from '../mentor/mentorProfiles';
 import type { GoalAiAnalysisResponse } from '../../validations/aiResponses';
 
 type GoalRow = {
@@ -15,6 +16,7 @@ type GoalRow = {
   current_level: string;
   description: string;
   id: string;
+  mentor_profile_id: MentorProfileId;
   progress: number;
   status: GoalStatus;
   target_date: string;
@@ -28,6 +30,7 @@ type CreateGoalRow = {
   available_time: number;
   current_level: string;
   description: string;
+  mentor_profile_id: MentorProfileId;
   status: GoalStatus;
   target_date: string;
   time_period: TimePeriod;
@@ -73,6 +76,7 @@ const goalColumns = `
   available_time,
   time_period,
   current_level,
+  mentor_profile_id,
   status,
   progress,
   created_at,
@@ -104,6 +108,7 @@ function mapGoalRow(row: GoalRow): Goal {
     currentLevel: row.current_level,
     description: row.description,
     id: row.id,
+    mentorProfileId: row.mentor_profile_id,
     progress: row.progress,
     status: row.status,
     targetDate: row.target_date,
@@ -246,11 +251,13 @@ export async function createGoal(
   userId: string,
   input: CreateGoalInput,
   aiAnalysis: GoalAiAnalysisResponse,
+  mentorProfileId: MentorProfileId,
 ): Promise<GoalSummary> {
   const payload: CreateGoalRow = {
     available_time: input.availableTime,
     current_level: input.currentLevel,
     description: input.description,
+    mentor_profile_id: mentorProfileId,
     status: 'draft',
     target_date: input.targetDate,
     time_period: input.timePeriod,
