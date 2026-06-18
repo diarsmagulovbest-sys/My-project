@@ -283,3 +283,21 @@ export async function createGoal(
     throw caughtError;
   }
 }
+
+export async function deleteGoal(userId: string, goalId: string) {
+  const { data, error } = await supabase
+    .from('goals')
+    .delete()
+    .eq('id', goalId)
+    .eq('user_id', userId)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error('Цель не найдена или уже удалена.');
+  }
+}

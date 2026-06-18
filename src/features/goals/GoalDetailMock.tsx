@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
 import type { GoalSummary } from '../../types/goal';
+import type { DetailSectionId } from '../../types/navigation';
 
 type TaskStatus = 'todo' | 'completed';
 
@@ -21,10 +22,14 @@ type GoalStage = {
 };
 
 type GoalDetailMockProps = {
+  activeSection?: DetailSectionId | null;
+  canDeleteGoal?: boolean;
+  deletingGoalId?: string | null;
   goal: GoalSummary & {
     stages?: GoalStage[];
   };
   onBack: () => void;
+  onDeleteGoal?: (goalId: string) => void;
   questionsPanel?: ReactNode;
   roadmapPanel?: ReactNode;
 };
@@ -37,7 +42,20 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: GoalDetailMockProps) {
+export function GoalDetailMock({
+  activeSection = null,
+  canDeleteGoal = false,
+  deletingGoalId = null,
+  goal,
+  onBack,
+  onDeleteGoal,
+  questionsPanel,
+  roadmapPanel,
+}: GoalDetailMockProps) {
+  const mentorRef = useRef<HTMLDivElement | null>(null);
+  const progressRef = useRef<HTMLElement | null>(null);
+  const roadmapRef = useRef<HTMLDivElement | null>(null);
+  const tasksRef = useRef<HTMLElement | null>(null);
   const stages = goal.stages ?? [];
   const allTasks = stages.flatMap((stage) => stage.tasks);
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
@@ -50,12 +68,35 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
       ? 'Это первый маленький шаг от AI-наставника. Его можно сделать уже сегодня.'
       : 'Сейчас можно сгенерировать план ниже. Отмечать задачи выполненными будем на следующем этапе.');
 
+  useEffect(() => {
+    const sectionRefs: Partial<Record<DetailSectionId, HTMLElement | HTMLDivElement | null>> = {
+      mentor: mentorRef.current,
+      progress: progressRef.current,
+      roadmap: roadmapRef.current,
+      tasks: tasksRef.current,
+    };
+    const element = activeSection ? sectionRefs[activeSection] : null;
+
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [activeSection, goal.id]);
+
   return (
     <div className="page-stack">
       <header className="detail-header">
-        <Button variant="ghost" onClick={onBack}>
-          Назад
-        </Button>
+        <div className="detail-actions">
+          <Button variant="ghost" onClick={onBack}>
+            Назад
+          </Button>
+          {canDeleteGoal ? (
+            <Button
+              disabled={deletingGoalId === goal.id}
+              onClick={() => onDeleteGoal?.(goal.id)}
+              variant="danger"
+            >
+              {deletingGoalId === goal.id ? 'Удаляем...' : 'Удалить'}
+            </Button>
+          ) : null}
+        </div>
         <div>
           <span className="eyebrow">Страница цели</span>
           <h1>{goal.title}</h1>
@@ -63,7 +104,7 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
         </div>
       </header>
 
-      <section className="detail-summary" aria-label="Сводка цели">
+      <section className="detail-summary" ref={progressRef} aria-label="Сводка цели">
         <div>
           <span>Срок</span>
           <strong>{formatDate(goal.targetDate)}</strong>
@@ -84,49 +125,51 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
         </div>
       </section>
 
-      {aiAnalysis ? (
-        <section className="ai-analysis-panel" aria-label="AI-анализ цели">
-          <div>
-            <span className="eyebrow">AI-наставник</span>
-            <h2>Стартовый план</h2>
-            <p>{aiAnalysis.goalSummary}</p>
-          </div>
-
-          <div className="ai-analysis-grid">
+      <div className="detail-section-anchor" ref={mentorRef}>
+        {aiAnalysis ? (
+          <section className="ai-analysis-panel" aria-label="AI-анализ цели">
             <div>
-              <span>Уровень</span>
-              <strong>{aiAnalysis.estimatedUserLevel}</strong>
+              <span className="eyebrow">AI-наставник</span>
+              <h2>Стартовый план</h2>
+              <p>{aiAnalysis.goalSummary}</p>
             </div>
-            <div>
-              <span>Сегодня</span>
-              <strong>{aiAnalysis.firstSmallAction}</strong>
-            </div>
-          </div>
 
-          <div className="ai-analysis-columns">
-            <div>
-              <h3>Шаги</h3>
-              <ol>
-                {aiAnalysis.steps.map((step) => (
-                  <li key={step}>{step}</li>
-                ))}
-              </ol>
+            <div className="ai-analysis-grid">
+              <div>
+                <span>Уровень</span>
+                <strong>{aiAnalysis.estimatedUserLevel}</strong>
+              </div>
+              <div>
+                <span>Сегодня</span>
+                <strong>{aiAnalysis.firstSmallAction}</strong>
+              </div>
             </div>
-            <div>
-              <h3>Вопросы</h3>
-              <ul>
-                {aiAnalysis.clarificationQuestions.map((question) => (
-                  <li key={question}>{question}</li>
-                ))}
-              </ul>
+
+            <div className="ai-analysis-columns">
+              <div>
+                <h3>Шаги</h3>
+                <ol>
+                  {aiAnalysis.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+              <div>
+                <h3>Вопросы</h3>
+                <ul>
+                  {aiAnalysis.clarificationQuestions.map((question) => (
+                    <li key={question}>{question}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        </section>
-      ) : null}
+          </section>
+        ) : null}
 
-      {questionsPanel}
+        {questionsPanel}
+      </div>
 
-      <section className="task-focus">
+      <section className="task-focus" ref={tasksRef}>
         <div>
           <span className="eyebrow">Сегодняшнее задание</span>
           <h2>{todayTitle}</h2>
@@ -137,9 +180,10 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
         </Button>
       </section>
 
-      {roadmapPanel ??
-        (stages.length > 0 ? (
-          <section className="roadmap-grid" aria-label="Дорожная карта">
+      <div className="detail-section-anchor" ref={roadmapRef}>
+        {roadmapPanel ??
+          (stages.length > 0 ? (
+            <section className="roadmap-grid" aria-label="Дорожная карта">
             {stages.map((stage, index) => (
               <article className="stage-panel" key={stage.id}>
                 <div className="stage-heading">
@@ -160,13 +204,14 @@ export function GoalDetailMock({ goal, onBack, questionsPanel, roadmapPanel }: G
                 </div>
               </article>
             ))}
-          </section>
-        ) : (
-          <section className="state-panel">
-            <h2>Дорожная карта пока пустая</h2>
-            <p>На этом этапе цель уже хранится в Supabase. Этапы и задачи будут добавлены позже.</p>
-          </section>
-        ))}
+            </section>
+          ) : (
+            <section className="state-panel">
+              <h2>Дорожная карта пока пустая</h2>
+              <p>На этом этапе цель уже хранится в Supabase. Этапы и задачи будут добавлены позже.</p>
+            </section>
+          ))}
+      </div>
 
       <section className="history-panel">
         <div>

@@ -5,7 +5,10 @@ import type { CreateGoalInput, TimePeriod } from '../../types/goal';
 
 type CreateGoalFormProps = {
   error?: string | null;
+  goalCount: number;
+  isGoalLimitEnabled: boolean;
   isSubmitting?: boolean;
+  maxGoals: number;
   onCancel: () => void;
   onCreate: (input: CreateGoalInput) => Promise<void> | void;
 };
@@ -14,7 +17,10 @@ const today = new Date().toISOString().slice(0, 10);
 
 export function CreateGoalForm({
   error = null,
+  goalCount,
+  isGoalLimitEnabled,
   isSubmitting = false,
+  maxGoals,
   onCancel,
   onCreate,
 }: CreateGoalFormProps) {
@@ -27,9 +33,15 @@ export function CreateGoalForm({
   const [wasSubmitted, setWasSubmitted] = useState(false);
 
   const parsedTime = Number(availableTime);
+  const canCreateMoreGoals = !isGoalLimitEnabled || goalCount < maxGoals;
   const canSubmit = useMemo(
-    () => title.trim().length >= 3 && targetDate.length > 0 && Number.isFinite(parsedTime) && parsedTime > 0,
-    [parsedTime, targetDate, title],
+    () =>
+      canCreateMoreGoals &&
+      title.trim().length >= 3 &&
+      targetDate.length > 0 &&
+      Number.isFinite(parsedTime) &&
+      parsedTime > 0,
+    [canCreateMoreGoals, parsedTime, targetDate, title],
   );
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -142,6 +154,12 @@ export function CreateGoalForm({
         {error ? (
           <div className="form-error" role="alert">
             {error}
+          </div>
+        ) : null}
+
+        {!canCreateMoreGoals ? (
+          <div className="form-error" role="alert">
+            Можно создать максимум {maxGoals} целей. Продолжай работу с текущими целями.
           </div>
         ) : null}
 

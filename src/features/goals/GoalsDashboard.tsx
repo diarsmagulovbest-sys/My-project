@@ -2,10 +2,15 @@ import { Button } from '../../components/common/Button';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 
 type GoalsDashboardProps = {
+  canDeleteGoals: boolean;
+  deletingGoalId?: string | null;
   error?: string | null;
   goals: GoalSummary[];
+  isGoalLimitEnabled: boolean;
   isLoading?: boolean;
+  maxGoals: number;
   onCreateClick: () => void;
+  onDeleteGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
 };
 
@@ -38,12 +43,18 @@ function getNextAction(goal: GoalSummary | undefined) {
 }
 
 export function GoalsDashboard({
+  canDeleteGoals,
+  deletingGoalId = null,
   error = null,
   goals,
+  isGoalLimitEnabled,
   isLoading = false,
+  maxGoals,
   onCreateClick,
+  onDeleteGoal,
   onOpenGoal,
 }: GoalsDashboardProps) {
+  const canCreateGoal = !isGoalLimitEnabled || goals.length < maxGoals;
   const activeGoals = goals.filter((goal) => goal.status === 'active').length;
   const averageProgress =
     goals.length > 0
@@ -69,7 +80,7 @@ export function GoalsDashboard({
               ) : (
                 <Button onClick={onCreateClick}>Создать цель</Button>
               )}
-              <Button variant="secondary" onClick={onCreateClick}>
+              <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
                 Новая цель
               </Button>
             </div>
@@ -89,11 +100,18 @@ export function GoalsDashboard({
             </div>
           </div>
           <div className="mentor-stats-row">
-            <span>{goals.length} целей</span>
+            <span>{isGoalLimitEnabled ? `${goals.length}/${maxGoals}` : goals.length} целей</span>
             <span>{activeGoals} активных</span>
           </div>
         </aside>
       </section>
+
+      {isGoalLimitEnabled && !canCreateGoal ? (
+        <section className="state-panel limit-panel">
+          <h2>Лимит целей достигнут</h2>
+          <p>Сейчас можно вести максимум {maxGoals} целей. Продолжай работу с текущими целями.</p>
+        </section>
+      ) : null}
 
       {isLoading ? (
         <section className="state-panel" aria-live="polite">
@@ -124,7 +142,7 @@ export function GoalsDashboard({
               <span className="eyebrow">Мои цели</span>
               <h2>Продолжай в своём темпе</h2>
             </div>
-            <Button variant="secondary" onClick={onCreateClick}>
+            <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
               Создать цель
             </Button>
           </div>
@@ -156,9 +174,20 @@ export function GoalsDashboard({
                   </strong>
                 </div>
 
-                <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                  Открыть
-                </Button>
+                <div className="goal-card-actions">
+                  <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                    Открыть
+                  </Button>
+                  {canDeleteGoals ? (
+                    <Button
+                      disabled={deletingGoalId === goal.id}
+                      onClick={() => onDeleteGoal(goal.id)}
+                      variant="danger"
+                    >
+                      {deletingGoalId === goal.id ? 'Удаляем...' : 'Удалить'}
+                    </Button>
+                  ) : null}
+                </div>
               </article>
             ))}
           </section>

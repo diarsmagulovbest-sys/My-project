@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 
 export type ProgressiveFluxPhase = {
   at: number;
@@ -8,6 +8,8 @@ export type ProgressiveFluxPhase = {
 type ProgressiveFluxLoaderProps = {
   className?: string;
   duration?: number;
+  loop?: boolean;
+  onComplete?: () => void;
   phases?: ProgressiveFluxPhase[];
   showLabel?: boolean;
   value?: number;
@@ -44,13 +46,20 @@ function pickLabel(value: number, phases: ProgressiveFluxPhase[]) {
 export function ProgressiveFluxLoader({
   className = '',
   duration = 12,
+  loop = true,
+  onComplete,
   phases = defaultPhases,
   showLabel = true,
   value,
 }: ProgressiveFluxLoaderProps) {
   const [internalProgress, setInternalProgress] = useState(0);
-  const startTimeRef = useRef<number | null>(null);
+  const onCompleteRef = useRef(onComplete);
+  const completedRef = useRef(false);
   const isControlled = typeof value === 'number';
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     if (isControlled) {
@@ -58,21 +67,35 @@ export function ProgressiveFluxLoader({
     }
 
     let animationFrame = 0;
+    let restartTimer = 0;
+    let startTime: number | null = null;
     const totalMs = Math.max(500, duration * 1000);
 
     const tick = (timestamp: number) => {
-      if (startTimeRef.current === null) {
-        startTimeRef.current = timestamp;
+      if (startTime === null) {
+        startTime = timestamp;
       }
 
-      const elapsed = timestamp - startTimeRef.current;
-      const nextProgress = (elapsed / totalMs) * 100;
+      const elapsed = timestamp - startTime;
+      const nextProgress = clampProgress((elapsed / totalMs) * 100);
+      setInternalProgress(nextProgress);
 
       if (nextProgress >= 100) {
-        startTimeRef.current = timestamp;
-        setInternalProgress(0);
-      } else {
-        setInternalProgress(nextProgress);
+        if (!completedRef.current) {
+          completedRef.current = true;
+          onCompleteRef.current?.();
+        }
+
+        if (loop) {
+          restartTimer = window.setTimeout(() => {
+            startTime = null;
+            completedRef.current = false;
+            setInternalProgress(0);
+            animationFrame = requestAnimationFrame(tick);
+          }, 700);
+        }
+
+        return;
       }
 
       animationFrame = requestAnimationFrame(tick);
@@ -80,8 +103,11 @@ export function ProgressiveFluxLoader({
 
     animationFrame = requestAnimationFrame(tick);
 
-    return () => cancelAnimationFrame(animationFrame);
-  }, [duration, isControlled]);
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      clearTimeout(restartTimer);
+    };
+  }, [duration, isControlled, loop]);
 
   const sortedPhases = useMemo(
     () => [...phases].sort((first, second) => first.at - second.at),
@@ -90,10 +116,35 @@ export function ProgressiveFluxLoader({
   const progress = clampProgress(isControlled ? value ?? 0 : internalProgress);
   const label = pickLabel(progress, sortedPhases);
   const roundedProgress = Math.round(progress);
+  const classNames = [
+    'progressive-flux-loader',
+    isControlled ? 'progressive-flux-loader-controlled' : 'progressive-flux-loader-uncontrolled',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const fillStyle: CSSProperties = isControlled
+    ? { width: `${progress}%` }
+    : { '--flux-duration': `${Math.max(500, duration * 1000)}ms` } as CSSProperties;
+
+  useEffect(() => {
+    if (!isControlled) {
+      return;
+    }
+
+    if (progress >= 100 && !completedRef.current) {
+      completedRef.current = true;
+      onCompleteRef.current?.();
+    }
+
+    if (progress < 100) {
+      completedRef.current = false;
+    }
+  }, [isControlled, progress]);
 
   return (
     <div
-      className={['progressive-flux-loader', className].filter(Boolean).join(' ')}
+      className={classNames}
       role="progressbar"
       aria-label="Loading"
       aria-valuemin={0}
@@ -110,7 +161,7 @@ export function ProgressiveFluxLoader({
       ) : null}
 
       <div className="progressive-flux-track">
-        <div className="progressive-flux-fill" style={{ width: `${progress}%` }}>
+        <div className="progressive-flux-fill" style={fillStyle}>
           <span />
         </div>
       </div>
