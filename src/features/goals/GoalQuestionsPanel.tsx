@@ -8,7 +8,7 @@ import { createGoalQuestions, fetchGoalQuestions, saveGoalQuestionAnswers } from
 
 type GoalQuestionsPanelProps = {
   goal: Goal;
-  onAnswersSaved?: () => void;
+  onAnswersSaved?: (options?: { openRoadmap?: boolean }) => void;
 };
 
 const pendingQuestionRequests = new Map<string, Promise<GoalQuestion[]>>();
@@ -107,7 +107,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
     }
   };
 
-  const saveAnswers = async (message: string) => {
+  const saveAnswers = async (message: string, options?: { openRoadmap?: boolean }) => {
     setError(null);
     setIsSaving(true);
     setSuccessMessage(null);
@@ -124,7 +124,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
       setQuestions(nextQuestions);
       setAnswers(mapAnswers(nextQuestions));
       setSuccessMessage(message);
-      onAnswersSaved?.();
+      onAnswersSaved?.(options);
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
     } finally {
@@ -193,16 +193,20 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
           <div className="question-actions">
             <Button
               disabled={isSaving}
-              onClick={() => void saveAnswers('Ответы сохранены.')}
+              onClick={() => void saveAnswers('Ответы сохранены. Следующий шаг: создай дорожную карту ниже.')}
               variant="secondary"
             >
               {isSaving ? 'Сохраняем...' : 'Сохранить ответы'}
             </Button>
             <Button
               disabled={isSaving || !allQuestionsAnswered}
-              onClick={() => void saveAnswers('Ответы сохранены.')}
+              onClick={() =>
+                void saveAnswers('Ответы сохранены. Открываем дорожную карту.', {
+                  openRoadmap: true,
+                })
+              }
             >
-              Продолжить
+              Сохранить и открыть план
             </Button>
           </div>
         </>

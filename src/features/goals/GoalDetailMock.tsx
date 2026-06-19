@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
 import type { GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
-import { getMentorProfile } from '../mentor/mentorProfiles';
+import { getMentorProfile, type MentorProfileId } from '../mentor/mentorProfiles';
 import { MentorChat } from '../mentor/MentorChat';
 import { PlanAdaptationPanel } from '../mentor/PlanAdaptationPanel';
 
@@ -46,19 +46,55 @@ type CollapsibleGoalSectionProps = {
   title: string;
 };
 
+const mentorProfileDisplay: Record<MentorProfileId, { description: string; label: string }> = {
+  business_project: {
+    description: 'Помогает проверять идеи, планировать маленький проект и готовить понятную презентацию.',
+    label: 'Наставник по проектам',
+  },
+  creative_skill: {
+    description: 'Помогает учиться через небольшие творческие работы, обратную связь и доработку.',
+    label: 'Творческий наставник',
+  },
+  fitness: {
+    description: 'Помогает двигаться постепенно, безопасно и с учетом восстановления.',
+    label: 'Фитнес-наставник',
+  },
+  general: {
+    description: 'Помогает двигаться к цели маленькими реалистичными шагами.',
+    label: 'Универсальный наставник',
+  },
+  language_learning: {
+    description: 'Помогает тренировать речь, аудирование, словарь, грамматику и регулярную практику.',
+    label: 'Наставник по языкам',
+  },
+  martial_arts: {
+    description: 'Помогает тренироваться безопасно: техника, разминка, контроль и работа с тренером.',
+    label: 'Наставник по единоборствам',
+  },
+  music: {
+    description: 'Помогает строить короткие практики, технику, повторение и музыкальные привычки.',
+    label: 'Музыкальный наставник',
+  },
+  programming: {
+    description: 'Помогает учиться через проекты, код, инструменты и отладку.',
+    label: 'Наставник по программированию',
+  },
+  puzzle_logic: {
+    description: 'Помогает учить методы, паттерны, алгоритмы и спокойную практику.',
+    label: 'Наставник по головоломкам и логике',
+  },
+  school_exam: {
+    description: 'Помогает разбирать темы, слабые места, повторение и тренировочные задания.',
+    label: 'Наставник по учебе и экзаменам',
+  },
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('ru', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   }).format(new Date(value));
-}
-
-function formatMentorProfileLabel(label: string) {
-  return label
-    .split(' ')
-    .map((word) => (word ? `${word[0].toUpperCase()}${word.slice(1)}` : word))
-    .join(' ');
 }
 
 function CollapsibleGoalSection({
@@ -106,6 +142,7 @@ export function GoalDetailMock({
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
   const completedTasks = allTasks.filter((task) => task.status === 'completed');
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
+  const mentorProfileCopy = mentorProfileDisplay[mentorProfile.mentorProfileId];
   const aiAnalysis = goal.aiAnalysis;
   const todayTitle = currentTask?.title ?? aiAnalysis?.firstSmallAction ?? 'Следующий шаг: дорожная карта';
   const todayDescription =
@@ -153,10 +190,10 @@ export function GoalDetailMock({
       <section className="mentor-profile-card" aria-label="Выбранный AI-наставник">
         <div>
           <span className="eyebrow">AI-наставник цели</span>
-          <strong>{formatMentorProfileLabel(mentorProfile.label)}</strong>
-          <p>{mentorProfile.description}</p>
+          <strong>{mentorProfileCopy.label}</strong>
+          <p>{mentorProfileCopy.description}</p>
         </div>
-        <small>Этот наставник влияет на вопросы, roadmap и AI chat.</small>
+        <small>Этот наставник влияет на вопросы, дорожную карту и чат с AI-наставником.</small>
       </section>
 
       <div ref={progressRef}>

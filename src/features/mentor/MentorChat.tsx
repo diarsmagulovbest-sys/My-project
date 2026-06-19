@@ -15,6 +15,11 @@ type MentorChatProps = {
   goal: Goal;
 };
 
+type MentorReplyRetryState = {
+  conversation: MentorConversation;
+  messages: MentorMessage[];
+};
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Неизвестная ошибка';
 }
@@ -30,6 +35,7 @@ export function MentorChat({ goal }: MentorChatProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<MentorMessage[]>([]);
+  const [retryState, setRetryState] = useState<MentorReplyRetryState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,6 +72,24 @@ export function MentorChat({ goal }: MentorChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length]);
 
+  const createAssistantReply = async (
+    activeConversation: MentorConversation,
+    nextMessages: MentorMessage[],
+  ) => {
+    const [roadmapStages, progressLogs] = await Promise.all([
+      fetchRoadmap(goal.id),
+      fetchRecentProgressLogs(goal.id),
+    ]);
+    const mentorReply = await generateMentorReply({
+      goal,
+      messages: nextMessages,
+      progressLogs,
+      roadmapStages,
+    });
+
+    return createMentorMessage(activeConversation.id, 'assistant', mentorReply.message);
+  };
+
   const handleSend = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -78,11 +102,14 @@ export function MentorChat({ goal }: MentorChatProps) {
     setDraft('');
     setError(null);
     setIsSending(true);
+    setRetryState(null);
 
+    let activeConversation: MentorConversation | null = null;
+    let messagesWithUserReply: MentorMessage[] | null = null;
     let userMessageWasSaved = false;
 
     try {
-      const activeConversation = conversation ?? (await getOrCreateMentorConversation(goal));
+      activeConversation = conversation ?? (await getOrCreateMentorConversation(goal));
 
       if (!conversation) {
         setConversation(activeConversation);
@@ -90,32 +117,46 @@ export function MentorChat({ goal }: MentorChatProps) {
 
       const userMessage = await createMentorMessage(activeConversation.id, 'user', content);
       userMessageWasSaved = true;
-      const messagesWithUserReply = [...messages, userMessage];
+      messagesWithUserReply = [...messages, userMessage];
 
       setMessages(messagesWithUserReply);
 
-      const [roadmapStages, progressLogs] = await Promise.all([
-        fetchRoadmap(goal.id),
-        fetchRecentProgressLogs(goal.id),
-      ]);
-      const mentorReply = await generateMentorReply({
-        goal,
-        messages: messagesWithUserReply,
-        progressLogs,
-        roadmapStages,
-      });
-      const assistantMessage = await createMentorMessage(
-        activeConversation.id,
-        'assistant',
-        mentorReply.message,
-      );
+      const assistantMessage = await createAssistantReply(activeConversation, messagesWithUserReply);
 
       setMessages([...messagesWithUserReply, assistantMessage]);
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
-      if (!userMessageWasSaved) {
+      if (userMessageWasSaved && activeConversation && messagesWithUserReply) {
+        setRetryState({
+          conversation: activeConversation,
+          messages: messagesWithUserReply,
+        });
+      } else {
         setDraft(content);
       }
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleRetryAssistantReply = async () => {
+    if (!retryState || isSending) {
+      return;
+    }
+
+    setError(null);
+    setIsSending(true);
+
+    try {
+      const assistantMessage = await createAssistantReply(
+        retryState.conversation,
+        retryState.messages,
+      );
+
+      setMessages([...retryState.messages, assistantMessage]);
+      setRetryState(null);
+    } catch (caughtError) {
+      setError(getErrorMessage(caughtError));
     } finally {
       setIsSending(false);
     }
@@ -167,6 +208,15 @@ export function MentorChat({ goal }: MentorChatProps) {
       {error ? (
         <div className="form-error mentor-chat-error" role="alert">
           <span>{error}</span>
+          {retryState ? (
+            <Button
+              disabled={isSending}
+              onClick={() => void handleRetryAssistantReply()}
+              variant="secondary"
+            >
+              {isSending ? 'Повторяем...' : 'Повторить ответ'}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 

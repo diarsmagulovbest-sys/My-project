@@ -173,8 +173,8 @@ export function CreateGoalForm({
               <ProgressiveFluxLoader
                 className="progressive-flux-loader-compact"
                 phases={[
-                  { at: 0, label: language === 'ru' ? 'анализ' : 'analysis' },
-                  { at: 45, label: language === 'ru' ? 'план' : 'plan' },
+                  { at: 0, label: language === 'ru' ? 'цель' : 'goal' },
+                  { at: 45, label: language === 'ru' ? 'наставник' : 'mentor' },
                   { at: 80, label: language === 'ru' ? 'готово' : 'ready' },
                 ]}
               />

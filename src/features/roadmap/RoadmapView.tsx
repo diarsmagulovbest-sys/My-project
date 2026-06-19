@@ -323,7 +323,7 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
         <div>
           <span className="eyebrow">Дорожная карта</span>
           <h2>Сгенерировать план</h2>
-          <p>Gemini составит этапы и задачи по цели, сроку, времени и твоим ответам.</p>
+          <p>AI-наставник составит этапы и задачи по цели, сроку, времени и твоим ответам.</p>
         </div>
       </div>
 
@@ -339,9 +339,14 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
       {!canGenerateRoadmap ? (
         <div className="inline-state">
           <strong>Нужны сохранённые ответы</strong>
-          <p>Ответь на все уточняющие вопросы выше и нажми «Сохранить ответы» или «Продолжить».</p>
+          <p>Ответь на все уточняющие вопросы выше и нажми «Сохранить и открыть план».</p>
         </div>
-      ) : null}
+      ) : (
+        <div className="inline-state">
+          <strong>Можно создавать дорожную карту</strong>
+          <p>Нажми кнопку ниже, и AI-наставник соберёт этапы и первые задачи.</p>
+        </div>
+      )}
 
       <div className="question-actions">
         <Button disabled={isGenerating || !canGenerateRoadmap} onClick={() => void handleGenerate()}>

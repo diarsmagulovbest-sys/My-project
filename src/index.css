@@ -1832,7 +1832,16 @@ textarea {
 }
 
 .mentor-chat-error {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mentor-chat-error span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .plan-adaptation-form {
@@ -2420,6 +2429,7 @@ textarea {
   .question-actions,
   .mentor-chat-actions,
   .plan-adaptation-actions,
+  .mentor-chat-error,
   .questions-error,
   .form-actions {
     align-items: stretch;

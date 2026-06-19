@@ -14,4 +14,7 @@ vite.config.js
 vite.config.d.ts
 .codex_frames
 .env.local
+.vscode/
+*.mentor
+assets/reference/
 

@@ -283,7 +283,13 @@ export default function App() {
             <GoalQuestionsPanel
               goal={selectedGoal}
               key={selectedGoal.id}
-              onAnswersSaved={() => setRoadmapRefreshKey((currentKey) => currentKey + 1)}
+              onAnswersSaved={(options) => {
+                setRoadmapRefreshKey((currentKey) => currentKey + 1);
+
+                if (options?.openRoadmap) {
+                  setActivePage('roadmap');
+                }
+              }}
             />
           }
           roadmapPanel={
