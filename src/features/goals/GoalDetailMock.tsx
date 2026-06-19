@@ -2,6 +2,9 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
 import type { GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
+import { getMentorProfile } from '../mentor/mentorProfiles';
+import { MentorChat } from '../mentor/MentorChat';
+import { PlanAdaptationPanel } from '../mentor/PlanAdaptationPanel';
 
 type TaskStatus = 'todo' | 'completed';
 
@@ -51,6 +54,13 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatMentorProfileLabel(label: string) {
+  return label
+    .split(' ')
+    .map((word) => (word ? `${word[0].toUpperCase()}${word.slice(1)}` : word))
+    .join(' ');
+}
+
 function CollapsibleGoalSection({
   children,
   defaultOpen = false,
@@ -95,6 +105,7 @@ export function GoalDetailMock({
   const allTasks = stages.flatMap((stage) => stage.tasks);
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
   const completedTasks = allTasks.filter((task) => task.status === 'completed');
+  const mentorProfile = getMentorProfile(goal.mentorProfileId);
   const aiAnalysis = goal.aiAnalysis;
   const todayTitle = currentTask?.title ?? aiAnalysis?.firstSmallAction ?? 'Следующий шаг: дорожная карта';
   const todayDescription =
@@ -138,6 +149,15 @@ export function GoalDetailMock({
           <p>{goal.description || 'Описание можно будет уточнить перед генерацией плана.'}</p>
         </div>
       </header>
+
+      <section className="mentor-profile-card" aria-label="Выбранный AI-наставник">
+        <div>
+          <span className="eyebrow">AI-наставник цели</span>
+          <strong>{formatMentorProfileLabel(mentorProfile.label)}</strong>
+          <p>{mentorProfile.description}</p>
+        </div>
+        <small>Этот наставник влияет на вопросы, roadmap и AI chat.</small>
+      </section>
 
       <div ref={progressRef}>
         <CollapsibleGoalSection
@@ -218,6 +238,10 @@ export function GoalDetailMock({
           ) : null}
 
           {questionsPanel}
+
+          <PlanAdaptationPanel goal={goal} key={`adapt-${goal.id}`} />
+
+          <MentorChat goal={goal} key={goal.id} />
         </CollapsibleGoalSection>
       </div>
 

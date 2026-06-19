@@ -993,6 +993,7 @@ textarea {
 
 .page-header,
 .detail-header,
+.mentor-profile-card,
 .task-focus,
 .history-panel {
   display: flex;
@@ -1004,6 +1005,7 @@ textarea {
 
 .page-header > div,
 .detail-header > div,
+.mentor-profile-card > div,
 .section-heading > div,
 .panel-heading > div {
   min-width: 0;
@@ -1013,6 +1015,8 @@ textarea {
 .detail-header h1,
 .task-focus h2,
 .ai-analysis-panel h2,
+.mentor-chat-panel h2,
+.plan-adaptation-panel h2,
 .history-panel h2,
 .state-panel h2,
 .goal-card h2,
@@ -1030,8 +1034,11 @@ textarea {
 
 .page-header p,
 .detail-header p,
+.mentor-profile-card p,
 .task-focus p,
 .ai-analysis-panel p,
+.mentor-chat-panel p,
+.plan-adaptation-panel p,
 .history-panel p,
 .state-panel p,
 .goal-card p,
@@ -1054,11 +1061,14 @@ textarea {
 .stat-tile,
 .detail-summary div,
 .goal-card,
+.mentor-profile-card,
 .form-panel,
 .state-panel,
 .questions-panel,
 .roadmap-panel,
 .ai-analysis-panel,
+.mentor-chat-panel,
+.plan-adaptation-panel,
 .task-focus,
 .stage-panel,
 .history-panel {
@@ -1103,18 +1113,63 @@ textarea {
 }
 
 .goal-card,
+.mentor-profile-card,
 .stage-panel,
 .state-panel,
 .questions-panel,
 .roadmap-panel,
 .ai-analysis-panel,
+.mentor-chat-panel,
+.plan-adaptation-panel,
 .task-focus,
 .history-panel,
 .form-panel {
   padding: 22px;
 }
 
+.mentor-profile-card {
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.mentor-profile-card strong {
+  display: block;
+  margin-top: 4px;
+  color: #111827;
+  font-size: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mentor-profile-card p {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+.mentor-profile-card small {
+  max-width: 280px;
+  min-width: 180px;
+  border-radius: 12px;
+  color: #3156c8;
+  background: #eef3ff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+
 .ai-analysis-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.mentor-chat-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.plan-adaptation-panel {
   display: grid;
   gap: 18px;
 }
@@ -1304,6 +1359,8 @@ textarea {
 
 .goal-collapsible-body > .detail-summary,
 .goal-collapsible-body > .ai-analysis-panel,
+.goal-collapsible-body > .mentor-chat-panel,
+.goal-collapsible-body > .plan-adaptation-panel,
 .goal-collapsible-body > .questions-panel,
 .goal-collapsible-body > .roadmap-panel,
 .goal-collapsible-body > .roadmap-grid,
@@ -1696,6 +1753,200 @@ textarea {
   gap: 18px;
 }
 
+.mentor-message-list {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.mentor-message {
+  width: min(100%, 760px);
+  min-width: 0;
+  border-radius: 14px;
+  padding: 12px 14px;
+  overflow-wrap: anywhere;
+}
+
+.mentor-message span {
+  color: #647086;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.mentor-message p {
+  margin: 6px 0 0;
+  color: #26324a;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.mentor-message-user {
+  justify-self: end;
+  background: #eaf0ff;
+}
+
+.mentor-message-assistant {
+  justify-self: start;
+  background: #f5f7fb;
+}
+
+.mentor-chat-form {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mentor-chat-input {
+  width: 100%;
+  min-width: 0;
+  min-height: 88px;
+  resize: vertical;
+  border: 1px solid #d9e1ee;
+  border-radius: 14px;
+  color: #111827;
+  background: #ffffff;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  padding: 12px 14px;
+}
+
+.mentor-chat-input:focus {
+  border-color: #4169e1;
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.14);
+}
+
+.mentor-chat-input:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.mentor-chat-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mentor-chat-error {
+  display: block;
+}
+
+.plan-adaptation-form {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.plan-adaptation-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: #2f3a4f;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.plan-adaptation-select,
+.plan-adaptation-textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #d9e1ee;
+  border-radius: 14px;
+  color: #111827;
+  background: #ffffff;
+  font-size: 16px;
+  outline: none;
+}
+
+.plan-adaptation-select {
+  min-height: 46px;
+  padding: 0 12px;
+}
+
+.plan-adaptation-textarea {
+  min-height: 82px;
+  resize: vertical;
+  line-height: 1.5;
+  padding: 12px 14px;
+}
+
+.plan-adaptation-select:focus,
+.plan-adaptation-textarea:focus {
+  border-color: #4169e1;
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.14);
+}
+
+.plan-adaptation-select:disabled,
+.plan-adaptation-textarea:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.plan-adaptation-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.plan-adaptation-result {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border-radius: 14px;
+  background: #f5f7fb;
+  padding: 14px;
+}
+
+.plan-adaptation-result div {
+  display: grid;
+  gap: 6px;
+}
+
+.plan-adaptation-result span {
+  color: #647086;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.plan-adaptation-result strong {
+  color: #26324a;
+  font-size: 17px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.plan-adaptation-result ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan-adaptation-result li {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #3f4b5f;
+  line-height: 1.45;
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+
+.plan-adaptation-result p {
+  margin: 0;
+  color: #647086;
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
 .roadmap-panel {
   display: grid;
   gap: 18px;
@@ -2080,12 +2331,15 @@ textarea {
 
   .auth-panel,
   .form-panel,
-  .goal-card,
-  .stage-panel,
-  .state-panel,
-  .questions-panel,
+.goal-card,
+.stage-panel,
+.state-panel,
+.mentor-profile-card,
+.questions-panel,
   .roadmap-panel,
   .ai-analysis-panel,
+  .mentor-chat-panel,
+  .plan-adaptation-panel,
   .task-focus,
   .history-panel {
     padding: 18px;
@@ -2156,6 +2410,7 @@ textarea {
 
   .page-header,
   .detail-header,
+  .mentor-profile-card,
   .panel-heading,
   .task-focus,
   .history-panel,
@@ -2163,6 +2418,8 @@ textarea {
   .goal-card-top,
   .goal-card-actions,
   .question-actions,
+  .mentor-chat-actions,
+  .plan-adaptation-actions,
   .questions-error,
   .form-actions {
     align-items: stretch;
@@ -2206,8 +2463,11 @@ textarea {
 :root.dark .calendar-picker-selected,
 :root.dark .calendar-picker-weekday,
 :root.dark .goal-collapsible-copy small,
+:root.dark .mentor-profile-card small,
 :root.dark .task-row small,
 :root.dark .task-row p,
+:root.dark .mentor-message span,
+:root.dark .plan-adaptation-result span,
 :root.dark .auth-message,
 :root.dark .form-field small {
   color: var(--app-text-muted);
@@ -2220,8 +2480,11 @@ textarea {
 :root.dark .section-heading h2,
 :root.dark .page-header h1,
 :root.dark .detail-header h1,
+:root.dark .mentor-profile-card strong,
 :root.dark .task-focus h2,
 :root.dark .ai-analysis-panel h2,
+:root.dark .mentor-chat-panel h2,
+:root.dark .plan-adaptation-panel h2,
 :root.dark .history-panel h2,
 :root.dark .state-panel h2,
 :root.dark .goal-card h2,
@@ -2236,6 +2499,7 @@ textarea {
 :root.dark .ai-analysis-columns h3,
 :root.dark .progress-row strong,
 :root.dark .task-row strong,
+:root.dark .plan-adaptation-result strong,
 :root.dark .calendar-picker-heading,
 :root.dark .calendar-picker-selected strong,
 :root.dark .goal-collapsible-copy strong {
@@ -2245,15 +2509,19 @@ textarea {
 :root.dark .mentor-copy p,
 :root.dark .page-header p,
 :root.dark .detail-header p,
+:root.dark .mentor-profile-card p,
 :root.dark .task-focus p,
 :root.dark .ai-analysis-panel p,
+:root.dark .mentor-chat-panel p,
+:root.dark .plan-adaptation-panel p,
 :root.dark .history-panel p,
 :root.dark .state-panel p,
 :root.dark .goal-card p,
 :root.dark .stage-heading p,
 :root.dark .feature-panel p,
 :root.dark .ai-analysis-columns ol,
-:root.dark .ai-analysis-columns ul {
+:root.dark .ai-analysis-columns ul,
+:root.dark .plan-adaptation-result li {
   color: var(--app-text-body);
 }
 
@@ -2272,12 +2540,15 @@ textarea {
 :root.dark .section-heading,
 :root.dark .stat-tile,
 :root.dark .detail-summary div,
+:root.dark .mentor-profile-card,
 :root.dark .goal-card,
 :root.dark .form-panel,
 :root.dark .state-panel,
 :root.dark .questions-panel,
 :root.dark .roadmap-panel,
 :root.dark .ai-analysis-panel,
+:root.dark .mentor-chat-panel,
+:root.dark .plan-adaptation-panel,
 :root.dark .task-focus,
 :root.dark .stage-panel,
 :root.dark .history-panel,
@@ -2333,8 +2604,23 @@ textarea {
 :root.dark .progress-bar,
 :root.dark .task-focus,
 :root.dark .stage-panel,
-:root.dark .detail-summary div {
+:root.dark .detail-summary div,
+:root.dark .mentor-message-assistant,
+:root.dark .plan-adaptation-result {
   background: var(--app-surface-soft);
+}
+
+:root.dark .mentor-profile-card small {
+  color: #bfdbfe;
+  background: #20345d;
+}
+
+:root.dark .mentor-message-user {
+  background: #20345d;
+}
+
+:root.dark .plan-adaptation-result li {
+  background: var(--app-surface);
 }
 
 :root.dark .auth-field,
@@ -2346,6 +2632,9 @@ textarea {
 :root.dark .form-field input,
 :root.dark .form-field textarea,
 :root.dark .question-textarea,
+:root.dark .mentor-chat-input,
+:root.dark .plan-adaptation-select,
+:root.dark .plan-adaptation-textarea,
 :root.dark .calendar-picker {
   border-color: var(--app-border);
   color: var(--app-text);
@@ -2356,6 +2645,17 @@ textarea {
 :root.dark .form-field input:focus,
 :root.dark .form-field textarea:focus,
 :root.dark .question-textarea:focus {
+  border-color: var(--app-brand);
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.28);
+}
+
+:root.dark .mentor-chat-input:focus {
+  border-color: var(--app-brand);
+  box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.28);
+}
+
+:root.dark .plan-adaptation-select:focus,
+:root.dark .plan-adaptation-textarea:focus {
   border-color: var(--app-brand);
   box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.28);
 }

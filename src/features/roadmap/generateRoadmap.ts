@@ -3,13 +3,70 @@ import type { Goal } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
 import type { RoadmapResponse } from '../../validations/aiResponses';
 import { validateRoadmapResponse } from '../../validations/aiResponses';
+import {
+  getMentorProfile,
+  getMentorProfileSystemContext,
+  type MentorProfileId,
+} from '../mentor/mentorProfiles';
 
-const roadmapSystemPrompt = [
+const baseRoadmapSystemPrompt = [
   'Ты AI-наставник для подростка 14-16 лет.',
   'Составь реалистичную дорожную карту по цели, сроку, доступному времени и ответам пользователя.',
   'Не придумывай лишние данные, если пользователь их не дал.',
   'Верни только валидный JSON без markdown и без пояснений.',
 ].join('\n');
+
+const mentorRoadmapGuidance: Record<MentorProfileId, string[]> = {
+  general: [
+    'Create broad but concrete stages with small actions, checkpoints, and realistic pacing.',
+  ],
+  programming: [
+    'Create project-based stages: setup/tools, fundamentals, small feature practice, debugging, building a project, and review.',
+    'Include practical coding tasks with clear outputs, not only reading theory.',
+  ],
+  language_learning: [
+    'Balance speaking, listening, vocabulary, grammar, reading, and review practice.',
+    'Use repeated short practice sessions and concrete language outputs.',
+  ],
+  fitness: [
+    'Use safe progression with warmups, technique practice, rest, recovery, and simple tracking.',
+    'Avoid intense jumps in volume and include safety checks for pain or discomfort.',
+  ],
+  martial_arts: [
+    'Use safe progression with warmups, basic technique, supervised practice, recovery, and protective gear when relevant.',
+    'Include a safety reminder to train with a qualified coach for sparring, high kicks, or risky drills.',
+  ],
+  school_exam: [
+    'Organize stages by topics, weak areas, spaced review, practice tests, error analysis, and final revision.',
+  ],
+  music: [
+    'Organize stages around technique, short practice routines, repertoire, listening, repetition, and performance checkpoints.',
+  ],
+  puzzle_logic: [
+    'Organize stages around learning a method, practicing algorithms or patterns, repetition, timed practice, and fixing weak cases.',
+  ],
+  creative_skill: [
+    'Organize stages around references, fundamentals, small creative projects, feedback, revision, and portfolio-style output.',
+  ],
+  business_project: [
+    'Organize stages around idea validation, audience, simple prototype, feedback, safe launch planning, and presentation.',
+  ],
+};
+
+function buildRoadmapSystemPrompt(goal: Goal) {
+  const mentorProfile = getMentorProfile(goal.mentorProfileId);
+
+  return [
+    baseRoadmapSystemPrompt,
+    '',
+    'Mentor profile context:',
+    getMentorProfileSystemContext(goal.mentorProfileId),
+    '',
+    'Use the mentor profile to make the roadmap more specific, while keeping every user-facing field in Russian.',
+    'Profile-specific roadmap guidance:',
+    ...mentorRoadmapGuidance[mentorProfile.mentorProfileId],
+  ].join('\n');
+}
 
 function formatPeriod(period: Goal['timePeriod']) {
   return period === 'day' ? 'в день' : 'в неделю';
@@ -65,7 +122,7 @@ function buildRoadmapPrompt(goal: Goal, questions: GoalQuestion[]) {
 export async function generateRoadmap(goal: Goal, questions: GoalQuestion[]): Promise<RoadmapResponse> {
   const aiText = await invokeAi({
     prompt: buildRoadmapPrompt(goal, questions),
-    system: roadmapSystemPrompt,
+    system: buildRoadmapSystemPrompt(goal),
   });
   const parsedResponse = parseAiJson(aiText);
 

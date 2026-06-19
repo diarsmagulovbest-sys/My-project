@@ -77,6 +77,21 @@ export const mentorResponseSchema = z
   })
   .strict();
 
+export const planAdaptationChangeSchema = z
+  .object({
+    change: shortText,
+    type: z.enum(['simplify', 'postpone', 'focus']),
+  })
+  .strict();
+
+export const planAdaptationResponseSchema = z
+  .object({
+    explanation: longText,
+    nextSmallAction: shortText,
+    planChanges: z.array(planAdaptationChangeSchema).min(1).max(3),
+  })
+  .strict();
+
 export type ClarifyingQuestion = z.infer<typeof clarifyingQuestionSchema>;
 export type ClarifyingQuestionsResponse = z.infer<typeof clarifyingQuestionsResponseSchema>;
 export type Feasibility = z.infer<typeof feasibilitySchema>;
@@ -88,6 +103,8 @@ export type RoadmapTask = z.infer<typeof roadmapTaskSchema>;
 export type RoadmapStage = z.infer<typeof roadmapStageSchema>;
 export type RoadmapResponse = z.infer<typeof roadmapResponseSchema>;
 export type MentorResponse = z.infer<typeof mentorResponseSchema>;
+export type PlanAdaptationChange = z.infer<typeof planAdaptationChangeSchema>;
+export type PlanAdaptationResponse = z.infer<typeof planAdaptationResponseSchema>;
 
 export class AiResponseValidationError extends Error {
   constructor(details: string[]) {
@@ -132,4 +149,8 @@ export function validateMentorProfileClassificationResponse(value: unknown) {
 
 export function validateMentorResponse(value: unknown) {
   return validateAiResponse(mentorResponseSchema, value);
+}
+
+export function validatePlanAdaptationResponse(value: unknown) {
+  return validateAiResponse(planAdaptationResponseSchema, value);
 }

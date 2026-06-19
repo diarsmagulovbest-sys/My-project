@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 type AiFunctionResponse = {
   code?: string;
   error?: string;
+  status?: number;
   text?: string;
   upstreamErrorCode?: number | string | null;
   upstreamStatus?: number;
@@ -13,6 +14,9 @@ type InvokeAiInput = {
   prompt: string;
   system?: string;
 };
+
+const AI_RATE_LIMIT_MESSAGE =
+  'AI временно перегружен или достигнут лимит запросов. Попробуй ещё раз через минуту.';
 
 function stripJsonFence(value: string) {
   const trimmed = value.trim();
@@ -25,12 +29,41 @@ function isAiFunctionResponse(value: unknown): value is AiFunctionResponse {
   return typeof value === 'object' && value !== null;
 }
 
-function getReadableAiError(value: AiFunctionResponse) {
+function isAiRateLimitResponse(value: AiFunctionResponse, responseStatus?: number) {
+  return (
+    responseStatus === 429 ||
+    value.status === 429 ||
+    value.upstreamStatus === 429 ||
+    String(value.upstreamErrorCode) === '429' ||
+    value.code === 'gemini_rate_limited'
+  );
+}
+
+function writeAiRateLimitLog(value: AiFunctionResponse, responseStatus?: number) {
+  console.warn(
+    JSON.stringify({
+      code: value.code ?? null,
+      event: 'ai_rate_limited',
+      responseStatus: responseStatus ?? value.status ?? null,
+      upstreamErrorCode: value.upstreamErrorCode ?? null,
+      upstreamStatus: value.upstreamStatus ?? null,
+    }),
+  );
+}
+
+function getReadableAiError(value: AiFunctionResponse, responseStatus?: number) {
   if (!value.error) {
     return null;
   }
 
+  if (isAiRateLimitResponse(value, responseStatus)) {
+    writeAiRateLimitLog(value, responseStatus);
+
+    return AI_RATE_LIMIT_MESSAGE;
+  }
+
   const details = [
+    value.status ? `status ${value.status}` : null,
     value.upstreamStatus ? `status ${value.upstreamStatus}` : null,
     value.upstreamErrorCode ? String(value.upstreamErrorCode) : null,
   ].filter(Boolean);
@@ -43,11 +76,17 @@ async function getFunctionErrorMessage(error: unknown) {
     const value: unknown = await error.context.json().catch(() => null);
 
     if (isAiFunctionResponse(value)) {
-      const readableError = getReadableAiError(value);
+      const readableError = getReadableAiError(value, error.context.status);
 
       if (readableError) {
         return readableError;
       }
+    }
+
+    if (error.context.status === 429) {
+      writeAiRateLimitLog({}, error.context.status);
+
+      return AI_RATE_LIMIT_MESSAGE;
     }
   }
 

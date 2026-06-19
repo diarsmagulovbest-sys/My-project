@@ -54,6 +54,8 @@ const GEMINI_API_KEY_2 = Deno.env.get('GEMINI_API_KEY_2') ?? Deno.env.get('GEMIN
 const MODEL = 'gemini-2.5-flash';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const MAX_GEMINI_ATTEMPTS = 3;
+const AI_RATE_LIMIT_MESSAGE =
+  'AI временно перегружен или достигнут лимит запросов. Попробуй ещё раз через минуту.';
 const GEMINI_API_KEYS = [
   { label: 'primary', value: GEMINI_API_KEY },
   { label: 'secondary', value: GEMINI_API_KEY_2 },
@@ -108,7 +110,7 @@ function getGeminiClientMessage(status: number, upstreamMessage: string) {
   }
 
   if (status === 429) {
-    return `Gemini rate limit was reached. Wait a little and try again: ${upstreamMessage}`;
+    return AI_RATE_LIMIT_MESSAGE;
   }
 
   if (status >= 500) {
@@ -281,22 +283,26 @@ Deno.serve(async (req) => {
     if (!geminiResponse.ok) {
       const upstreamMessage = getUpstreamMessage(geminiData, geminiResponseBody);
       const upstreamErrorCode = geminiData.error?.status ?? geminiData.error?.code ?? null;
+      const retryAfter = geminiResponse.headers.get('retry-after');
+      const isRateLimited = geminiResponse.status === 429;
 
-      writeLog('error', 'gemini_request_failed', {
+      writeLog('error', isRateLimited ? 'gemini_rate_limited' : 'gemini_request_failed', {
         endpoint: GEMINI_API_URL,
         ...getBodySummary(body),
         responseContentType: geminiResponseContentType,
         keySlot: usedKeyLabel,
         upstreamErrorCode,
-        upstreamMessage,
         upstreamStatus: geminiResponse.status,
+        ...(retryAfter ? { retryAfter } : {}),
+        ...(isRateLimited ? {} : { upstreamMessage }),
       });
 
       throw new HttpError(
-        502,
-        'gemini_request_failed',
+        isRateLimited ? 429 : 502,
+        isRateLimited ? 'gemini_rate_limited' : 'gemini_request_failed',
         getGeminiClientMessage(geminiResponse.status, upstreamMessage),
         {
+          ...(isRateLimited ? { status: 429 } : {}),
           upstreamErrorCode,
           upstreamStatus: geminiResponse.status,
         },
