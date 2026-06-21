@@ -1,4 +1,5 @@
 import { invokeAi, parseAiJson } from '../../lib/ai';
+import type { AppLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { MentorMessage, ProgressLog } from '../../types/mentorChat';
 import type { RoadmapStage } from '../../types/roadmap';
@@ -8,30 +9,39 @@ import { getMentorProfile, getMentorProfileSystemContext } from './mentorProfile
 
 type GenerateMentorReplyInput = {
   goal: Goal;
+  language: AppLanguage;
   messages: MentorMessage[];
   progressLogs: ProgressLog[];
   roadmapStages: RoadmapStage[];
 };
 
 const mentorChatSystemPrompt = [
-  'Ты AI-наставник для подростка 14-16 лет.',
-  'Отвечай по теме конкретной цели пользователя и не уходи в общие разговоры.',
-  'Помогай объяснять непонятные задания, разбивать сложные задачи на маленькие шаги и выбирать следующий безопасный шаг.',
-  'Отвечай кратко и практично: сначала дай один конкретный следующий шаг, потом короткое пояснение только если нужно.',
-  'Не пиши длинные лекции без необходимости. Если пользователь застрял, упрости задачу до самого маленького выполнимого действия.',
-  'Задавай максимум один уточняющий вопрос за раз и только если без него нельзя выбрать следующий шаг.',
-  'Всегда сохраняй стиль mentor profile из контекста.',
-  'Для programming mentor давай конкретные coding, project или debugging шаги и не перегружай теорией.',
-  'Не меняй сохранённый roadmap без подтверждения пользователя. Если изменение плана может понадобиться, объясни это и поставь shouldSuggestPlanChange=true.',
-  'Не обещай гарантированный результат.',
-  'Для fitness, martial_arts и любых потенциально травмоопасных целей сохраняй осторожный стиль: не давай опасные инструкции, напоминай про разминку, ограничения и тренера.',
-  'Верни только валидный JSON без markdown и без пояснений.',
-  'JSON-формат ответа строго такой:',
+  'You are a practical AI mentor for a 14-16 year old learner.',
+  'Answer only about the user current goal and avoid generic lectures.',
+  'Help explain unclear tasks, break hard work into small steps, and choose the next safe step.',
+  'Keep replies short and practical: start with one concrete next step, then add a brief explanation only if needed.',
+  'If the user is stuck, simplify the task into the smallest doable action.',
+  'Ask at most one clarifying question at a time, and only if it is needed to choose the next step.',
+  'Preserve the mentor profile style from context.',
+  'For programming mentors, give concrete coding, project, or debugging steps without overloading theory.',
+  'Do not change the saved roadmap without user confirmation. If a plan change may be useful, explain it and set shouldSuggestPlanChange=true.',
+  'Do not promise guaranteed results.',
+  'For fitness, martial_arts, and injury-risk goals, stay cautious: avoid dangerous instructions and mention warmup, limitations, recovery, and a qualified coach when relevant.',
+  'Return only valid JSON without markdown or explanations.',
+  'The response JSON must match this shape:',
   '{"message":"...","suggestedActions":["..."],"shouldSuggestPlanChange":false}',
 ].join('\n');
 
-function formatTimePeriod(period: Goal['timePeriod']) {
-  return period === 'day' ? 'в день' : 'в неделю';
+function getLanguageName(language: AppLanguage) {
+  return language === 'ru' ? 'Russian' : 'English';
+}
+
+function formatTimePeriod(period: Goal['timePeriod'], language: AppLanguage) {
+  if (language === 'ru') {
+    return period === 'day' ? 'в день' : 'в неделю';
+  }
+
+  return period === 'day' ? 'per day' : 'per week';
 }
 
 function buildRoadmapContext(stages: RoadmapStage[]) {
@@ -71,15 +81,16 @@ function buildMessageContext(messages: MentorMessage[]) {
 
 function buildMentorChatPrompt({
   goal,
+  language,
   messages,
   progressLogs,
   roadmapStages,
 }: GenerateMentorReplyInput) {
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
   const goalContext = {
-    available_time: `${goal.availableTime} минут ${formatTimePeriod(goal.timePeriod)}`,
-    current_level: goal.currentLevel || 'не указан',
-    description: goal.description || 'не указано',
+    available_time: `${goal.availableTime} ${language === 'ru' ? 'минут' : 'minutes'} ${formatTimePeriod(goal.timePeriod, language)}`,
+    current_level: goal.currentLevel || (language === 'ru' ? 'не указано' : 'not provided'),
+    description: goal.description || (language === 'ru' ? 'не указано' : 'not provided'),
     mentor_profile_id: mentorProfile.mentorProfileId,
     progress: goal.progress,
     status: goal.status,
@@ -88,22 +99,22 @@ function buildMentorChatPrompt({
   };
 
   return [
-    'Контекст цели:',
+    'Goal context:',
     JSON.stringify(goalContext, null, 2),
     '',
-    'Контекст mentor profile:',
+    'Mentor profile context:',
     getMentorProfileSystemContext(goal.mentorProfileId),
     '',
-    'Сохранённая дорожная карта и задачи:',
+    'Saved roadmap and tasks:',
     JSON.stringify(buildRoadmapContext(roadmapStages), null, 2),
     '',
-    'Последние progress logs:',
+    'Recent progress logs:',
     JSON.stringify(buildProgressLogContext(progressLogs), null, 2),
     '',
-    'Последние сообщения чата:',
+    'Recent chat messages:',
     JSON.stringify(buildMessageContext(messages), null, 2),
     '',
-    'Ответь на последнее сообщение пользователя. Пиши на русском языке, коротко и практично.',
+    `Answer the latest user message in ${getLanguageName(language)}. Be short, practical, and mentor-like.`,
   ].join('\n');
 }
 

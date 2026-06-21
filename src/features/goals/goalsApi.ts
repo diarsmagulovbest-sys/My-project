@@ -305,6 +305,6 @@ export async function deleteGoal(userId: string, goalId: string) {
   }
 
   if (!data) {
-    throw new Error('Цель не найдена или уже удалена.');
+    throw new Error('Goal not found or already deleted.');
   }
 }

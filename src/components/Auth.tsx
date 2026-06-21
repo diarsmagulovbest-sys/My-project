@@ -1,9 +1,11 @@
 import { FormEvent, useState } from 'react';
+import { useLanguage } from '../lib/language';
 import { supabase } from '../lib/supabase';
 
 type AuthMode = 'sign-in' | 'sign-up';
 
 export default function Auth() {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -30,21 +32,21 @@ export default function Auth() {
 
     setMessage(
       isSignUp
-        ? 'Аккаунт создан. Если Supabase попросит подтверждение, проверь почту.'
-        : 'Вход выполнен.',
+        ? t.accountCreated
+        : t.signedIn,
     );
   };
 
   return (
     <main className="auth-page">
-      <section className="auth-panel" aria-label="Вход в аккаунт">
+      <section className="auth-panel" aria-label={t.signInTitle}>
         <div className="auth-copy">
-          <span className="eyebrow">Аккаунт</span>
-          <h1>{isSignUp ? 'Создай аккаунт' : 'Войди в аккаунт'}</h1>
-          <p>Войди или зарегистрируйся, чтобы пользоваться приложением под своим профилем.</p>
+          <span className="eyebrow">{t.account}</span>
+          <h1>{isSignUp ? t.createAccountTitle : t.signInTitle}</h1>
+          <p>{t.authDescription}</p>
         </div>
 
-        <div className="auth-tabs" role="tablist" aria-label="Режим авторизации">
+        <div className="auth-tabs" role="tablist" aria-label={t.authMode}>
           <button
             className={mode === 'sign-in' ? 'auth-tab auth-tab-active' : 'auth-tab'}
             type="button"
@@ -53,7 +55,7 @@ export default function Auth() {
               setMessage('');
             }}
           >
-            Вход
+            {t.signIn}
           </button>
           <button
             className={mode === 'sign-up' ? 'auth-tab auth-tab-active' : 'auth-tab'}
@@ -63,7 +65,7 @@ export default function Auth() {
               setMessage('');
             }}
           >
-            Регистрация
+            {t.signUp}
           </button>
         </div>
 
@@ -83,7 +85,7 @@ export default function Auth() {
           </label>
 
           <label className="auth-field">
-            <span>Пароль</span>
+            <span>{t.password}</span>
             <input
               autoComplete={isSignUp ? 'new-password' : 'current-password'}
               minLength={6}
@@ -92,14 +94,14 @@ export default function Auth() {
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder="Минимум 6 символов"
+              placeholder={t.passwordPlaceholder}
             />
           </label>
 
           {message ? <p className="auth-message">{message}</p> : null}
 
           <button className="auth-submit" type="submit" disabled={isLoading}>
-            {isLoading ? 'Подождите...' : isSignUp ? 'Зарегистрироваться' : 'Войти'}
+            {isLoading ? t.signingInWait : isSignUp ? t.createAccount : t.signIn}
           </button>
         </form>
       </section>

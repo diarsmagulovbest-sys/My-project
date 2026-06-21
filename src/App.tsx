@@ -29,7 +29,7 @@ const detailSectionByPage: Partial<Record<AppPage, DetailSectionId>> = {
 };
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Неизвестная ошибка';
+  return error instanceof Error ? error.message : 'Unknown error';
 }
 
 async function getSafeMentorProfileId(input: CreateGoalInput) {
@@ -161,7 +161,7 @@ export default function App() {
 
   const handleCreateGoal = async (input: CreateGoalInput) => {
     if (!session) {
-      setCreateError(language === 'ru' ? 'Нужно войти в аккаунт.' : 'You need to sign in.');
+      setCreateError(t.signInRequired);
       return;
     }
 
@@ -177,7 +177,7 @@ export default function App() {
 
     try {
       const mentorProfileIdPromise = getSafeMentorProfileId(input);
-      const aiAnalysis = await generateGoalAnalysis(input);
+      const aiAnalysis = await generateGoalAnalysis(input, language);
       const mentorProfileId = await mentorProfileIdPromise;
       const newGoal = await createGoal(session.user.id, input, aiAnalysis, mentorProfileId);
 

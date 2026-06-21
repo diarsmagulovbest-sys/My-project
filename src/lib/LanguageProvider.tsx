@@ -19,7 +19,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    document.documentElement.lang = language === 'ru' ? 'ru' : 'en';
+    document.documentElement.lang = language;
     localStorage.setItem(languageStorageKey, language);
   }, [language]);
 

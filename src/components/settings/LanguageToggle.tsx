@@ -1,7 +1,7 @@
 import { useLanguage } from '../../lib/language';
 
 export function LanguageToggle() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const isRussian = language === 'ru';
 
   const handleToggle = () => {
@@ -10,7 +10,7 @@ export function LanguageToggle() {
 
   return (
     <button
-      aria-label={`Switch language to ${isRussian ? 'English' : 'Russian'}`}
+      aria-label={`${t.language}: ${isRussian ? 'RU' : 'EN'}`}
       aria-checked={isRussian}
       className="language-toggle"
       onClick={handleToggle}

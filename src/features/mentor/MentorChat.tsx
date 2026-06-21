@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button } from '../../components/common/Button';
+import { useLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { MentorConversation, MentorMessage } from '../../types/mentorChat';
 import { fetchRoadmap } from '../roadmap/roadmapApi';
@@ -21,14 +22,11 @@ type MentorReplyRetryState = {
 };
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Неизвестная ошибка';
-}
-
-function getMessageAuthor(message: MentorMessage) {
-  return message.role === 'assistant' ? 'AI-наставник' : 'Ты';
+  return error instanceof Error ? error.message : 'Unknown error';
 }
 
 export function MentorChat({ goal }: MentorChatProps) {
+  const { language, t } = useLanguage();
   const [conversation, setConversation] = useState<MentorConversation | null>(null);
   const [draft, setDraft] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +80,7 @@ export function MentorChat({ goal }: MentorChatProps) {
     ]);
     const mentorReply = await generateMentorReply({
       goal,
+      language,
       messages: nextMessages,
       progressLogs,
       roadmapStages,
@@ -163,26 +162,26 @@ export function MentorChat({ goal }: MentorChatProps) {
   };
 
   return (
-    <section className="mentor-chat-panel" aria-label="AI Mentor chat">
+    <section className="mentor-chat-panel mentor-next-panel" aria-label="AI Mentor chat">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">AI-наставник</span>
-          <h2>Чат по этой цели</h2>
-          <p>Можно спросить про задания, следующий шаг или непонятную часть плана.</p>
+          <span className="eyebrow">{t.aiMentor}</span>
+          <h2>{t.askTheMentor}</h2>
+          <p>{t.useMentorWhenStuck}</p>
         </div>
       </div>
 
       {isLoading ? (
         <div className="inline-state">
-          <strong>Загружаем чат...</strong>
-          <p>Проверяем сохранённую переписку по этой цели.</p>
+          <strong>{t.loadingChat}</strong>
+          <p>{t.checkingMessages}</p>
         </div>
       ) : null}
 
       {!isLoading && messages.length === 0 ? (
-        <div className="inline-state">
-          <strong>Чат готов</strong>
-          <p>Напиши вопрос, и наставник ответит с учётом цели, профиля и дорожной карты.</p>
+        <div className="inline-state inline-state-ready">
+          <strong>{t.mentorReady}</strong>
+          <p>{t.askShortQuestion}</p>
         </div>
       ) : null}
 
@@ -197,7 +196,7 @@ export function MentorChat({ goal }: MentorChatProps) {
               }
               key={message.id}
             >
-              <span>{getMessageAuthor(message)}</span>
+              <span>{message.role === 'assistant' ? t.aiMentor : t.you}</span>
               <p>{message.content}</p>
             </article>
           ))}
@@ -214,7 +213,7 @@ export function MentorChat({ goal }: MentorChatProps) {
               onClick={() => void handleRetryAssistantReply()}
               variant="secondary"
             >
-              {isSending ? 'Повторяем...' : 'Повторить ответ'}
+              {isSending ? t.retrying : t.retryAnswer}
             </Button>
           ) : null}
         </div>
@@ -225,13 +224,13 @@ export function MentorChat({ goal }: MentorChatProps) {
           className="mentor-chat-input"
           disabled={isLoading || isSending}
           onChange={(event) => setDraft(event.target.value)}
-          placeholder="Спроси наставника про эту цель..."
-          rows={3}
+          placeholder={t.askMentorPlaceholder}
+          rows={2}
           value={draft}
         />
         <div className="mentor-chat-actions">
           <Button disabled={isLoading || isSending || !draft.trim()} type="submit">
-            {isSending ? 'Отвечаем...' : 'Отправить'}
+            {isSending ? t.thinking : t.send}
           </Button>
         </div>
       </form>

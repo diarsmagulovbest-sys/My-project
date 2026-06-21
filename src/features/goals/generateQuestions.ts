@@ -1,4 +1,5 @@
 import { invokeAi, parseAiJson } from '../../lib/ai';
+import type { AppLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { ClarifyingQuestion } from '../../validations/aiResponses';
 import { validateClarifyingQuestionsResponse } from '../../validations/aiResponses';
@@ -9,47 +10,51 @@ import {
 } from '../mentor/mentorProfiles';
 
 const baseClarifyingQuestionsSystemPrompt = [
-  'Ты продуктовый AI-наставник для подростка 14-16 лет.',
-  'Твоя задача - задать короткие уточняющие вопросы, чтобы потом составить точный план достижения цели.',
-  'Не повторяй информацию, которая уже известна из цели.',
-  'Не создавай roadmap, этапы или задачи.',
-  'Верни только валидный JSON без markdown и без пояснений.',
+  'You are a practical AI mentor for a 14-16 year old learner.',
+  'Ask short clarifying questions so the app can build a useful plan later.',
+  'Do not repeat information that is already clear from the goal.',
+  'Do not create a roadmap, stages, or tasks.',
+  'Return only valid JSON without markdown or explanations.',
 ].join('\n');
 
 const mentorQuestionGuidance: Record<MentorProfileId, string[]> = {
   general: [
-    'Ask about the learner goal, constraints, motivation, resources, and preferred pace.',
+    'Ask about constraints, motivation, resources, and preferred pace.',
   ],
   programming: [
-    'Ask about coding experience, programming language or stack, project idea, tools, device access, and debugging comfort.',
+    'Ask about coding experience, stack, project idea, tools, and debugging comfort.',
   ],
   language_learning: [
-    'Ask about current language level, target skill, practice format, preferred topics, and speaking/listening/reading/writing balance.',
+    'Ask about current level, target skill, practice format, and speaking/listening/reading/writing balance.',
   ],
   fitness: [
-    'Ask safety-first questions about experience, current activity level, physical limitations, available equipment, rest, and training environment.',
+    'Ask safety-first questions about experience, activity level, physical limitations, equipment, and recovery.',
   ],
   martial_arts: [
-    'Ask safety-first questions about prior training, coach or supervised practice, protective gear, injuries or limitations, and realistic practice space.',
+    'Ask safety-first questions about training experience, coach or supervised practice, protective gear, injuries, and practice space.',
   ],
   school_exam: [
-    'Ask about subject, exam date, weak topics, current grades or practice results, study resources, and available review time.',
+    'Ask about subject, exam date, weak topics, practice results, and study resources.',
   ],
   music: [
-    'Ask about instrument or voice experience, current songs or exercises, practice setup, technique issues, and performance goals.',
+    'Ask about instrument or voice experience, current songs or exercises, practice setup, and technique issues.',
   ],
   puzzle_logic: [
-    'Ask about current method, current level, practice time, known algorithms or strategies, speed goals, and what feels hardest.',
+    'Ask about current method, level, practice time, known algorithms or strategies, and what feels hardest.',
   ],
   creative_skill: [
-    'Ask about current skill level, preferred style, tools, references, project goal, and feedback habits.',
+    'Ask about current skill level, preferred style, tools, project goal, and feedback habits.',
   ],
   business_project: [
-    'Ask about audience, project idea, resources, timeline, adult support, budget constraints, and how success will be tested safely.',
+    'Ask about audience, project idea, resources, timeline, adult support, and how success will be tested safely.',
   ],
 };
 
-function buildClarifyingQuestionsSystemPrompt(goal: Goal) {
+function getLanguageName(language: AppLanguage) {
+  return language === 'ru' ? 'Russian' : 'English';
+}
+
+function buildClarifyingQuestionsSystemPrompt(goal: Goal, language: AppLanguage) {
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
 
   return [
@@ -58,46 +63,54 @@ function buildClarifyingQuestionsSystemPrompt(goal: Goal) {
     'Mentor profile context:',
     getMentorProfileSystemContext(goal.mentorProfileId),
     '',
-    'Use the mentor profile to make the questions more specific, while keeping every question in Russian.',
+    `Use the mentor profile to make the questions specific. Write every question in ${getLanguageName(language)}.`,
     'Profile-specific question guidance:',
     ...mentorQuestionGuidance[mentorProfile.mentorProfileId],
   ].join('\n');
 }
 
-function formatPeriod(period: Goal['timePeriod']) {
-  return period === 'day' ? 'в день' : 'в неделю';
+function formatPeriod(period: Goal['timePeriod'], language: AppLanguage) {
+  if (language === 'ru') {
+    return period === 'day' ? 'в день' : 'в неделю';
+  }
+
+  return period === 'day' ? 'per day' : 'per week';
 }
 
-function buildGoalContext(goal: Goal) {
+function buildGoalContext(goal: Goal, language: AppLanguage) {
   return {
-    available_time: `${goal.availableTime} минут ${formatPeriod(goal.timePeriod)}`,
-    current_level: goal.currentLevel || 'не указан',
-    description: goal.description || 'не указано',
+    available_time: `${goal.availableTime} ${language === 'ru' ? 'минут' : 'minutes'} ${formatPeriod(goal.timePeriod, language)}`,
+    current_level: goal.currentLevel || (language === 'ru' ? 'не указано' : 'not provided'),
+    description: goal.description || (language === 'ru' ? 'не указано' : 'not provided'),
     target_date: goal.targetDate,
     title: goal.title,
   };
 }
 
-function buildQuestionsPrompt(goal: Goal) {
-  const goalContext = buildGoalContext(goal);
+function buildQuestionsPrompt(goal: Goal, language: AppLanguage) {
+  const goalContext = buildGoalContext(goal, language);
+  const languageName = getLanguageName(language);
 
   return [
-    'Создай от 5 до 6 уточняющих вопросов по этой цели.',
-    'Вопросы должны быть на русском языке, короткими и понятными.',
-    'Вопросы должны помогать понять ограничения, ресурсы, желаемый результат и текущие навыки.',
-    'Не спрашивай дату, доступное время, название цели или текущий уровень, если это уже указано.',
-    'JSON-формат ответа строго такой:',
-    '{"questions":[{"question":"текст вопроса","sortOrder":0}]}',
-    'sortOrder должен идти по порядку с 0.',
+    'Create 3 to 4 clarifying questions for this goal.',
+    `Questions must be short, clear, and written in ${languageName}.`,
+    'Focus on the missing details that would most improve the roadmap.',
+    'Do not ask for the target date, available time, goal title, or current level if already provided.',
+    'The response JSON must match this shape:',
+    '{"questions":[{"question":"question text","sortOrder":0}]}',
+    'sortOrder must start at 0 and increase by 1.',
     '',
-    `Данные цели: ${JSON.stringify(goalContext, null, 2)}`,
+    `Goal data: ${JSON.stringify(goalContext, null, 2)}`,
   ].join('\n');
 }
 
-export async function generateClarifyingQuestions(goal: Goal): Promise<ClarifyingQuestion[]> {
+export async function generateClarifyingQuestions(
+  goal: Goal,
+  language: AppLanguage,
+): Promise<ClarifyingQuestion[]> {
   const aiText = await invokeAi({
-    prompt: buildQuestionsPrompt(goal),
-    system: buildClarifyingQuestionsSystemPrompt(goal),
+    prompt: buildQuestionsPrompt(goal, language),
+    system: buildClarifyingQuestionsSystemPrompt(goal, language),
   });
   const parsedResponse = parseAiJson(aiText);
   const validatedResponse = validateClarifyingQuestionsResponse(parsedResponse);

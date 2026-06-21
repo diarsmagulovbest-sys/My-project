@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
+import { useLanguage, type AppLanguage } from '../../lib/language';
 import type { GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
 import { getMentorProfile, type MentorProfileId } from '../mentor/mentorProfiles';
@@ -46,17 +47,17 @@ type CollapsibleGoalSectionProps = {
   title: string;
 };
 
-const mentorProfileDisplay: Record<MentorProfileId, { description: string; label: string }> = {
+const mentorProfileDisplayRu: Record<MentorProfileId, { description: string; label: string }> = {
   business_project: {
-    description: 'Помогает проверять идеи, планировать маленький проект и готовить понятную презентацию.',
+    description: 'Помогает проверять идеи, планировать маленький проект и готовить презентацию.',
     label: 'Наставник по проектам',
   },
   creative_skill: {
-    description: 'Помогает учиться через небольшие творческие работы, обратную связь и доработку.',
+    description: 'Помогает учиться через маленькие творческие работы, обратную связь и доработку.',
     label: 'Творческий наставник',
   },
   fitness: {
-    description: 'Помогает двигаться постепенно, безопасно и с учетом восстановления.',
+    description: 'Помогает двигаться постепенно, безопасно и с учётом восстановления.',
     label: 'Фитнес-наставник',
   },
   general: {
@@ -64,11 +65,11 @@ const mentorProfileDisplay: Record<MentorProfileId, { description: string; label
     label: 'Универсальный наставник',
   },
   language_learning: {
-    description: 'Помогает тренировать речь, аудирование, словарь, грамматику и регулярную практику.',
+    description: 'Помогает тренировать речь, аудирование, словарь, грамматику и практику.',
     label: 'Наставник по языкам',
   },
   martial_arts: {
-    description: 'Помогает тренироваться безопасно: техника, разминка, контроль и работа с тренером.',
+    description: 'Помогает тренироваться безопасно: техника, разминка, контроль и тренер.',
     label: 'Наставник по единоборствам',
   },
   music: {
@@ -81,16 +82,16 @@ const mentorProfileDisplay: Record<MentorProfileId, { description: string; label
   },
   puzzle_logic: {
     description: 'Помогает учить методы, паттерны, алгоритмы и спокойную практику.',
-    label: 'Наставник по головоломкам и логике',
+    label: 'Наставник по головоломкам',
   },
   school_exam: {
     description: 'Помогает разбирать темы, слабые места, повторение и тренировочные задания.',
-    label: 'Наставник по учебе и экзаменам',
+    label: 'Наставник по учёбе',
   },
 };
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('ru', {
+function formatDate(value: string, language: AppLanguage) {
+  return new Intl.DateTimeFormat(language === 'ru' ? 'ru' : 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -133,6 +134,7 @@ export function GoalDetailMock({
   questionsPanel,
   roadmapPanel,
 }: GoalDetailMockProps) {
+  const { language, t } = useLanguage();
   const mentorRef = useRef<HTMLDivElement | null>(null);
   const progressRef = useRef<HTMLDivElement | null>(null);
   const roadmapRef = useRef<HTMLDivElement | null>(null);
@@ -142,14 +144,15 @@ export function GoalDetailMock({
   const currentTask = allTasks.find((task) => task.status !== 'completed') ?? allTasks[0];
   const completedTasks = allTasks.filter((task) => task.status === 'completed');
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
-  const mentorProfileCopy = mentorProfileDisplay[mentorProfile.mentorProfileId];
+  const mentorProfileCopy =
+    language === 'ru'
+      ? mentorProfileDisplayRu[mentorProfile.mentorProfileId]
+      : { description: mentorProfile.description, label: mentorProfile.label };
   const aiAnalysis = goal.aiAnalysis;
-  const todayTitle = currentTask?.title ?? aiAnalysis?.firstSmallAction ?? 'Следующий шаг: дорожная карта';
+  const todayTitle = currentTask?.title ?? aiAnalysis?.firstSmallAction ?? t.createRoadmap;
   const todayDescription =
     currentTask?.description ??
-    (aiAnalysis
-      ? 'Это первый маленький шаг от AI-наставника. Его можно сделать уже сегодня.'
-      : 'Сейчас можно сгенерировать план ниже. Отмечать задачи выполненными будем на следующем этапе.');
+    (aiAnalysis ? t.smallestActionToday : t.unlockingTasksDescription);
 
   useEffect(() => {
     const sectionRefs: Partial<Record<DetailSectionId, HTMLElement | HTMLDivElement | null>> = {
@@ -168,7 +171,7 @@ export function GoalDetailMock({
       <header className="detail-header">
         <div className="detail-actions">
           <Button variant="ghost" onClick={onBack}>
-            Назад
+            {t.back}
           </Button>
           {canDeleteGoal ? (
             <Button
@@ -176,99 +179,71 @@ export function GoalDetailMock({
               onClick={() => onDeleteGoal?.(goal.id)}
               variant="danger"
             >
-              {deletingGoalId === goal.id ? 'Удаляем...' : 'Удалить'}
+              {deletingGoalId === goal.id ? t.deleting : t.delete}
             </Button>
           ) : null}
         </div>
         <div>
-          <span className="eyebrow">Страница цели</span>
+          <span className="eyebrow">{t.goalPage}</span>
           <h1>{goal.title}</h1>
-          <p>{goal.description || 'Описание можно будет уточнить перед генерацией плана.'}</p>
+          <p>{goal.description || t.refineDescription}</p>
         </div>
       </header>
 
-      <section className="mentor-profile-card" aria-label="Выбранный AI-наставник">
+      <section className="mentor-profile-card" aria-label={t.selectedMentor}>
         <div>
-          <span className="eyebrow">AI-наставник цели</span>
+          <span className="eyebrow">{t.selectedMentor}</span>
           <strong>{mentorProfileCopy.label}</strong>
           <p>{mentorProfileCopy.description}</p>
         </div>
-        <small>Этот наставник влияет на вопросы, дорожную карту и чат с AI-наставником.</small>
+        <small>{t.mentorShapes}</small>
       </section>
 
-      <div ref={progressRef}>
+      <div ref={tasksRef}>
         <CollapsibleGoalSection
           defaultOpen
-          eyebrow="Сводка"
-          forceOpen={activeSection === 'progress'}
-          summary={`${goal.progress}% прогресса`}
-          title="Основная информация"
+          eyebrow={t.today}
+          forceOpen={activeSection === 'tasks'}
+          summary={todayTitle}
+          title={t.todaysNextStep}
         >
-          <section className="detail-summary" aria-label="Сводка цели">
+          <section className="task-focus task-focus-primary">
             <div>
-              <span>Срок</span>
-              <strong>{formatDate(goal.targetDate)}</strong>
+              <span className="eyebrow">{t.doThisNext}</span>
+              <h2>{todayTitle}</h2>
+              <p>{todayDescription}</p>
             </div>
-            <div>
-              <span>Время</span>
-              <strong>
-                {goal.availableTime} мин. {goal.timePeriod === 'day' ? 'в день' : 'в неделю'}
-              </strong>
-            </div>
-            <div>
-              <span>Прогресс</span>
-              <strong>{goal.progress}%</strong>
-            </div>
-            <div>
-              <span>Уровень</span>
-              <strong>{goal.currentLevel || 'Не указан'}</strong>
-            </div>
+            <Button disabled={!currentTask || currentTask.status === 'completed'}>
+              {t.markDone}
+            </Button>
           </section>
         </CollapsibleGoalSection>
       </div>
 
       <div className="detail-section-anchor" ref={mentorRef}>
         <CollapsibleGoalSection
-          eyebrow="AI-наставник"
+          defaultOpen
+          eyebrow={t.aiMentor}
           forceOpen={activeSection === 'mentor'}
-          summary="План и уточняющие вопросы"
-          title="Наставник"
+          summary={t.questionsStuckHelpChat}
+          title={t.mentor}
         >
           {aiAnalysis ? (
-            <section className="ai-analysis-panel" aria-label="AI-анализ цели">
+            <section className="ai-analysis-panel" aria-label={t.starterPlan}>
               <div>
-                <span className="eyebrow">AI-наставник</span>
-                <h2>Стартовый план</h2>
+                <span className="eyebrow">{t.starterPlan}</span>
+                <h2>{t.firstDirection}</h2>
                 <p>{aiAnalysis.goalSummary}</p>
               </div>
 
               <div className="ai-analysis-grid">
                 <div>
-                  <span>Уровень</span>
+                  <span>{t.level}</span>
                   <strong>{aiAnalysis.estimatedUserLevel}</strong>
                 </div>
                 <div>
-                  <span>Сегодня</span>
+                  <span>{t.today}</span>
                   <strong>{aiAnalysis.firstSmallAction}</strong>
-                </div>
-              </div>
-
-              <div className="ai-analysis-columns">
-                <div>
-                  <h3>Шаги</h3>
-                  <ol>
-                    {aiAnalysis.steps.map((step) => (
-                      <li key={step}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-                <div>
-                  <h3>Вопросы</h3>
-                  <ul>
-                    {aiAnalysis.clarificationQuestions.map((question) => (
-                      <li key={question}>{question}</li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             </section>
@@ -276,47 +251,26 @@ export function GoalDetailMock({
 
           {questionsPanel}
 
-          <PlanAdaptationPanel goal={goal} key={`adapt-${goal.id}`} />
-
           <MentorChat goal={goal} key={goal.id} />
-        </CollapsibleGoalSection>
-      </div>
 
-      <div ref={tasksRef}>
-        <CollapsibleGoalSection
-          defaultOpen
-          eyebrow="Фокус"
-          forceOpen={activeSection === 'tasks'}
-          summary={todayTitle}
-          title="Сегодняшнее задание"
-        >
-          <section className="task-focus">
-            <div>
-              <span className="eyebrow">Сегодняшнее задание</span>
-              <h2>{todayTitle}</h2>
-              <p>{todayDescription}</p>
-            </div>
-            <Button disabled={!currentTask || currentTask.status === 'completed'}>
-              Отметить выполненным
-            </Button>
-          </section>
+          <PlanAdaptationPanel goal={goal} key={`adapt-${goal.id}`} />
         </CollapsibleGoalSection>
       </div>
 
       <div className="detail-section-anchor" ref={roadmapRef}>
         <CollapsibleGoalSection
-          eyebrow="План"
+          eyebrow={t.plan}
           forceOpen={activeSection === 'roadmap'}
-          summary={stages.length > 0 ? `${stages.length} этапов` : 'Можно сгенерировать план'}
-          title="Дорожная карта"
+          summary={stages.length > 0 ? `${stages.length} ${t.loadingStages}` : t.createRoadmap}
+          title={t.roadmap}
         >
           {roadmapPanel ??
             (stages.length > 0 ? (
-              <section className="roadmap-grid" aria-label="Дорожная карта">
+              <section className="roadmap-grid" aria-label={t.roadmap}>
                 {stages.map((stage, index) => (
                   <article className="stage-panel" key={stage.id}>
                     <div className="stage-heading">
-                      <span>Этап {index + 1}</span>
+                      <span>{language === 'ru' ? `Этап ${index + 1}` : `Stage ${index + 1}`}</span>
                       <strong>{stage.title}</strong>
                       <p>{stage.description}</p>
                     </div>
@@ -326,7 +280,7 @@ export function GoalDetailMock({
                           <span className={task.status === 'completed' ? 'task-check task-done' : 'task-check'} />
                           <div>
                             <strong>{task.title}</strong>
-                            <small>{task.estimatedMinutes} минут</small>
+                            <small>{task.estimatedMinutes} {t.min}</small>
                           </div>
                         </div>
                       ))}
@@ -336,31 +290,66 @@ export function GoalDetailMock({
               </section>
             ) : (
               <section className="state-panel">
-                <h2>Дорожная карта пока пустая</h2>
-                <p>На этом этапе цель уже хранится в Supabase. Этапы и задачи будут добавлены позже.</p>
+                <h2>{t.noRoadmapYet}</h2>
+                <p>{t.roadmapAfterQuestions}</p>
               </section>
             ))}
         </CollapsibleGoalSection>
       </div>
 
+      <div ref={progressRef}>
+        <CollapsibleGoalSection
+          eyebrow={t.summary ?? 'Summary'}
+          forceOpen={activeSection === 'progress'}
+          summary={`${goal.progress}% ${t.progress}`}
+          title={t.goalInfo}
+        >
+          <section className="detail-summary" aria-label={t.goalInfo}>
+            <div>
+              <span>{t.target}</span>
+              <strong>{formatDate(goal.targetDate, language)}</strong>
+            </div>
+            <div>
+              <span>{t.time}</span>
+              <strong>
+                {goal.availableTime} {t.min} {goal.timePeriod === 'day' ? t.perDay : t.perWeek}
+              </strong>
+            </div>
+            <div>
+              <span>{t.progress}</span>
+              <strong>{goal.progress}%</strong>
+            </div>
+            <div>
+              <span>{t.level}</span>
+              <strong>{goal.currentLevel || t.notProvided}</strong>
+            </div>
+          </section>
+        </CollapsibleGoalSection>
+      </div>
+
       <CollapsibleGoalSection
-        eyebrow="История"
-        summary={`${completedTasks.length} из ${allTasks.length} задач выполнено`}
-        title="История и действия"
+        eyebrow={t.history}
+        summary={
+          language === 'ru'
+            ? `${completedTasks.length} из ${allTasks.length} задач выполнено`
+            : `${completedTasks.length} of ${allTasks.length} tasks done`
+        }
+        title={t.historyActions}
       >
         <section className="history-panel">
           <div>
-            <h2>История</h2>
+            <h2>{t.progressHistory}</h2>
             <p>
-              Выполнено задач: <strong>{completedTasks.length}</strong> из <strong>{allTasks.length}</strong>
+              {t.completedTasks}: <strong>{completedTasks.length}</strong>{' '}
+              {language === 'ru' ? 'из' : 'of'} <strong>{allTasks.length}</strong>
             </p>
           </div>
           <div className="locked-actions">
             <Button disabled variant="secondary">
-              Мне нужна помощь
+              {t.askForHelp}
             </Button>
             <Button disabled variant="secondary">
-              Изменить план
+              {t.changePlan}
             </Button>
           </div>
         </section>

@@ -1,9 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Button } from '../../components/common/Button';
+import { useLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { PlanAdaptationResponse } from '../../validations/aiResponses';
 import { fetchRoadmap } from '../roadmap/roadmapApi';
-import { generatePlanAdaptation, planAdaptationReasons } from './generatePlanAdaptation';
+import {
+  generatePlanAdaptation,
+  getPlanAdaptationReasonLabel,
+  planAdaptationReasons,
+} from './generatePlanAdaptation';
 import type { PlanAdaptationReasonId } from './generatePlanAdaptation';
 import { fetchRecentProgressLogs } from './mentorChatApi';
 
@@ -11,17 +16,17 @@ type PlanAdaptationPanelProps = {
   goal: Goal;
 };
 
-const changeTypeLabels: Record<PlanAdaptationResponse['planChanges'][number]['type'], string> = {
-  focus: 'Фокус',
-  postpone: 'Перенести',
-  simplify: 'Упростить',
-};
-
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Неизвестная ошибка';
+  return error instanceof Error ? error.message : 'Unknown error';
 }
 
 export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
+  const { language, t } = useLanguage();
+  const changeTypeLabels: Record<PlanAdaptationResponse['planChanges'][number]['type'], string> = {
+    focus: t.focus,
+    postpone: language === 'ru' ? 'Перенести' : 'Postpone',
+    simplify: language === 'ru' ? 'Упростить' : 'Simplify',
+  };
   const [adaptation, setAdaptation] = useState<PlanAdaptationResponse | null>(null);
   const [comment, setComment] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +47,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
       const nextAdaptation = await generatePlanAdaptation({
         comment,
         goal,
+        language,
         progressLogs,
         reasonId,
         roadmapStages,
@@ -56,18 +62,18 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
   };
 
   return (
-    <section className="plan-adaptation-panel" aria-label="Адаптация плана">
+    <section className="plan-adaptation-panel" aria-label={t.stuckAdaptationTitle}>
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">Я застрял</span>
-          <h2>Предложить адаптацию плана</h2>
-          <p>AI предложит, как упростить ближайшие шаги. План сам не изменится.</p>
+          <span className="eyebrow">{t.iAmStuck}</span>
+          <h2>{t.stuckAdaptationTitle}</h2>
+          <p>{t.stuckAdaptationDescription}</p>
         </div>
       </div>
 
       <form className="plan-adaptation-form" onSubmit={(event) => void handleSubmit(event)}>
         <label className="plan-adaptation-field">
-          <span>Причина</span>
+          <span>{t.reason}</span>
           <select
             className="plan-adaptation-select"
             disabled={isGenerating}
@@ -76,21 +82,25 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
           >
             {planAdaptationReasons.map((reason) => (
               <option key={reason.id} value={reason.id}>
-                {reason.label}
+                {getPlanAdaptationReasonLabel(reason.id, language)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="plan-adaptation-field">
-          <span>Комментарий</span>
+          <span>{t.optionalNote}</span>
           <textarea
             className="plan-adaptation-textarea"
             disabled={isGenerating}
             maxLength={300}
             onChange={(event) => setComment(event.target.value)}
-            placeholder="Например: не успеваю после школы или не понимаю задание..."
-            rows={3}
+            placeholder={
+              language === 'ru'
+                ? 'Например: стало меньше времени после школы или я не понимаю задание.'
+                : 'Example: I have less time after school, or I do not understand the task.'
+            }
+            rows={2}
             value={comment}
           />
         </label>
@@ -103,7 +113,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
 
         <div className="plan-adaptation-actions">
           <Button disabled={isGenerating} type="submit">
-            {isGenerating ? 'Думаем...' : 'Предложить адаптацию'}
+            {isGenerating ? t.thinking : t.suggestAdaptation}
           </Button>
         </div>
       </form>
@@ -111,7 +121,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
       {adaptation ? (
         <div className="plan-adaptation-result" aria-live="polite">
           <div>
-            <span>Сегодня</span>
+            <span>{t.today}</span>
             <strong>{adaptation.nextSmallAction}</strong>
           </div>
           <ul>

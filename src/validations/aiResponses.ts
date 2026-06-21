@@ -13,7 +13,7 @@ export const clarifyingQuestionSchema = z
 
 export const clarifyingQuestionsResponseSchema = z
   .object({
-    questions: z.array(clarifyingQuestionSchema).min(5).max(6),
+    questions: z.array(clarifyingQuestionSchema).min(3).max(4),
   })
   .strict();
 
@@ -108,13 +108,13 @@ export type PlanAdaptationResponse = z.infer<typeof planAdaptationResponseSchema
 
 export class AiResponseValidationError extends Error {
   constructor(details: string[]) {
-    super(`AI вернул данные в неправильном формате: ${details.join('; ')}`);
+    super(`AI returned data in the wrong format: ${details.join('; ')}`);
     this.name = 'AiResponseValidationError';
   }
 }
 
 function formatPath(path: Array<PropertyKey>) {
-  return path.length > 0 ? path.join('.') : 'ответ';
+  return path.length > 0 ? path.join('.') : 'response';
 }
 
 function formatValidationIssues(error: z.ZodError) {

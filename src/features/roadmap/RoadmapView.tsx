@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
+import { useLanguage, type AppLanguage } from '../../lib/language';
 import { fetchGoalQuestions } from '../goals/questionsApi';
 import type { Goal, GoalStatus } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
@@ -21,15 +22,15 @@ type RoadmapViewProps = {
 const pendingRoadmapRequests = new Map<string, Promise<RoadmapStage[]>>();
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Неизвестная ошибка';
+  return error instanceof Error ? error.message : 'Unknown error';
 }
 
-function formatDate(value: string | null) {
+function formatDate(value: string | null, language: AppLanguage) {
   if (!value) {
-    return 'Без даты';
+    return language === 'ru' ? 'Без даты' : 'No date';
   }
 
-  return new Intl.DateTimeFormat('ru', {
+  return new Intl.DateTimeFormat(language === 'ru' ? 'ru' : 'en-US', {
     day: 'numeric',
     month: 'short',
   }).format(new Date(value));
@@ -94,25 +95,31 @@ function getOptimisticStages(stages: RoadmapStage[], taskId: string, isCompleted
   return updateStageStatuses(nextStages);
 }
 
-async function generateAndSaveRoadmap(goal: Goal, questions: GoalQuestion[]) {
-  const pendingRequest = pendingRoadmapRequests.get(goal.id);
+async function generateAndSaveRoadmap(
+  goal: Goal,
+  questions: GoalQuestion[],
+  language: AppLanguage,
+) {
+  const pendingRequestKey = `${goal.id}:${language}`;
+  const pendingRequest = pendingRoadmapRequests.get(pendingRequestKey);
 
   if (pendingRequest) {
     return pendingRequest;
   }
 
-  const nextRequest = generateRoadmap(goal, questions)
+  const nextRequest = generateRoadmap(goal, questions, language)
     .then((roadmap) => createRoadmap(goal, roadmap))
     .finally(() => {
-      pendingRoadmapRequests.delete(goal.id);
+      pendingRoadmapRequests.delete(pendingRequestKey);
     });
 
-  pendingRoadmapRequests.set(goal.id, nextRequest);
+  pendingRoadmapRequests.set(pendingRequestKey, nextRequest);
 
   return nextRequest;
 }
 
 export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
+  const { language, t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,11 +178,11 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
       setQuestions(nextQuestions);
 
       if (nextQuestions.length === 0) {
-        throw new Error('Сначала нужно получить уточняющие вопросы.');
+        throw new Error(t.answerQuickQuestionsFirst);
       }
 
       if (nextAnsweredQuestions.length !== nextQuestions.length) {
-        throw new Error('Ответь на все уточняющие вопросы и сохрани ответы.');
+        throw new Error(t.answerAllQuickQuestions);
       }
 
       const existingRoadmap = await fetchRoadmap(goal.id);
@@ -185,7 +192,7 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
         return;
       }
 
-      const nextStages = await generateAndSaveRoadmap(goal, nextQuestions);
+      const nextStages = await generateAndSaveRoadmap(goal, nextQuestions, language);
       setStages(nextStages);
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
@@ -243,8 +250,8 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
     return (
       <section className="roadmap-panel">
         <div className="inline-state">
-          <strong>Проверяем дорожную карту...</strong>
-          <p>Загружаем сохранённые этапы и ответы на вопросы.</p>
+          <strong>{t.checkingRoadmap}</strong>
+          <p>{t.loadingSavedStages}</p>
         </div>
       </section>
     );
@@ -256,10 +263,12 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
         <section className="roadmap-panel">
           <div className="panel-heading">
             <div>
-              <span className="eyebrow">Дорожная карта</span>
-              <h2>План готов</h2>
+              <span className="eyebrow">{t.roadmap}</span>
+              <h2>{t.planReady}</h2>
               <p>
-                Выполнено {completedTasks} из {totalTasks} задач.
+                {language === 'ru'
+                  ? `Выполнено ${completedTasks} из ${totalTasks} задач.`
+                  : `${completedTasks} of ${totalTasks} tasks completed.`}
               </p>
             </div>
           </div>
@@ -270,17 +279,17 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
           ) : null}
         </section>
 
-        <section className="roadmap-grid" aria-label="Дорожная карта">
+        <section className="roadmap-grid" aria-label={t.roadmap}>
           {stages.map((stage, index) => (
             <article className="stage-panel" key={stage.id}>
               <div className="stage-heading">
-                <span>Этап {index + 1}</span>
+                <span>{language === 'ru' ? `Этап ${index + 1}` : `Stage ${index + 1}`}</span>
                 <strong>{stage.title}</strong>
                 <p>{stage.description}</p>
               </div>
 
               {stage.successCriteria.length > 0 ? (
-                <ul className="criteria-list" aria-label="Критерии успеха">
+                <ul className="criteria-list" aria-label={t.successCriteria}>
                   {stage.successCriteria.map((criterion) => (
                     <li key={criterion}>{criterion}</li>
                   ))}
@@ -293,8 +302,12 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
                     <button
                       aria-label={
                         task.status === 'completed'
-                          ? `Снять отметку выполнения с задачи «${task.title}»`
-                          : `Отметить задачу «${task.title}» выполненной`
+                          ? language === 'ru'
+                            ? `Снять отметку выполнения с "${task.title}"`
+                            : `Mark "${task.title}" as not done`
+                          : language === 'ru'
+                            ? `Отметить "${task.title}" выполненным`
+                            : `Mark "${task.title}" as done`
                       }
                       className={task.status === 'completed' ? 'task-check task-done' : 'task-check'}
                       onClick={() => void handleToggleTaskCompletion(task)}
@@ -304,7 +317,7 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
                       <strong>{task.title}</strong>
                       <p>{task.description}</p>
                       <small>
-                        {task.estimatedMinutes} минут · {formatDate(task.dueDate)}
+                        {task.estimatedMinutes} {t.min} · {formatDate(task.dueDate, language)}
                       </small>
                     </div>
                   </div>
@@ -318,12 +331,12 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
   }
 
   return (
-    <section className="roadmap-panel">
+    <section className="roadmap-panel roadmap-action-panel">
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">Дорожная карта</span>
-          <h2>Сгенерировать план</h2>
-          <p>AI-наставник составит этапы и задачи по цели, сроку, времени и твоим ответам.</p>
+          <span className="eyebrow">{t.doThisNext}</span>
+          <h2>{t.createRoadmap}</h2>
+          <p>{t.roadmapActionDescription}</p>
         </div>
       </div>
 
@@ -331,20 +344,20 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
         <div className="form-error questions-error" role="alert">
           <span>{error}</span>
           <Button variant="secondary" onClick={() => void handleGenerate()}>
-            Повторить
+            {t.retry}
           </Button>
         </div>
       ) : null}
 
       {!canGenerateRoadmap ? (
         <div className="inline-state">
-          <strong>Нужны сохранённые ответы</strong>
-          <p>Ответь на все уточняющие вопросы выше и нажми «Сохранить и открыть план».</p>
+          <strong>{t.answerQuickQuestionsFirst}</strong>
+          <p>{t.saveAnswersFirst}</p>
         </div>
       ) : (
-        <div className="inline-state">
-          <strong>Можно создавать дорожную карту</strong>
-          <p>Нажми кнопку ниже, и AI-наставник соберёт этапы и первые задачи.</p>
+        <div className="inline-state inline-state-ready">
+          <strong>{t.readyToCreate}</strong>
+          <p>{t.roadmapReadyDescription}</p>
         </div>
       )}
 
@@ -354,13 +367,13 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
             <ProgressiveFluxLoader
               className="progressive-flux-loader-compact"
               phases={[
-                { at: 0, label: 'этапы' },
-                { at: 45, label: 'задачи' },
-                { at: 80, label: 'готово' },
+                { at: 0, label: t.loadingStages },
+                { at: 45, label: t.loadingTasks },
+                { at: 80, label: t.loadingReady },
               ]}
             />
           ) : (
-            'Сгенерировать дорожную карту'
+            t.createRoadmap
           )}
         </Button>
       </div>

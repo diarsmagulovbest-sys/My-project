@@ -58,37 +58,47 @@ export function AchievementsPage({ goals, onCreateGoal, onOpenGoals }: Achieveme
         </div>
       </section>
 
-      <section className="metric-grid" aria-label={t.achievementStats}>
-        <div className="metric-card">
-          <span>{t.totalGoals}</span>
-          <strong>{goals.length}</strong>
-        </div>
-        <div className="metric-card">
-          <span>{t.activeGoals}</span>
-          <strong>{activeGoals}</strong>
-        </div>
-        <div className="metric-card">
-          <span>{t.completed}</span>
-          <strong>{completedGoals}</strong>
-        </div>
-        <div className="metric-card">
-          <span>{t.averageProgress}</span>
-          <strong>{averageProgress}%</strong>
-        </div>
-      </section>
+      {goals.length === 0 ? (
+        <section className="state-panel">
+          <h2>{t.noAchievements}</h2>
+          <p>{t.noAchievementsDescription}</p>
+          <Button onClick={onCreateGoal}>{t.createGoal}</Button>
+        </section>
+      ) : (
+        <>
+          <section className="metric-grid" aria-label={t.achievementStats}>
+            <div className="metric-card">
+              <span>{t.totalGoals}</span>
+              <strong>{goals.length}</strong>
+            </div>
+            <div className="metric-card">
+              <span>{t.activeGoals}</span>
+              <strong>{activeGoals}</strong>
+            </div>
+            <div className="metric-card">
+              <span>{t.completed}</span>
+              <strong>{completedGoals}</strong>
+            </div>
+            <div className="metric-card">
+              <span>{t.averageProgress}</span>
+              <strong>{averageProgress}%</strong>
+            </div>
+          </section>
 
-      <section className="achievement-grid" aria-label={t.badges}>
-        {achievements.map((achievement) => (
-          <article
-            className={achievement.isUnlocked ? 'achievement-card achievement-card-unlocked' : 'achievement-card'}
-            key={achievement.label}
-          >
-            <span>{achievement.isUnlocked ? t.unlocked : t.locked}</span>
-            <h2>{achievement.label}</h2>
-            <p>{achievement.text}</p>
-          </article>
-        ))}
-      </section>
+          <section className="achievement-grid" aria-label={t.badges}>
+            {achievements.map((achievement) => (
+              <article
+                className={achievement.isUnlocked ? 'achievement-card achievement-card-unlocked' : 'achievement-card'}
+                key={achievement.label}
+              >
+                <span>{achievement.isUnlocked ? t.unlocked : t.locked}</span>
+                <h2>{achievement.label}</h2>
+                <p>{achievement.text}</p>
+              </article>
+            ))}
+          </section>
+        </>
+      )}
     </div>
   );
 }

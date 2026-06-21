@@ -1,4 +1,5 @@
 import { invokeAi, parseAiJson } from '../../lib/ai';
+import type { AppLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { ProgressLog } from '../../types/mentorChat';
 import type { RoadmapStage, RoadmapTask } from '../../types/roadmap';
@@ -7,45 +8,79 @@ import { validatePlanAdaptationResponse } from '../../validations/aiResponses';
 import { getMentorProfile, getMentorProfileSystemContext } from './mentorProfiles';
 
 export const planAdaptationReasons = [
-  { id: 'not_enough_time', label: 'Не хватило времени' },
-  { id: 'too_difficult', label: 'Задание слишком сложное' },
-  { id: 'lost_motivation', label: 'Потерял мотивацию' },
-  { id: 'unclear_material', label: 'Не понял материал' },
-  { id: 'circumstances_changed', label: 'Изменились обстоятельства' },
-  { id: 'other', label: 'Другая причина' },
+  { id: 'not_enough_time' },
+  { id: 'too_difficult' },
+  { id: 'lost_motivation' },
+  { id: 'unclear_material' },
+  { id: 'circumstances_changed' },
+  { id: 'other' },
 ] as const;
 
 export type PlanAdaptationReasonId = (typeof planAdaptationReasons)[number]['id'];
 
+const planAdaptationReasonLabels: Record<
+  AppLanguage,
+  Record<PlanAdaptationReasonId, string>
+> = {
+  en: {
+    circumstances_changed: 'My situation changed',
+    lost_motivation: 'Lost motivation',
+    not_enough_time: 'Not enough time',
+    other: 'Other reason',
+    too_difficult: 'The task is too difficult',
+    unclear_material: 'I do not understand the material',
+  },
+  ru: {
+    circumstances_changed: 'Изменились обстоятельства',
+    lost_motivation: 'Потерял мотивацию',
+    not_enough_time: 'Не хватило времени',
+    other: 'Другая причина',
+    too_difficult: 'Задание слишком сложное',
+    unclear_material: 'Не понял материал',
+  },
+};
+
+export function getPlanAdaptationReasonLabel(
+  reasonId: PlanAdaptationReasonId,
+  language: AppLanguage,
+) {
+  return planAdaptationReasonLabels[language][reasonId];
+}
+
 export type GeneratePlanAdaptationInput = {
   comment: string;
   goal: Goal;
+  language: AppLanguage;
   progressLogs: ProgressLog[];
   reasonId: PlanAdaptationReasonId;
   roadmapStages: RoadmapStage[];
 };
 
 const planAdaptationSystemPrompt = [
-  'Ты AI-наставник для подростка 14-16 лет.',
-  'Предложи адаптацию плана, но не применяй изменения и не говори, что roadmap уже изменён.',
-  'Ответ должен быть коротким и практичным: 1 маленькое действие на сегодня, 1-3 изменения плана, короткое объяснение.',
-  'В planChanges обязательно предложи, что упростить, и что перенести, если это применимо к текущему roadmap.',
-  'Если пользователь застрял, упрости ближайшую задачу до самого маленького выполнимого шага.',
-  'Сохраняй стиль и safety rules mentor profile из контекста.',
-  'Для programming целей предлагай конкретное упрощение coding/project/debugging task, без длинной теории.',
-  'Для fitness, martial_arts и травмоопасных целей не давай опасные инструкции: упоминай разминку, ограничения, восстановление и тренера.',
-  'Верни только валидный JSON без markdown и без пояснений.',
-  'JSON-формат ответа строго такой:',
+  'You are a practical AI mentor for a 14-16 year old learner.',
+  'Suggest an adaptation, but do not apply changes and do not say the roadmap has already changed.',
+  'Keep the response short and practical: one small action for today, 1-3 plan changes, and a brief reason.',
+  'In planChanges, suggest what to simplify and what to postpone when relevant.',
+  'If the user is stuck, simplify the nearest task into the smallest doable step.',
+  'Preserve the mentor profile style and safety rules from context.',
+  'For programming goals, suggest a concrete coding, project, or debugging simplification without long theory.',
+  'For fitness, martial_arts, and injury-risk goals, avoid dangerous instructions and mention warmup, limitations, recovery, and a qualified coach when relevant.',
+  'Return only valid JSON without markdown or explanations.',
+  'The response JSON must match this shape:',
   '{"nextSmallAction":"...","planChanges":[{"type":"simplify","change":"..."},{"type":"postpone","change":"..."}],"explanation":"..."}',
-  'type должен быть одним из: simplify, postpone, focus.',
+  'type must be one of: simplify, postpone, focus.',
 ].join('\n');
 
-function formatTimePeriod(period: Goal['timePeriod']) {
-  return period === 'day' ? 'в день' : 'в неделю';
+function getLanguageName(language: AppLanguage) {
+  return language === 'ru' ? 'Russian' : 'English';
 }
 
-function getReasonLabel(reasonId: PlanAdaptationReasonId) {
-  return planAdaptationReasons.find((reason) => reason.id === reasonId)?.label ?? 'Другая причина';
+function formatTimePeriod(period: Goal['timePeriod'], language: AppLanguage) {
+  if (language === 'ru') {
+    return period === 'day' ? 'в день' : 'в неделю';
+  }
+
+  return period === 'day' ? 'per day' : 'per week';
 }
 
 function mapTaskContext(task: RoadmapTask) {
@@ -87,15 +122,16 @@ function buildProgressLogContext(progressLogs: ProgressLog[]) {
 function buildPlanAdaptationPrompt({
   comment,
   goal,
+  language,
   progressLogs,
   reasonId,
   roadmapStages,
 }: GeneratePlanAdaptationInput) {
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
   const goalContext = {
-    available_time: `${goal.availableTime} минут ${formatTimePeriod(goal.timePeriod)}`,
-    current_level: goal.currentLevel || 'не указан',
-    description: goal.description || 'не указано',
+    available_time: `${goal.availableTime} ${language === 'ru' ? 'минут' : 'minutes'} ${formatTimePeriod(goal.timePeriod, language)}`,
+    current_level: goal.currentLevel || (language === 'ru' ? 'не указано' : 'not provided'),
+    description: goal.description || (language === 'ru' ? 'не указано' : 'not provided'),
     mentor_profile_id: mentorProfile.mentorProfileId,
     progress: goal.progress,
     status: goal.status,
@@ -104,36 +140,36 @@ function buildPlanAdaptationPrompt({
   };
 
   return [
-    'Контекст цели:',
+    'Goal context:',
     JSON.stringify(goalContext, null, 2),
     '',
-    'Контекст mentor profile:',
+    'Mentor profile context:',
     getMentorProfileSystemContext(goal.mentorProfileId),
     '',
-    'Roadmap и tasks:',
+    'Roadmap and tasks:',
     JSON.stringify(buildRoadmapContext(roadmapStages), null, 2),
     '',
-    'Выполненные задания:',
+    'Completed tasks:',
     JSON.stringify(getTasksByStatus(roadmapStages, 'completed'), null, 2),
     '',
-    'Пропущенные задания:',
+    'Skipped tasks:',
     JSON.stringify(getTasksByStatus(roadmapStages, 'skipped'), null, 2),
     '',
-    'Последние progress logs:',
+    'Recent progress logs:',
     JSON.stringify(buildProgressLogContext(progressLogs), null, 2),
     '',
-    'Проблема пользователя:',
+    'User problem:',
     JSON.stringify(
       {
-        comment: comment.trim() || 'не указан',
-        reason: getReasonLabel(reasonId),
+        comment: comment.trim() || (language === 'ru' ? 'не указано' : 'not provided'),
+        reason: getPlanAdaptationReasonLabel(reasonId, language),
         reason_id: reasonId,
       },
       null,
       2,
     ),
     '',
-    'Предложи только адаптацию. Не меняй сохранённый план автоматически.',
+    `Suggest only an adaptation in ${getLanguageName(language)}. Do not automatically change the saved plan.`,
   ].join('\n');
 }
 

@@ -1,4 +1,5 @@
 import { FunctionsHttpError } from '@supabase/supabase-js';
+import { languageStorageKey, type AppLanguage } from './language';
 import { supabase } from './supabase';
 
 type AiFunctionResponse = {
@@ -15,8 +16,22 @@ type InvokeAiInput = {
   system?: string;
 };
 
-const AI_RATE_LIMIT_MESSAGE =
-  'AI временно перегружен или достигнут лимит запросов. Попробуй ещё раз через минуту.';
+const aiRateLimitMessages: Record<AppLanguage, string> = {
+  en: 'AI is temporarily overloaded or the request limit was reached. Try again in about a minute.',
+  ru: 'AI временно перегружен или достигнут лимит запросов. Попробуй ещё раз через минуту.',
+};
+
+function getCurrentLanguage(): AppLanguage {
+  try {
+    return localStorage.getItem(languageStorageKey) === 'ru' ? 'ru' : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+function getAiRateLimitMessage() {
+  return aiRateLimitMessages[getCurrentLanguage()];
+}
 
 function stripJsonFence(value: string) {
   const trimmed = value.trim();
@@ -59,7 +74,7 @@ function getReadableAiError(value: AiFunctionResponse, responseStatus?: number) 
   if (isAiRateLimitResponse(value, responseStatus)) {
     writeAiRateLimitLog(value, responseStatus);
 
-    return AI_RATE_LIMIT_MESSAGE;
+    return getAiRateLimitMessage();
   }
 
   const details = [
@@ -86,11 +101,15 @@ async function getFunctionErrorMessage(error: unknown) {
     if (error.context.status === 429) {
       writeAiRateLimitLog({}, error.context.status);
 
-      return AI_RATE_LIMIT_MESSAGE;
+      return getAiRateLimitMessage();
     }
   }
 
-  return error instanceof Error ? error.message : 'Неизвестная ошибка Edge Function';
+  return error instanceof Error
+    ? error.message
+    : getCurrentLanguage() === 'ru'
+      ? 'Неизвестная ошибка Edge Function'
+      : 'Unknown Edge Function error';
 }
 
 export async function invokeAi({ prompt, system }: InvokeAiInput): Promise<string> {
@@ -107,7 +126,11 @@ export async function invokeAi({ prompt, system }: InvokeAiInput): Promise<strin
   }
 
   if (!data?.text?.trim()) {
-    throw new Error('AI вернул пустой ответ. Попробуй ещё раз.');
+    throw new Error(
+      getCurrentLanguage() === 'ru'
+        ? 'AI вернул пустой ответ. Попробуй ещё раз.'
+        : 'AI returned an empty response. Try again.',
+    );
   }
 
   return data.text;
@@ -126,10 +149,18 @@ export function parseAiJson(text: string): unknown {
       try {
         return JSON.parse(preparedText.slice(firstBrace, lastBrace + 1));
       } catch {
-        throw new Error('AI вернул ответ не в JSON-формате. Попробуй сгенерировать вопросы ещё раз.');
+        throw new Error(
+          getCurrentLanguage() === 'ru'
+            ? 'AI вернул ответ не в JSON-формате. Попробуй ещё раз.'
+            : 'AI returned a non-JSON response. Try again.',
+        );
       }
     }
 
-    throw new Error('AI вернул ответ не в JSON-формате. Попробуй сгенерировать вопросы ещё раз.');
+    throw new Error(
+      getCurrentLanguage() === 'ru'
+        ? 'AI вернул ответ не в JSON-формате. Попробуй ещё раз.'
+        : 'AI returned a non-JSON response. Try again.',
+    );
   }
 }

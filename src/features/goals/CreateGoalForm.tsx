@@ -26,7 +26,7 @@ export function CreateGoalForm({
   onCancel,
   onCreate,
 }: CreateGoalFormProps) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -67,7 +67,7 @@ export function CreateGoalForm({
 
   return (
     <div className="page-stack">
-      <header className="page-header">
+      <header className="page-header page-header-compact">
         <div>
           <span className="eyebrow">{t.newGoal}</span>
           <h1>{t.createGoal}</h1>
@@ -75,7 +75,7 @@ export function CreateGoalForm({
         </div>
       </header>
 
-      <form className="form-panel" onSubmit={handleSubmit}>
+      <form className="form-panel form-panel-compact" onSubmit={handleSubmit}>
         <label className="form-field">
           <span>{t.goalTitle}</span>
           <input
@@ -92,11 +92,11 @@ export function CreateGoalForm({
             value={description}
             onChange={(event) => setDescription(event.target.value)}
             placeholder={t.descriptionPlaceholder}
-            rows={4}
+            rows={2}
           />
         </label>
 
-        <div className="form-grid">
+        <div className="form-grid form-grid-compact">
           <div className="form-field">
             <span>{t.targetDate}</span>
             <CalendarPicker
@@ -108,39 +108,40 @@ export function CreateGoalForm({
             />
           </div>
 
-          <label className="form-field">
-            <span>{language === 'ru' ? 'Свободное время' : 'Available time'}</span>
-            <input
-              min={1}
-              type="number"
-              value={availableTime}
-              onChange={(event) => setAvailableTime(event.target.value)}
-            />
+          <div className="form-field goal-time-field">
+            <label className="goal-time-input">
+              <span>{t.availableTime}</span>
+              <input
+                min={1}
+                type="number"
+                value={availableTime}
+                onChange={(event) => setAvailableTime(event.target.value)}
+              />
+            </label>
+            <fieldset className="segmented-field segmented-field-compact">
+              <legend>{t.timePeriod}</legend>
+              <div>
+                <button
+                  className={timePeriod === 'day' ? 'segment segment-active' : 'segment'}
+                  type="button"
+                  onClick={() => setTimePeriod('day')}
+                >
+                  {t.timePeriodDay}
+                </button>
+                <button
+                  className={timePeriod === 'week' ? 'segment segment-active' : 'segment'}
+                  type="button"
+                  onClick={() => setTimePeriod('week')}
+                >
+                  {t.timePeriodWeek}
+                </button>
+              </div>
+            </fieldset>
             {wasSubmitted && (!Number.isFinite(parsedTime) || parsedTime <= 0) ? (
               <small>{t.timePositive}</small>
             ) : null}
-          </label>
-        </div>
-
-        <fieldset className="segmented-field">
-          <legend>{t.timePeriod}</legend>
-          <div>
-            <button
-              className={timePeriod === 'day' ? 'segment segment-active' : 'segment'}
-              type="button"
-              onClick={() => setTimePeriod('day')}
-            >
-              {t.timePeriodDay}
-            </button>
-            <button
-              className={timePeriod === 'week' ? 'segment segment-active' : 'segment'}
-              type="button"
-              onClick={() => setTimePeriod('week')}
-            >
-              {t.timePeriodWeek}
-            </button>
           </div>
-        </fieldset>
+        </div>
 
         <label className="form-field">
           <span>{t.currentLevel}</span>
@@ -148,7 +149,7 @@ export function CreateGoalForm({
             value={currentLevel}
             onChange={(event) => setCurrentLevel(event.target.value)}
             placeholder={t.currentLevelPlaceholder}
-            rows={3}
+            rows={2}
           />
         </label>
 
@@ -173,9 +174,9 @@ export function CreateGoalForm({
               <ProgressiveFluxLoader
                 className="progressive-flux-loader-compact"
                 phases={[
-                  { at: 0, label: language === 'ru' ? 'цель' : 'goal' },
-                  { at: 45, label: language === 'ru' ? 'наставник' : 'mentor' },
-                  { at: 80, label: language === 'ru' ? 'готово' : 'ready' },
+                  { at: 0, label: t.loadingGoal },
+                  { at: 45, label: t.loadingMentor },
+                  { at: 80, label: t.loadingReady },
                 ]}
               />
             ) : (

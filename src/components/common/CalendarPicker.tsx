@@ -55,12 +55,12 @@ export function CalendarPicker({
   onChange,
   value,
 }: CalendarPickerProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const locale = language === 'ru' ? 'ru' : 'en-US';
   const selectedDate = getCalendarDate(value);
   const minDate = minValue ? parseDate(minValue) : undefined;
   const currentDate = today(getLocalTimeZone());
-  const emptyLabel = language === 'ru' ? 'Дата не выбрана' : 'No date selected';
+  const emptyLabel = t.noDateSelected;
 
   return (
     <div className={error ? 'calendar-picker-shell calendar-picker-shell-error' : 'calendar-picker-shell'}>
@@ -104,7 +104,7 @@ export function CalendarPicker({
       </I18nProvider>
 
       <div className="calendar-picker-selected" aria-live="polite">
-        <span>{language === 'ru' ? 'Выбрано' : 'Selected'}</span>
+        <span>{t.selected}</span>
         <strong>{value ? formatIsoDate(value, locale) ?? emptyLabel : emptyLabel}</strong>
       </div>
 

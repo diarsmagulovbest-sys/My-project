@@ -176,7 +176,7 @@ export function GoalsDashboard({
 
       {error ? (
         <section className="state-panel state-panel-error" role="alert">
-          <h2>{language === 'ru' ? 'Не получилось загрузить цели' : 'Could not load goals'}</h2>
+          <h2>Could not load goals</h2>
           <p>{error}</p>
         </section>
       ) : null}
@@ -194,7 +194,7 @@ export function GoalsDashboard({
           <div className="section-heading">
             <div>
               <span className="eyebrow">{t.myGoals}</span>
-              <h2>{language === 'ru' ? 'Продолжай в своём темпе' : 'Keep going at your pace'}</h2>
+              <h2>Keep going at your pace</h2>
             </div>
             <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
               {t.createGoal}

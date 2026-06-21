@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
+import { useLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
 import { generateClarifyingQuestions } from './generateQuestions';
@@ -14,7 +15,7 @@ type GoalQuestionsPanelProps = {
 const pendingQuestionRequests = new Map<string, Promise<GoalQuestion[]>>();
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Неизвестная ошибка';
+  return error instanceof Error ? error.message : 'Unknown error';
 }
 
 function mapAnswers(questions: GoalQuestion[]) {
@@ -24,31 +25,33 @@ function mapAnswers(questions: GoalQuestion[]) {
   }, {});
 }
 
-async function getOrCreateQuestions(goal: Goal) {
+async function getOrCreateQuestions(goal: Goal, language: 'en' | 'ru') {
   const existingQuestions = await fetchGoalQuestions(goal.id);
 
   if (existingQuestions.length > 0) {
     return existingQuestions;
   }
 
-  const pendingRequest = pendingQuestionRequests.get(goal.id);
+  const pendingRequestKey = `${goal.id}:${language}`;
+  const pendingRequest = pendingQuestionRequests.get(pendingRequestKey);
 
   if (pendingRequest) {
     return pendingRequest;
   }
 
-  const nextRequest = generateClarifyingQuestions(goal)
+  const nextRequest = generateClarifyingQuestions(goal, language)
     .then((questions) => createGoalQuestions(goal.id, questions))
     .finally(() => {
-      pendingQuestionRequests.delete(goal.id);
+      pendingQuestionRequests.delete(pendingRequestKey);
     });
 
-  pendingQuestionRequests.set(goal.id, nextRequest);
+  pendingQuestionRequests.set(pendingRequestKey, nextRequest);
 
   return nextRequest;
 }
 
 export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelProps) {
+  const { language, t } = useLanguage();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +67,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
   useEffect(() => {
     let isActive = true;
 
-    getOrCreateQuestions(goal)
+    getOrCreateQuestions(goal, language)
       .then((nextQuestions) => {
         if (!isActive) {
           return;
@@ -89,7 +92,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
     return () => {
       isActive = false;
     };
-  }, [goal]);
+  }, [goal, language]);
 
   const handleRetry = async () => {
     setError(null);
@@ -97,7 +100,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
     setSuccessMessage(null);
 
     try {
-      const nextQuestions = await getOrCreateQuestions(goal);
+      const nextQuestions = await getOrCreateQuestions(goal, language);
       setQuestions(nextQuestions);
       setAnswers(mapAnswers(nextQuestions));
     } catch (caughtError) {
@@ -133,12 +136,12 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
   };
 
   return (
-    <section className="questions-panel" aria-label="Уточняющие вопросы">
+    <section className="questions-panel" aria-label={t.answerFewQuestions}>
       <div className="panel-heading">
         <div>
-          <span className="eyebrow">Уточнение цели</span>
-          <h2>Ответь на несколько вопросов</h2>
-          <p>Так план получится точнее и ближе к твоей реальной ситуации.</p>
+          <span className="eyebrow">{t.goalDetails}</span>
+          <h2>{t.answerFewQuestions}</h2>
+          <p>{t.answersEnough}</p>
         </div>
       </div>
 
@@ -146,10 +149,10 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
         <div className="inline-state">
           <ProgressiveFluxLoader
             phases={[
-              { at: 0, label: 'анализ цели' },
-              { at: 40, label: 'подбор вопросов' },
-              { at: 75, label: 'проверка' },
-              { at: 100, label: 'готово' },
+              { at: 0, label: t.loadingGoal },
+              { at: 40, label: t.loadingQuestions },
+              { at: 75, label: t.checkingRoadmap },
+              { at: 100, label: t.loadingReady },
             ]}
           />
         </div>
@@ -159,7 +162,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
         <div className="form-error questions-error" role="alert">
           <span>{error}</span>
           <Button variant="secondary" onClick={() => void handleRetry()}>
-            Повторить
+            {t.retry}
           </Button>
         </div>
       ) : null}
@@ -169,7 +172,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
           <div className="question-list">
             {questions.map((question, index) => (
               <label className="question-item" key={question.id}>
-                <span>Вопрос {index + 1}</span>
+                <span>{t.question} {index + 1}</span>
                 <strong>{question.question}</strong>
                 <textarea
                   disabled={isSaving}
@@ -180,8 +183,8 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
                     }));
                     setSuccessMessage(null);
                   }}
-                  placeholder="Твой ответ"
-                  rows={3}
+                  placeholder={t.yourAnswer}
+                  rows={2}
                   value={answers[question.id] ?? ''}
                 />
               </label>
@@ -193,20 +196,20 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
           <div className="question-actions">
             <Button
               disabled={isSaving}
-              onClick={() => void saveAnswers('Ответы сохранены. Следующий шаг: создай дорожную карту ниже.')}
+              onClick={() => void saveAnswers(t.answersSavedNext)}
               variant="secondary"
             >
-              {isSaving ? 'Сохраняем...' : 'Сохранить ответы'}
+              {isSaving ? t.saving : t.saveAnswers}
             </Button>
             <Button
               disabled={isSaving || !allQuestionsAnswered}
               onClick={() =>
-                void saveAnswers('Ответы сохранены. Открываем дорожную карту.', {
+                void saveAnswers(t.answersSavedOpening, {
                   openRoadmap: true,
                 })
               }
             >
-              Сохранить и открыть план
+              {t.saveAndOpenRoadmap}
             </Button>
           </div>
         </>
