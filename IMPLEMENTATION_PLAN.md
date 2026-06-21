@@ -516,3 +516,14 @@ Done:
 - added mentor_profile_id column to goals with default general and safe profile id constraint;
 - connected goal creation to classify and save mentor_profile_id with fallback to general;
 - did not connect profiles to question generation, roadmap generation, mentor chat, or UI yet.
+
+## Mentor Characters
+
+Status: Stage 1 completed.
+
+Done:
+
+- added Mentor Character TypeScript ids and structure;
+- added the first character list as code constants;
+- added helper functions for default character, id validation, character lookup, and future system prompt context;
+- did not connect characters to UI, AI, goals, Supabase, migrations, or navigation yet.
