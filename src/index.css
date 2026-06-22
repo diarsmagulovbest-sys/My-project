@@ -4246,6 +4246,247 @@ textarea {
   background: var(--app-brand);
 }
 
+.app-shell-today {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(173, 225, 245, 0.42), transparent 30vw),
+    linear-gradient(90deg, #eaf8ff 0 252px, #f7fbff 252px 100%);
+  color: #111827;
+}
+
+.app-shell-today .sidebar {
+  border-right: 1px solid rgba(122, 84, 101, 0.08);
+  background: rgba(232, 247, 255, 0.86);
+  box-shadow: none;
+}
+
+.app-shell-today .brand-block strong {
+  color: #5f4050;
+}
+
+.app-shell-today .account-box {
+  border-top-color: rgba(122, 84, 101, 0.1);
+}
+
+.app-shell-today .account-box span {
+  color: rgba(95, 64, 80, 0.78);
+}
+
+.app-shell-today .nav-item {
+  color: rgba(46, 37, 48, 0.66);
+  background: transparent;
+}
+
+.app-shell-today .nav-item-active {
+  color: #5f4050;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow:
+    inset -4px 0 0 #8d5e70,
+    0 12px 28px rgba(95, 64, 80, 0.06);
+}
+
+.content-shell-today {
+  width: min(100%, 1280px);
+  padding: 34px 32px;
+}
+
+.app-shell-today .dashboard-page {
+  color: #111827;
+}
+
+.app-shell-today .dashboard-welcome h1,
+.app-shell-today .dashboard-page .mentor-copy h2,
+.app-shell-today .dashboard-page .goal-card h2,
+.app-shell-today .dashboard-page .dashboard-stat-card strong,
+.app-shell-today .dashboard-companion-card strong,
+.app-shell-today .dashboard-milestone-card strong,
+.app-shell-today .quest-focus-row strong {
+  color: #101923;
+}
+
+.app-shell-today .dashboard-welcome p,
+.app-shell-today .dashboard-page .mentor-copy p,
+.app-shell-today .dashboard-page .goal-card p {
+  color: rgba(46, 37, 48, 0.72);
+}
+
+.app-shell-today .dashboard-page .mentor-card {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 253, 255, 0.92)),
+    #ffffff;
+  box-shadow: 0 22px 54px rgba(61, 83, 112, 0.075);
+}
+
+.app-shell-today .dashboard-page .goal-card,
+.app-shell-today .dashboard-companion-card,
+.app-shell-today .dashboard-page .dashboard-stat-card {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 42px rgba(61, 83, 112, 0.06);
+}
+
+.app-shell-today .dashboard-page .goal-card-create {
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: none;
+}
+
+.app-shell-today .quest-pill,
+.app-shell-today .dashboard-page .mentor-actions .button-primary,
+.app-shell-today .dashboard-page .progress-bar span,
+.app-shell-today .quest-progress-line span {
+  color: #ffffff;
+  background: #5f4050;
+}
+
+.app-shell-today .dashboard-page .mentor-actions .button-secondary,
+.app-shell-today .dashboard-page .goal-card-actions .button-secondary {
+  color: #5f4050;
+  background: #fff6f9;
+}
+
+.app-shell-today .dashboard-page .goal-card-actions .button-danger {
+  color: rgba(138, 47, 47, 0.72);
+  background: rgba(255, 241, 241, 0.7);
+}
+
+.app-shell-today .quest-focus-row,
+.app-shell-today .dashboard-page .today-box {
+  background: rgba(234, 248, 255, 0.72);
+}
+
+.app-shell-today .dashboard-page .dashboard-stat-card span:not(.dashboard-stat-icon),
+.app-shell-today .dashboard-page .dashboard-stat-card small,
+.app-shell-today .dashboard-page .today-box span,
+.app-shell-today .dashboard-page .progress-row span,
+.app-shell-today .dashboard-side-title,
+.app-shell-today .dashboard-companion-card span {
+  color: rgba(95, 64, 80, 0.62);
+}
+
+.app-shell-today .dashboard-milestone-card {
+  background: #e9f8ff;
+  box-shadow: 0 16px 36px rgba(61, 83, 112, 0.055);
+}
+
+:root.dark .app-shell-today {
+  color-scheme: light;
+  color: #111827;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(173, 225, 245, 0.42), transparent 30vw),
+    linear-gradient(90deg, #eaf8ff 0 252px, #f7fbff 252px 100%);
+}
+
+:root.dark .app-shell-today .sidebar {
+  border-right-color: rgba(122, 84, 101, 0.08);
+  background: rgba(232, 247, 255, 0.86);
+}
+
+:root.dark .app-shell-today .brand-block strong,
+:root.dark .app-shell-today .nav-item-active,
+:root.dark .app-shell-today .dashboard-welcome h1,
+:root.dark .app-shell-today .dashboard-page .mentor-copy h2,
+:root.dark .app-shell-today .dashboard-page .goal-card h2,
+:root.dark .app-shell-today .dashboard-page .dashboard-stat-card strong,
+:root.dark .app-shell-today .dashboard-companion-card strong,
+:root.dark .app-shell-today .dashboard-milestone-card strong,
+:root.dark .app-shell-today .quest-focus-row strong,
+:root.dark .app-shell-today .dashboard-page .progress-row strong {
+  color: #101923;
+}
+
+:root.dark .app-shell-today .account-box span,
+:root.dark .app-shell-today .nav-item,
+:root.dark .app-shell-today .dashboard-page .dashboard-stat-card span:not(.dashboard-stat-icon),
+:root.dark .app-shell-today .dashboard-page .dashboard-stat-card small,
+:root.dark .app-shell-today .dashboard-page .today-box span,
+:root.dark .app-shell-today .dashboard-page .progress-row span,
+:root.dark .app-shell-today .dashboard-side-title,
+:root.dark .app-shell-today .dashboard-companion-card span {
+  color: rgba(95, 64, 80, 0.66);
+}
+
+:root.dark .app-shell-today .dashboard-welcome p,
+:root.dark .app-shell-today .dashboard-page .mentor-copy p,
+:root.dark .app-shell-today .dashboard-page .goal-card p {
+  color: rgba(46, 37, 48, 0.72);
+}
+
+:root.dark .app-shell-today .dashboard-page .mentor-card,
+:root.dark .app-shell-today .dashboard-page .goal-card,
+:root.dark .app-shell-today .dashboard-companion-card,
+:root.dark .app-shell-today .dashboard-page .dashboard-stat-card,
+:root.dark .app-shell-today .section-heading {
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 42px rgba(61, 83, 112, 0.06);
+}
+
+:root.dark .app-shell-today .dashboard-page .mentor-card {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(247, 253, 255, 0.92)),
+    #ffffff;
+}
+
+:root.dark .app-shell-today .quest-pill,
+:root.dark .app-shell-today .dashboard-page .mentor-actions .button-primary,
+:root.dark .app-shell-today .dashboard-page .progress-bar span,
+:root.dark .app-shell-today .quest-progress-line span {
+  color: #ffffff;
+  background: #5f4050;
+}
+
+:root.dark .app-shell-today .dashboard-page .mentor-actions .button-secondary,
+:root.dark .app-shell-today .dashboard-page .goal-card-actions .button-secondary {
+  color: #5f4050;
+  background: #fff6f9;
+}
+
+:root.dark .app-shell-today .dashboard-page .goal-card-actions .button-danger {
+  color: rgba(138, 47, 47, 0.72);
+  background: rgba(255, 241, 241, 0.7);
+}
+
+:root.dark .app-shell-today .quest-focus-row,
+:root.dark .app-shell-today .dashboard-page .today-box,
+:root.dark .app-shell-today .dashboard-page .progress-bar {
+  background: rgba(234, 248, 255, 0.72);
+}
+
+:root.dark .app-shell-today .dashboard-milestone-card {
+  background: #e9f8ff;
+  box-shadow: 0 16px 36px rgba(61, 83, 112, 0.055);
+}
+
+@media (max-width: 900px) {
+  .app-shell-today {
+    background: #f7fbff;
+  }
+
+  .content-shell-today {
+    width: 100%;
+    padding: 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell-today {
+    background: #f7fbff;
+  }
+
+  .app-shell-today .sidebar {
+    border-top-color: rgba(122, 84, 101, 0.1);
+    background: rgba(255, 255, 255, 0.92);
+  }
+
+  .app-shell-today .nav-item-active {
+    box-shadow: 0 6px 18px rgba(95, 64, 80, 0.08);
+  }
+
+  .content-shell-today {
+    padding: 14px 12px calc(var(--mobile-bottom-nav-height) + 20px + env(safe-area-inset-bottom));
+  }
+}
+
 @media (max-width: 640px) {
   .settings-card {
     align-items: flex-start;

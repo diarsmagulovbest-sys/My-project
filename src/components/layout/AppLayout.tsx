@@ -99,9 +99,10 @@ export function AppLayout({
   userEmail,
 }: AppLayoutProps) {
   const { t } = useLanguage();
+  const isTodayPage = activePage === 'today';
 
   return (
-    <main className="app-shell">
+    <main className={isTodayPage ? 'app-shell app-shell-today' : 'app-shell'}>
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
@@ -140,7 +141,9 @@ export function AppLayout({
         </div>
       </aside>
 
-      <section className="content-shell">{children}</section>
+      <section className={isTodayPage ? 'content-shell content-shell-today' : 'content-shell'}>
+        {children}
+      </section>
     </main>
   );
 }
