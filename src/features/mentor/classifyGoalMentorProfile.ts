@@ -86,6 +86,7 @@ export async function classifyGoalMentorProfile(
 
     return validatedResponse;
   } catch {
+    // Profile classification is optional personalization; callers can safely continue with general.
     return getFallbackClassification();
   }
 }

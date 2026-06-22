@@ -88,6 +88,7 @@ function getReadableAiError(value: AiFunctionResponse, responseStatus?: number) 
 
 async function getFunctionErrorMessage(error: unknown) {
   if (error instanceof FunctionsHttpError) {
+    // Supabase wraps non-2xx function responses; parse the JSON body to keep server error details.
     const value: unknown = await error.context.json().catch(() => null);
 
     if (isAiFunctionResponse(value)) {
@@ -142,6 +143,7 @@ export function parseAiJson(text: string): unknown {
   try {
     return JSON.parse(preparedText);
   } catch {
+    // Gemini sometimes adds text around JSON despite the prompt, so recover the outer object if possible.
     const firstBrace = preparedText.indexOf('{');
     const lastBrace = preparedText.lastIndexOf('}');
 

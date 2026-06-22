@@ -36,6 +36,7 @@ async function getOrCreateQuestions(goal: Goal, language: 'en' | 'ru') {
   const pendingRequest = pendingQuestionRequests.get(pendingRequestKey);
 
   if (pendingRequest) {
+    // Reuse the same AI request when React remounts/retries before questions are saved.
     return pendingRequest;
   }
 
@@ -90,6 +91,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
       });
 
     return () => {
+      // The panel is keyed by goal id, so ignore late async results after switching goals.
       isActive = false;
     };
   }, [goal, language]);

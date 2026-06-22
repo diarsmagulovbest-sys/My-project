@@ -11,6 +11,17 @@ export const mentorCharacterIds = [
 
 export type MentorCharacterId = (typeof mentorCharacterIds)[number];
 
+export const mentorCharacterEmotionIds = [
+  'neutral',
+  'worried',
+  'happy',
+  'excited',
+  'focused',
+  'playful',
+] as const;
+
+export type MentorCharacterEmotionId = (typeof mentorCharacterEmotionIds)[number];
+
 export type MentorCharacter = {
   id: MentorCharacterId;
   name: string;
@@ -19,6 +30,7 @@ export type MentorCharacter = {
   personalityInstruction: string;
   communicationStyle: string[];
   avatarPath?: string;
+  emotionAvatarPaths?: Partial<Record<MentorCharacterEmotionId, string>>;
   colorTheme?: string;
 };
 
@@ -46,6 +58,15 @@ export const mentorCharacters: Record<MentorCharacterId, MentorCharacter> = {
     personalityInstruction:
       'Communicate calmly and supportively. Reduce pressure, suggest small realistic steps, and avoid overwhelming the learner with too many details.',
     communicationStyle: ['calm', 'supportive', 'gentle', 'patient'],
+    avatarPath: '/mentor-characters/calm-plant/calm-plant-neutral.png',
+    emotionAvatarPaths: {
+      excited: '/mentor-characters/calm-plant/calm-plant-excited.png',
+      focused: '/mentor-characters/calm-plant/calm-plant-focused.png',
+      happy: '/mentor-characters/calm-plant/calm-plant-happy.png',
+      neutral: '/mentor-characters/calm-plant/calm-plant-neutral.png',
+      playful: '/mentor-characters/calm-plant/calm-plant-playful.png',
+      worried: '/mentor-characters/calm-plant/calm-plant-worried.png',
+    },
     colorTheme: 'leaf',
   },
   energetic_dragon: {
@@ -136,6 +157,13 @@ export function getMentorCharacterSystemContext(id: unknown) {
     `Personality: ${character.personalityInstruction}`,
     `Communication style: ${character.communicationStyle.join(', ')}`,
   ].join('\n');
+}
+
+export function getMentorCharacterEmotionAvatarPath(
+  id: unknown,
+  emotionId: MentorCharacterEmotionId,
+) {
+  return getMentorCharacter(id).emotionAvatarPaths?.[emotionId];
 }
 
 export function getActiveMentorCharacterId(): MentorCharacterId {

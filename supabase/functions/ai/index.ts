@@ -84,6 +84,7 @@ function getBodySummary(body: AiRequestBody | null) {
 }
 
 function sanitizeLogText(value: string) {
+  // Logs may include upstream error bodies, so redact configured keys before writing them.
   const redactedKeyText = GEMINI_API_KEYS.reduce(
     (text, key) => text.replaceAll(key.value, '[redacted]'),
     value,
@@ -233,6 +234,7 @@ Deno.serve(async (req) => {
             shouldSwitchGeminiKey(geminiResponse.status)
             && keyIndex < GEMINI_API_KEYS.length - 1
           ) {
+            // A quota-limited key should fail over quickly instead of spending all retries on it.
             writeLog('info', 'gemini_key_rate_limited', {
               attempt,
               keySlot: geminiKey.label,
@@ -246,6 +248,7 @@ Deno.serve(async (req) => {
             attempt < MAX_GEMINI_ATTEMPTS
             && shouldRetryGeminiStatus(geminiResponse.status)
           ) {
+            // Retry only transient upstream statuses; validation/auth errors should return fast.
             await wait(350 * attempt);
             continue;
           }

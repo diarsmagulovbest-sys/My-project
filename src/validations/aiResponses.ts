@@ -4,6 +4,7 @@ import { mentorProfileIds } from '../features/mentor/mentorProfiles';
 const shortText = z.string().trim().min(1).max(500);
 const longText = z.string().trim().min(1).max(3000);
 
+// These schemas are the boundary between generated AI text and data we allow into the app/database.
 export const clarifyingQuestionSchema = z
   .object({
     question: shortText,
@@ -125,6 +126,7 @@ function validateAiResponse<T>(schema: z.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
 
   if (!result.success) {
+    // Keep validation failures actionable for UI errors and debugging without exposing raw AI text.
     throw new AiResponseValidationError(formatValidationIssues(result.error));
   }
 

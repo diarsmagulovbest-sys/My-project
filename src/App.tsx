@@ -39,6 +39,7 @@ async function getSafeMentorProfileId(input: CreateGoalInput) {
 
     return classification.mentorProfileId;
   } catch {
+    // Mentor choice improves personalization, but goal creation should still work if AI fails.
     return getDefaultMentorProfile().mentorProfileId;
   }
 }
@@ -59,6 +60,7 @@ export default function App() {
   const latestGoalsLoadIdRef = useRef(0);
 
   const loadGoals = useCallback(async (userId: string) => {
+    // Only the newest load may update state, so slower auth/navigation requests cannot overwrite it.
     const loadId = latestGoalsLoadIdRef.current + 1;
     latestGoalsLoadIdRef.current = loadId;
 
@@ -174,9 +176,11 @@ export default function App() {
 
     setIsCreatingGoal(true);
     setCreateError(null);
+    // Creating a goal changes the local list directly; invalidate any older fetch still in flight.
     latestGoalsLoadIdRef.current += 1;
 
     try {
+      // Classification can run beside analysis because both depend only on the form input.
       const mentorProfileIdPromise = getSafeMentorProfileId(input);
       const aiAnalysis = await generateGoalAnalysis(input, language);
       const mentorProfileId = await mentorProfileIdPromise;

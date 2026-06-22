@@ -74,6 +74,7 @@ export function MentorChat({ goal }: MentorChatProps) {
     activeConversation: MentorConversation,
     nextMessages: MentorMessage[],
   ) => {
+    // The assistant prompt needs current roadmap/progress context, so fetch it at send time.
     const [roadmapStages, progressLogs] = await Promise.all([
       fetchRoadmap(goal.id),
       fetchRecentProgressLogs(goal.id),
@@ -126,6 +127,7 @@ export function MentorChat({ goal }: MentorChatProps) {
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
       if (userMessageWasSaved && activeConversation && messagesWithUserReply) {
+        // If only the assistant generation failed, keep the saved user message and retry that reply.
         setRetryState({
           conversation: activeConversation,
           messages: messagesWithUserReply,

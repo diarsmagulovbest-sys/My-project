@@ -1210,14 +1210,16 @@ textarea {
 }
 
 .mentor-character-meta,
-.mentor-character-theme {
+.mentor-character-theme,
+.mentor-character-emotions {
   display: grid;
   gap: 8px;
   min-width: 0;
 }
 
 .mentor-character-meta > span,
-.mentor-character-theme span {
+.mentor-character-theme span,
+.mentor-character-emotions > span {
   color: #647086;
   font-size: 12px;
   font-weight: 800;
@@ -1244,6 +1246,52 @@ textarea {
   font-weight: 800;
   line-height: 1.2;
   padding: 6px 10px;
+  overflow-wrap: anywhere;
+}
+
+.mentor-character-emotions > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.mentor-character-emotions figure {
+  display: grid;
+  gap: 5px;
+  justify-items: center;
+  min-width: 0;
+  margin: 0;
+}
+
+.mentor-character-emotion-avatar {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  max-width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid #dbe2ee;
+  border-radius: 14px;
+  color: #3156c8;
+  background: #f4f7fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.mentor-character-emotion-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.mentor-character-emotions figcaption {
+  max-width: 100%;
+  color: #647086;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
   overflow-wrap: anywhere;
 }
 
@@ -2911,7 +2959,9 @@ textarea {
 }
 
 :root.dark .mentor-character-meta > span,
-:root.dark .mentor-character-theme span {
+:root.dark .mentor-character-theme span,
+:root.dark .mentor-character-emotions > span,
+:root.dark .mentor-character-emotions figcaption {
   color: var(--app-text-muted);
 }
 
@@ -2919,6 +2969,12 @@ textarea {
 :root.dark .mentor-character-theme strong {
   color: #bfdbfe;
   background: #1a2a4e;
+}
+
+:root.dark .mentor-character-emotion-avatar {
+  border-color: var(--app-border);
+  color: #bfdbfe;
+  background: var(--app-surface-soft);
 }
 
 :root.dark .task-check {

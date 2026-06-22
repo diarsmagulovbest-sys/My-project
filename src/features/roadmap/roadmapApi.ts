@@ -136,6 +136,7 @@ function getDueDate(targetDate: string, suggestedDayOffset: number) {
   const today = new Date().toISOString().slice(0, 10);
   const dueDate = addDays(today, suggestedDayOffset);
 
+  // AI suggests offsets from today, but persisted due dates must never exceed the goal deadline.
   return dueDate > targetDate ? targetDate : dueDate;
 }
 
@@ -282,6 +283,7 @@ export async function createRoadmap(goal: Goal, roadmap: RoadmapResponse): Promi
   const { error: tasksError } = await supabase.from('tasks').insert(taskPayload);
 
   if (tasksError) {
+    // Roll back inserted stages because stages and tasks are created in separate Supabase calls.
     await supabase
       .from('roadmap_stages')
       .delete()
@@ -319,6 +321,7 @@ export async function setRoadmapTaskCompletion(
   const stagesAfterTaskUpdate = await fetchRoadmap(goalId);
   await updateStageStatuses(stagesAfterTaskUpdate);
 
+  // Fetch again after status updates so the UI receives the same stage state that is saved remotely.
   const stages = await fetchRoadmap(goalId);
   const goalProgress = getGoalProgress(stages);
   const goalStatus = await updateGoalProgress(goalId, goalProgress);

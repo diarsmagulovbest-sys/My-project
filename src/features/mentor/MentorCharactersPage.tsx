@@ -3,10 +3,12 @@ import { Button } from '../../components/common/Button';
 import { useLanguage, type AppLanguage } from '../../lib/language';
 import {
   getActiveMentorCharacterId,
+  mentorCharacterEmotionIds,
   mentorCharacterIds,
   mentorCharacters,
   setActiveMentorCharacterId,
   type MentorCharacter,
+  type MentorCharacterEmotionId,
   type MentorCharacterId,
 } from './mentorCharacters';
 
@@ -135,6 +137,7 @@ const pageCopy = {
     colorTheme: 'Theme',
     description:
       'Choose the mentor personality you like. This only saves your UI preference for now and does not change AI answers yet.',
+    emotions: 'Emotions',
     selected: 'Selected',
     select: 'Select',
     style: 'Style',
@@ -146,6 +149,7 @@ const pageCopy = {
     colorTheme: '\u0422\u0435\u043c\u0430',
     description:
       '\u0412\u044b\u0431\u0435\u0440\u0438 \u0445\u0430\u0440\u0430\u043a\u0442\u0435\u0440 \u043d\u0430\u0441\u0442\u0430\u0432\u043d\u0438\u043a\u0430. \u041f\u043e\u043a\u0430 \u044d\u0442\u043e \u0442\u043e\u043b\u044c\u043a\u043e UI-\u0432\u044b\u0431\u043e\u0440, \u043e\u043d \u0435\u0449\u0435 \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442 \u043e\u0442\u0432\u0435\u0442\u044b AI.',
+    emotions: '\u042d\u043c\u043e\u0446\u0438\u0438',
     selected: '\u0412\u044b\u0431\u0440\u0430\u043d',
     select: '\u0412\u044b\u0431\u0440\u0430\u0442\u044c',
     style: '\u0421\u0442\u0438\u043b\u044c',
@@ -153,8 +157,53 @@ const pageCopy = {
   },
 } satisfies Record<AppLanguage, Record<string, string>>;
 
+const emotionCopy: Record<AppLanguage, Record<MentorCharacterEmotionId, string>> = {
+  en: {
+    excited: 'Excited',
+    focused: 'Focused',
+    happy: 'Happy',
+    neutral: 'Neutral',
+    playful: 'Playful',
+    worried: 'Worried',
+  },
+  ru: {
+    excited: '\u0412\u043e\u043e\u0434\u0443\u0448\u0435\u0432\u043b\u0435\u043d',
+    focused: '\u0421\u043e\u0431\u0440\u0430\u043d',
+    happy: '\u0420\u0430\u0434\u043e\u0441\u0442\u043d\u044b\u0439',
+    neutral: '\u041e\u0431\u044b\u0447\u043d\u044b\u0439',
+    playful: '\u0418\u0433\u0440\u0438\u0432\u044b\u0439',
+    worried: '\u0412\u043e\u043b\u043d\u0443\u0435\u0442\u0441\u044f',
+  },
+};
+
 function getAvatarText(character: MentorCharacter, copy: MentorCharacterCopy) {
   return copy.shortName.slice(0, 2) || character.shortName.slice(0, 2);
+}
+
+type MentorCharacterImageProps = {
+  alt?: string;
+  className: string;
+  fallbackText: string;
+  src?: string;
+};
+
+function MentorCharacterImage({
+  alt = '',
+  className,
+  fallbackText,
+  src,
+}: MentorCharacterImageProps) {
+  const [hasImageError, setHasImageError] = useState(false);
+
+  return (
+    <div className={className}>
+      {src && !hasImageError ? (
+        <img src={src} alt={alt} onError={() => setHasImageError(true)} />
+      ) : (
+        <span>{fallbackText}</span>
+      )}
+    </div>
+  );
 }
 
 export function MentorCharactersPage() {
@@ -195,13 +244,11 @@ export function MentorCharactersPage() {
               key={character.id}
             >
               <div className="mentor-character-card-top">
-                <div className="mentor-character-avatar" aria-label={copy.avatar}>
-                  {character.avatarPath ? (
-                    <img src={character.avatarPath} alt="" aria-hidden="true" />
-                  ) : (
-                    <span>{getAvatarText(character, characterCopy)}</span>
-                  )}
-                </div>
+                <MentorCharacterImage
+                  className="mentor-character-avatar"
+                  fallbackText={getAvatarText(character, characterCopy)}
+                  src={character.avatarPath}
+                />
                 <div>
                   <span className="eyebrow">{characterCopy.shortName}</span>
                   <h2>{characterCopy.name}</h2>
@@ -223,6 +270,25 @@ export function MentorCharactersPage() {
                 <div className="mentor-character-theme">
                   <span>{copy.colorTheme}</span>
                   <strong>{character.colorTheme}</strong>
+                </div>
+              ) : null}
+
+              {character.emotionAvatarPaths ? (
+                <div className="mentor-character-emotions">
+                  <span>{copy.emotions}</span>
+                  <div>
+                    {mentorCharacterEmotionIds.map((emotionId) => (
+                      <figure key={emotionId}>
+                        <MentorCharacterImage
+                          alt={emotionCopy[language][emotionId]}
+                          className="mentor-character-emotion-avatar"
+                          fallbackText={emotionCopy[language][emotionId].slice(0, 2)}
+                          src={character.emotionAvatarPaths?.[emotionId]}
+                        />
+                        <figcaption>{emotionCopy[language][emotionId]}</figcaption>
+                      </figure>
+                    ))}
+                  </div>
                 </div>
               ) : null}
 

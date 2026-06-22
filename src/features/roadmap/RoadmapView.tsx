@@ -104,6 +104,7 @@ async function generateAndSaveRoadmap(
   const pendingRequest = pendingRoadmapRequests.get(pendingRequestKey);
 
   if (pendingRequest) {
+    // Prevent duplicate stages/tasks when the user retries while roadmap generation is still running.
     return pendingRequest;
   }
 
@@ -210,6 +211,7 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
 
     try {
       while (desiredTaskCompletionRef.current.has(taskId)) {
+        // Collapse rapid clicks into the latest desired state while one save loop owns this task.
         const desiredCompletion = desiredTaskCompletionRef.current.get(taskId);
 
         if (desiredCompletion === undefined) {

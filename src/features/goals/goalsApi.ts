@@ -219,6 +219,7 @@ export async function fetchGoals(userId: string): Promise<GoalSummary[]> {
   }
 
   const taskByGoalId = taskRows.reduce<Record<string, TaskPreviewRow>>((tasks, task) => {
+    // Rows are ordered by due date and sort order, so the first task becomes the dashboard preview.
     if (!tasks[task.goal_id]) {
       tasks[task.goal_id] = task;
     }
@@ -286,6 +287,7 @@ export async function createGoal(
       aiAnalysis: savedAiAnalysis,
     };
   } catch (caughtError) {
+    // Keep goal creation atomic from the user's perspective if the companion AI row fails to save.
     await supabase.from('goals').delete().eq('id', goal.id).eq('user_id', userId);
     throw caughtError;
   }
