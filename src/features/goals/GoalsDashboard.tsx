@@ -114,6 +114,7 @@ export function GoalsDashboard({
     startNextStep: language === 'ru' ? 'Начать шаг' : 'Start next step',
     todaysQuest: language === 'ru' ? 'Квест на сегодня' : "Today's Quest",
     upcomingMilestone: language === 'ru' ? 'Ближайший рубеж' : 'Upcoming milestone',
+    viewAll: language === 'ru' ? 'Все цели' : 'View all realms',
   };
 
   return (
@@ -148,10 +149,9 @@ export function GoalsDashboard({
       ) : null}
 
       {!isLoading && !error && goals.length > 0 ? (
-        <section className="dashboard-stitch-layout" aria-label={t.today}>
-          <div className="dashboard-main-column">
-            <header className="dashboard-welcome">
-              <span className="eyebrow">{t.today}</span>
+        <section className="stitch-dashboard" aria-label={t.today}>
+          <div className="stitch-main">
+            <header className="stitch-welcome">
               <h1>{language === 'ru' ? 'Добро пожаловать в GoalPath' : 'Good morning, Dreamer'}</h1>
               <p>
                 {language === 'ru'
@@ -160,150 +160,143 @@ export function GoalsDashboard({
               </p>
             </header>
 
-            <section className="mentor-home dashboard-quest-card" aria-label={questCopy.todaysQuest}>
-              <div className="mentor-card">
-                <div className="quest-pill">{questCopy.activeQuest}</div>
-                <div className="mentor-copy">
-                  <h2>{questCopy.todaysQuest}</h2>
-                  <p>{nextAction}</p>
-                  <div className="quest-focus-row">
-                    <span className="quest-focus-avatar" aria-hidden="true">
-                      {getGoalEmoji(focusGoal)}
-                    </span>
-                    <div>
-                      <strong>{focusGoal?.title ?? t.noGoal}</strong>
-                      <span>{questCopy.nextTask}</span>
-                    </div>
-                  </div>
-                  <div className="quest-progress-line" aria-hidden="true">
-                    <span style={{ width: `${focusGoal?.progress ?? averageProgress}%` }} />
-                  </div>
-                  <div className="mentor-actions">
-                    {focusGoal ? (
-                      <Button onClick={() => onOpenGoal(focusGoal.id)}>
-                        {questCopy.startNextStep}
-                      </Button>
-                    ) : (
-                      <Button onClick={onCreateClick}>{t.createGoal}</Button>
-                    )}
-                    <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
-                      {t.newGoal}
-                    </Button>
-                  </div>
+            <section className="stitch-quest" aria-label={questCopy.todaysQuest}>
+              <span className="stitch-quest-pill">{questCopy.activeQuest}</span>
+              <h2>{questCopy.todaysQuest}</h2>
+              <p>{nextAction}</p>
+
+              <div className="stitch-quest-meta">
+                <span className="stitch-quest-avatar" aria-hidden="true">
+                  {getGoalEmoji(focusGoal)}
+                </span>
+                <div>
+                  <strong>{focusGoal?.title ?? t.noGoal}</strong>
+                  <span>{questCopy.nextTask}</span>
                 </div>
+                <div className="stitch-quest-progress" aria-hidden="true">
+                  <span style={{ width: `${focusGoal?.progress ?? averageProgress}%` }} />
+                </div>
+              </div>
+
+              <div className="stitch-actions">
+                {focusGoal ? (
+                  <Button onClick={() => onOpenGoal(focusGoal.id)}>
+                    {questCopy.startNextStep}
+                  </Button>
+                ) : (
+                  <Button onClick={onCreateClick}>{t.createGoal}</Button>
+                )}
+                <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
+                  {t.newGoal}
+                </Button>
               </div>
             </section>
 
-            <div className="section-heading dashboard-goal-worlds-heading">
-              <div>
-                <span className="eyebrow">{t.myGoals}</span>
+            <section className="stitch-goals-section" aria-label={t.goals}>
+              <div className="stitch-section-header">
                 <h2>{questCopy.goalWorlds}</h2>
-              </div>
-              <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
-                {t.createGoal}
-              </Button>
-            </div>
-
-            <section className="goal-grid dashboard-goal-worlds" aria-label={t.goals}>
-              {goals.map((goal, index) => (
-                <article className={`goal-card ${getGoalAccentClass(index)}`} key={goal.id}>
-                  <div className="goal-card-top">
-                    <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status, t)}</span>
-                    <span className="date-label">
-                      {t.duePrefix} {formatDate(goal.targetDate, locale)}
-                    </span>
-                  </div>
-                  <div className="goal-title-row">
-                    <span className="goal-emoji" aria-hidden="true">
-                      {getGoalEmoji(goal)}
-                    </span>
-                    <h2>{goal.title}</h2>
-                  </div>
-                  <p>{goal.description || t.savedGoalDescription}</p>
-
-                  <div className="progress-row" aria-label={`${t.progress} ${goal.progress}%`}>
-                    <span>{t.level}</span>
-                    <strong>{goal.progress}%</strong>
-                  </div>
-                  <div className="progress-bar" aria-hidden="true">
-                    <span style={{ width: `${goal.progress}%` }} />
-                  </div>
-
-                  <div className="today-box">
-                    <span>{questCopy.nextTask}</span>
-                    <strong>
-                      {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
-                    </strong>
-                  </div>
-
-                  <div className="goal-card-actions">
-                    <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                      {t.open}
-                    </Button>
-                    {canDeleteGoals ? (
-                      <Button
-                        disabled={deletingGoalId === goal.id}
-                        onClick={() => onDeleteGoal(goal.id)}
-                        variant="danger"
-                      >
-                        {deletingGoalId === goal.id ? t.deleting : t.delete}
-                      </Button>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-
-              {canCreateGoal ? (
-                <button className="goal-card goal-card-create" onClick={onCreateClick} type="button">
-                  <span aria-hidden="true">+</span>
-                  <strong>{questCopy.createNewGoal}</strong>
+                <button disabled={!canCreateGoal} onClick={onCreateClick} type="button">
+                  {questCopy.viewAll}
                 </button>
-              ) : null}
+              </div>
+
+              <div className="stitch-goal-grid">
+                {goals.map((goal, index) => (
+                  <article className={`stitch-goal-card ${getGoalAccentClass(index)}`} key={goal.id}>
+                    <div className="stitch-goal-icon" aria-hidden="true">
+                      {getGoalEmoji(goal)}
+                    </div>
+                    <div className="stitch-goal-copy">
+                      <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status, t)}</span>
+                      <h3>{goal.title}</h3>
+                      <p>{goal.description || t.savedGoalDescription}</p>
+                    </div>
+
+                    <div className="stitch-card-progress" aria-label={`${t.progress} ${goal.progress}%`}>
+                      <div>
+                        <span>{t.progress}</span>
+                        <strong>{goal.progress}%</strong>
+                      </div>
+                      <div className="progress-bar" aria-hidden="true">
+                        <span style={{ width: `${goal.progress}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="stitch-next-task">
+                      <span>{questCopy.nextTask}</span>
+                      <strong>
+                        {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
+                      </strong>
+                    </div>
+
+                    <div className="stitch-card-actions">
+                      <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                        {t.open}
+                      </Button>
+                      {canDeleteGoals ? (
+                        <Button
+                          disabled={deletingGoalId === goal.id}
+                          onClick={() => onDeleteGoal(goal.id)}
+                          variant="danger"
+                        >
+                          {deletingGoalId === goal.id ? t.deleting : t.delete}
+                        </Button>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+
+                {canCreateGoal ? (
+                  <button className="stitch-create-card" onClick={onCreateClick} type="button">
+                    <span aria-hidden="true">+</span>
+                    <strong>{questCopy.createNewGoal}</strong>
+                  </button>
+                ) : null}
+              </div>
             </section>
           </div>
 
-          <aside className="dashboard-companion-column" aria-label={t.aiMentor}>
-            <section className="mentor-side-panel dashboard-companion-card">
-              <div className="companion-avatar" aria-hidden="true">
+          <aside className="stitch-side" aria-label={t.aiMentor}>
+            <section className="stitch-mentor-card">
+              <div className="stitch-mentor-avatar" aria-hidden="true">
                 {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
               </div>
-              <div>
-                <span>{t.aiMentor}</span>
-                <strong>{companion.name}</strong>
-              </div>
+              <strong>{companion.name}</strong>
+              <span>{t.aiMentor}</span>
               <p>{questCopy.companionQuote}</p>
             </section>
 
-            <section className="dashboard-stat-grid" aria-label={t.weeklyStats}>
-              <span className="dashboard-side-title">{questCopy.pathStatistics}</span>
-              <article className="dashboard-stat-card">
-                <span className="dashboard-stat-badge" aria-hidden="true">★</span>
+            <section className="stitch-stat-stack" aria-label={t.weeklyStats}>
+              <h2>{questCopy.pathStatistics}</h2>
+              <article className="stitch-stat-card">
+                <span className="stitch-stat-icon" aria-hidden="true">★</span>
                 <div>
                   <span>{t.activeGoals}</span>
                   <strong>{activeGoals}</strong>
                 </div>
               </article>
-              <article className="dashboard-stat-card">
-                <img className="dashboard-stat-icon" src={focusTimeIcon} alt="" aria-hidden="true" />
+              <article className="stitch-stat-card">
+                <img className="stitch-stat-icon" src={focusTimeIcon} alt="" aria-hidden="true" />
                 <div>
                   <span>{t.focusTime}</span>
                   <strong>{focusTime}</strong>
-                  <small>{t.thisWeek}</small>
                 </div>
               </article>
-              <article className="dashboard-stat-card">
-                <img className="dashboard-stat-icon" src={streakIcon} alt="" aria-hidden="true" />
+              <article className="stitch-stat-card">
+                <img className="stitch-stat-icon" src={streakIcon} alt="" aria-hidden="true" />
                 <div>
                   <span>{t.streak}</span>
                   <strong>{streakDays}</strong>
-                  <small>{streakDays === 1 ? t.dayInARow : t.daysInARow}</small>
                 </div>
               </article>
             </section>
 
-            <section className="dashboard-milestone-card" aria-label={questCopy.upcomingMilestone}>
+            <section className="stitch-milestone-card" aria-label={questCopy.upcomingMilestone}>
               <span>{questCopy.upcomingMilestone}</span>
               <strong>{focusGoal?.todayTask?.title ?? focusGoal?.title ?? t.noGoal}</strong>
+              <small>
+                {focusGoal ? `${t.duePrefix} ${formatDate(focusGoal.targetDate, locale)}` : t.noDate}
+              </small>
               <div className="progress-bar" aria-hidden="true">
                 <span style={{ width: `${focusGoal?.progress ?? averageProgress}%` }} />
               </div>
