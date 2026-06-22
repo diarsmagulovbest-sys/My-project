@@ -1,6 +1,7 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { LanguageToggle } from '../../components/settings/LanguageToggle';
+import { PaletteSelector } from '../../components/settings/PaletteSelector';
 import { ThemeToggle } from '../../components/settings/ThemeToggle';
 import { useLanguage } from '../../lib/language';
 
@@ -93,6 +94,7 @@ export function SettingsPage({
           <span>{t.goalDeletion}</span>
           <strong>{canDeleteGoals ? t.enabled : t.disabled}</strong>
         </article>
+        <PaletteSelector />
         <article className="settings-card settings-code-card">
           <label htmlFor="settings-word-box">{t.wordBox}</label>
           <div className="settings-code-control">

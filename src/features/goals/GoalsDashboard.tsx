@@ -3,6 +3,7 @@ import focusTimeIcon from '../../assets/ui/focus-time.svg';
 import streakIcon from '../../assets/ui/streak-flame.svg';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
+import { getGoalEmoji } from './goalEmoji';
 
 type GoalsDashboardProps = {
   canDeleteGoals: boolean;
@@ -194,7 +195,7 @@ export function GoalsDashboard({
           <div className="section-heading">
             <div>
               <span className="eyebrow">{t.myGoals}</span>
-              <h2>Keep going at your pace</h2>
+              <h2>{language === 'ru' ? 'Двигайся в своём темпе' : 'Keep going at your pace'}</h2>
             </div>
             <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
               {t.createGoal}
@@ -210,7 +211,12 @@ export function GoalsDashboard({
                     {t.duePrefix} {formatDate(goal.targetDate, locale)}
                   </span>
                 </div>
-                <h2>{goal.title}</h2>
+                <div className="goal-title-row">
+                  <span className="goal-emoji" aria-hidden="true">
+                    {getGoalEmoji(goal)}
+                  </span>
+                  <h2>{goal.title}</h2>
+                </div>
                 <p>{goal.description || t.savedGoalDescription}</p>
 
                 <div className="progress-row" aria-label={`${t.progress} ${goal.progress}%`}>
