@@ -110,7 +110,7 @@ export function GoalsDashboard({
     goalWorlds: language === 'ru' ? 'Миры целей' : 'Goal Worlds',
     nextTask: language === 'ru' ? 'Следующее задание' : 'Next task',
     pathStatistics: language === 'ru' ? 'Статистика пути' : 'Path statistics',
-    plantNewSeed: language === 'ru' ? 'Посадить новую цель' : 'Plant a new seed',
+    createNewGoal: language === 'ru' ? 'Создать новую цель' : 'Create new goal',
     startNextStep: language === 'ru' ? 'Начать шаг' : 'Start next step',
     todaysQuest: language === 'ru' ? 'Квест на сегодня' : "Today's Quest",
     upcomingMilestone: language === 'ru' ? 'Ближайший рубеж' : 'Upcoming milestone',
@@ -256,7 +256,7 @@ export function GoalsDashboard({
               {canCreateGoal ? (
                 <button className="goal-card goal-card-create" onClick={onCreateClick} type="button">
                   <span aria-hidden="true">+</span>
-                  <strong>{questCopy.plantNewSeed}</strong>
+                  <strong>{questCopy.createNewGoal}</strong>
                 </button>
               ) : null}
             </section>
