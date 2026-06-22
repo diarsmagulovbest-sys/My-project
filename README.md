@@ -117,3 +117,4 @@ npm run build
 ```
 
 Также проверь, что `.env` и `.env.local` не попали в git, а `GEMINI_API_KEY` хранится только в Supabase secrets.
+my-project-seven-alpha-27.vercel.app
