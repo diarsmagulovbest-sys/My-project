@@ -101,7 +101,7 @@ export function AppLayout({
   userEmail,
 }: AppLayoutProps) {
   const { t } = useLanguage();
-  const isPremiumOverviewPage = activePage === 'today' || activePage === 'goals';
+  const isPremiumOverviewPage = activePage === 'today' || activePage === 'goals' || activePage === 'detail';
 
   return (
     <main className={isPremiumOverviewPage ? 'app-shell app-shell-today' : 'app-shell'}>

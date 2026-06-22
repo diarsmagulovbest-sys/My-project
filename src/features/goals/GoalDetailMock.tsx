@@ -167,8 +167,8 @@ export function GoalDetailMock({
   }, [activeSection, goal.id]);
 
   return (
-    <div className="page-stack">
-      <header className="detail-header">
+    <div className="page-stack goal-detail-stitch">
+      <header className="detail-header goal-detail-hero">
         <div className="detail-actions">
           <Button variant="ghost" onClick={onBack}>
             {t.back}
