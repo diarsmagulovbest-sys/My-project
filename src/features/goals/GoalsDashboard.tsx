@@ -17,6 +17,7 @@ type GoalsDashboardProps = {
   onCreateClick: () => void;
   onDeleteGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
+  view: 'goals' | 'today';
 };
 
 type Text = ReturnType<typeof useLanguage>['t'];
@@ -83,6 +84,7 @@ export function GoalsDashboard({
   onCreateClick,
   onDeleteGoal,
   onOpenGoal,
+  view,
 }: GoalsDashboardProps) {
   const { language, t } = useLanguage();
   const locale = language === 'ru' ? 'ru' : 'en-US';
@@ -118,6 +120,177 @@ export function GoalsDashboard({
     upcomingMilestone: 'Upcoming milestone',
     viewAll: 'View all realms',
   };
+  const goalsCopy = {
+    activeQuests: 'Active quests',
+    averageProgress: 'Average progress',
+    createNewGoal: 'Create new goal',
+    focusTime: 'Focus time',
+    goalWorlds: 'Goal Worlds',
+    mentorNote: 'Keep each goal moving with one clear step, then open the quest when you are ready to continue.',
+    nextTask: 'Next task',
+    open: 'Open',
+    pageSubtitle: 'Track every learning world, review progress, and jump back into the next useful step.',
+    pageTitle: 'Goal Worlds',
+    totalGoals: 'Total goals',
+  };
+
+  if (view === 'goals') {
+    return (
+      <div className="page-stack dashboard-page goals-stitch-page">
+        {isGoalLimitEnabled && !canCreateGoal ? (
+          <section className="state-panel limit-panel">
+            <h2>{t.createGoalLimitReached}</h2>
+            <p>{t.createGoalLimit(maxGoals)}</p>
+          </section>
+        ) : null}
+
+        {isLoading ? (
+          <section className="state-panel" aria-live="polite">
+            <h2>{t.loadingGoals}</h2>
+            <p>{t.loadingGoalsDescription}</p>
+          </section>
+        ) : null}
+
+        {error ? (
+          <section className="state-panel state-panel-error" role="alert">
+            <h2>Could not load goals</h2>
+            <p>{error}</p>
+          </section>
+        ) : null}
+
+        {!isLoading && !error ? (
+          <section className="goals-stitch-layout" aria-label={goalsCopy.goalWorlds}>
+            <div className="goals-stitch-main">
+              <header className="goals-stitch-header">
+                <div>
+                  <span>Ongoing quests</span>
+                  <h1>{goalsCopy.pageTitle}</h1>
+                  <p>{goalsCopy.pageSubtitle}</p>
+                </div>
+                <Button disabled={!canCreateGoal} onClick={onCreateClick}>
+                  {goalsCopy.createNewGoal}
+                </Button>
+              </header>
+
+              <section className="goals-stitch-stats" aria-label="Goal stats">
+                <article>
+                  <span>{goalsCopy.totalGoals}</span>
+                  <strong>{isGoalLimitEnabled ? `${goals.length}/${maxGoals}` : goals.length}</strong>
+                </article>
+                <article>
+                  <span>{goalsCopy.activeQuests}</span>
+                  <strong>{activeGoals}</strong>
+                </article>
+                <article>
+                  <span>{goalsCopy.focusTime}</span>
+                  <strong>{focusTime}</strong>
+                </article>
+                <article>
+                  <span>{goalsCopy.averageProgress}</span>
+                  <strong>{averageProgress}%</strong>
+                </article>
+              </section>
+
+              {goals.length === 0 ? (
+                <section className="goals-stitch-empty">
+                  <h2>{t.noGoals}</h2>
+                  <p>{t.noGoalsDescription}</p>
+                  <Button onClick={onCreateClick}>{goalsCopy.createNewGoal}</Button>
+                </section>
+              ) : (
+                <section className="goals-world-board" aria-label={goalsCopy.activeQuests}>
+                  <div className="goals-board-heading">
+                    <h2>{goalsCopy.activeQuests}</h2>
+                    <span>{goals.length} realms</span>
+                  </div>
+
+                  <div className="goals-world-grid">
+                    {goals.map((goal, index) => (
+                      <article className={`goals-world-card ${getGoalAccentClass(index)}`} key={goal.id}>
+                        <div className="goals-world-top">
+                          <span className="goals-world-icon" aria-hidden="true">
+                            {getGoalEmoji(goal)}
+                          </span>
+                          <div>
+                            <span className={`status-pill status-${goal.status}`}>
+                              {getStatusLabel(goal.status, t)}
+                            </span>
+                            <h3>{goal.title}</h3>
+                          </div>
+                        </div>
+
+                        <p>{goal.description || t.savedGoalDescription}</p>
+
+                        <div className="goals-world-progress" aria-label={`${t.progress} ${goal.progress}%`}>
+                          <div>
+                            <span>{t.progress}</span>
+                            <strong>{goal.progress}%</strong>
+                          </div>
+                          <div className="progress-bar" aria-hidden="true">
+                            <span style={{ width: `${goal.progress}%` }} />
+                          </div>
+                        </div>
+
+                        <div className="goals-world-task">
+                          <span>{goalsCopy.nextTask}</span>
+                          <strong>
+                            {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
+                          </strong>
+                        </div>
+
+                        <div className="goals-world-actions">
+                          <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                            {goalsCopy.open}
+                          </Button>
+                          {canDeleteGoals ? (
+                            <Button
+                              disabled={deletingGoalId === goal.id}
+                              onClick={() => onDeleteGoal(goal.id)}
+                              variant="danger"
+                            >
+                              {deletingGoalId === goal.id ? t.deleting : t.delete}
+                            </Button>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
+
+                    {canCreateGoal ? (
+                      <button className="goals-create-card" onClick={onCreateClick} type="button">
+                        <span aria-hidden="true">+</span>
+                        <strong>{goalsCopy.createNewGoal}</strong>
+                      </button>
+                    ) : null}
+                  </div>
+                </section>
+              )}
+            </div>
+
+            <aside className="goals-stitch-side" aria-label="Goal mentor panel">
+              <section className="goals-mentor-panel">
+                <div className="stitch-mentor-avatar" aria-hidden="true">
+                  {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
+                </div>
+                <div>
+                  <strong>{companion.name}</strong>
+                  <span>AI Mentor</span>
+                </div>
+                <p>{goalsCopy.mentorNote}</p>
+              </section>
+
+              <section className="goals-tip-card">
+                <span>{goalsCopy.nextTask}</span>
+                <strong>{focusGoal?.todayTask?.title ?? focusGoal?.title ?? t.noGoal}</strong>
+                <div className="progress-bar" aria-hidden="true">
+                  <span style={{ width: `${focusGoal?.progress ?? averageProgress}%` }} />
+                </div>
+              </section>
+            </aside>
+          </section>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="page-stack dashboard-page">

@@ -101,15 +101,15 @@ export function AppLayout({
   userEmail,
 }: AppLayoutProps) {
   const { t } = useLanguage();
-  const isTodayPage = activePage === 'today';
+  const isPremiumOverviewPage = activePage === 'today' || activePage === 'goals';
 
   return (
-    <main className={isTodayPage ? 'app-shell app-shell-today' : 'app-shell'}>
+    <main className={isPremiumOverviewPage ? 'app-shell app-shell-today' : 'app-shell'}>
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
           <div>
-            <span className="eyebrow">{isTodayPage ? 'AI mentor' : t.aiMentor}</span>
+            <span className="eyebrow">{isPremiumOverviewPage ? 'AI mentor' : t.aiMentor}</span>
             <strong>GoalPath</strong>
           </div>
         </div>
@@ -129,7 +129,7 @@ export function AppLayout({
                 <span className="nav-icon" aria-hidden="true">
                   <Icon />
                 </span>
-                <span>{isTodayPage ? item.englishLabel : t[item.labelKey]}</span>
+                <span>{isPremiumOverviewPage ? item.englishLabel : t[item.labelKey]}</span>
               </button>
             );
           })}
@@ -138,12 +138,12 @@ export function AppLayout({
         <div className="account-box">
           <span>{userEmail ?? t.account}</span>
           <Button variant="ghost" onClick={onSignOut}>
-            {isTodayPage ? 'Sign out' : t.signOut}
+            {isPremiumOverviewPage ? 'Sign out' : t.signOut}
           </Button>
         </div>
       </aside>
 
-      <section className={isTodayPage ? 'content-shell content-shell-today' : 'content-shell'}>
+      <section className={isPremiumOverviewPage ? 'content-shell content-shell-today' : 'content-shell'}>
         {children}
       </section>
     </main>

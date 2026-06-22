@@ -247,6 +247,7 @@ export default function App() {
           isGoalLimitEnabled={isGoalLimitEnabled}
           isLoading={isGoalsLoading}
           maxGoals={maxGoalsPerUser}
+          view={activePage === 'goals' ? 'goals' : 'today'}
           onCreateClick={() => {
             setCreateError(null);
             setActivePage('create');
