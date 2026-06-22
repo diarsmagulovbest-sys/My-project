@@ -54,6 +54,7 @@ function MedalIcon() {
 
 const navItems: Array<{
   id: string;
+  englishLabel: string;
   labelKey:
     | 'navToday'
     | 'navGoals'
@@ -67,20 +68,21 @@ const navItems: Array<{
   Icon: ElementType;
   target: AppNavTarget;
 }> = [
-  { id: 'today', labelKey: 'navToday', Icon: HomeIcon, target: { page: 'today' } },
-  { id: 'goals', labelKey: 'navGoals', Icon: CheckCircledIcon, target: { page: 'goals' } },
-  { id: 'roadmap', labelKey: 'navRoadmap', Icon: RoadmapPathIcon, target: { page: 'roadmap' } },
-  { id: 'tasks', labelKey: 'navTasks', Icon: ListBulletIcon, target: { page: 'tasks' } },
-  { id: 'progress', labelKey: 'navProgress', Icon: BarChartIcon, target: { page: 'progress' } },
-  { id: 'mentor', labelKey: 'navMentor', Icon: MagicWandIcon, target: { page: 'mentor' } },
+  { id: 'today', englishLabel: 'Today', labelKey: 'navToday', Icon: HomeIcon, target: { page: 'today' } },
+  { id: 'goals', englishLabel: 'Goals', labelKey: 'navGoals', Icon: CheckCircledIcon, target: { page: 'goals' } },
+  { id: 'roadmap', englishLabel: 'Roadmap', labelKey: 'navRoadmap', Icon: RoadmapPathIcon, target: { page: 'roadmap' } },
+  { id: 'tasks', englishLabel: 'Tasks', labelKey: 'navTasks', Icon: ListBulletIcon, target: { page: 'tasks' } },
+  { id: 'progress', englishLabel: 'Progress', labelKey: 'navProgress', Icon: BarChartIcon, target: { page: 'progress' } },
+  { id: 'mentor', englishLabel: 'AI Mentor', labelKey: 'navMentor', Icon: MagicWandIcon, target: { page: 'mentor' } },
   {
     id: 'mentorCharacters',
+    englishLabel: 'Mentors',
     labelKey: 'navMentorCharacters',
     Icon: FaceIcon,
     target: { page: 'mentorCharacters' },
   },
-  { id: 'achievements', labelKey: 'navAchievements', Icon: MedalIcon, target: { page: 'achievements' } },
-  { id: 'settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
+  { id: 'achievements', englishLabel: 'Achievements', labelKey: 'navAchievements', Icon: MedalIcon, target: { page: 'achievements' } },
+  { id: 'settings', englishLabel: 'Settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
 ];
 
 function isActiveNavItem(item: (typeof navItems)[number], activePage: AppPage) {
@@ -107,7 +109,7 @@ export function AppLayout({
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
           <div>
-            <span className="eyebrow">{t.aiMentor}</span>
+            <span className="eyebrow">{isTodayPage ? 'AI mentor' : t.aiMentor}</span>
             <strong>GoalPath</strong>
           </div>
         </div>
@@ -127,7 +129,7 @@ export function AppLayout({
                 <span className="nav-icon" aria-hidden="true">
                   <Icon />
                 </span>
-                <span>{t[item.labelKey]}</span>
+                <span>{isTodayPage ? item.englishLabel : t[item.labelKey]}</span>
               </button>
             );
           })}
@@ -136,7 +138,7 @@ export function AppLayout({
         <div className="account-box">
           <span>{userEmail ?? t.account}</span>
           <Button variant="ghost" onClick={onSignOut}>
-            {t.signOut}
+            {isTodayPage ? 'Sign out' : t.signOut}
           </Button>
         </div>
       </aside>

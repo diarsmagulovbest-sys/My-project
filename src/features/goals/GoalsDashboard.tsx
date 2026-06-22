@@ -102,19 +102,21 @@ export function GoalsDashboard({
       : 0;
   const focusTime = formatFocusTime(getWeeklyFocusMinutes(goals));
   const questCopy = {
-    activeQuest: language === 'ru' ? 'Активный квест' : 'Active quest',
-    companionQuote:
-      language === 'ru'
-        ? 'Я помогу выбрать следующий маленький шаг. Двигайся спокойно, но уверенно.'
-        : 'I will help you choose the next small step. Keep it calm, keep it moving.',
-    goalWorlds: language === 'ru' ? 'Миры целей' : 'Goal Worlds',
-    nextTask: language === 'ru' ? 'Следующее задание' : 'Next task',
-    pathStatistics: language === 'ru' ? 'Статистика пути' : 'Path statistics',
-    createNewGoal: language === 'ru' ? 'Создать новую цель' : 'Create new goal',
-    startNextStep: language === 'ru' ? 'Начать шаг' : 'Start next step',
-    todaysQuest: language === 'ru' ? 'Квест на сегодня' : "Today's Quest",
-    upcomingMilestone: language === 'ru' ? 'Ближайший рубеж' : 'Upcoming milestone',
-    viewAll: language === 'ru' ? 'Все цели' : 'View all realms',
+    activeGoals: 'Active goals',
+    activeQuest: 'ACTIVE QUEST',
+    companionQuote: 'I will help you choose the next small step. Keep it calm, keep it moving.',
+    createNewGoal: 'Create new goal',
+    focusTime: 'Focus time',
+    goalWorlds: 'Goal Worlds',
+    nextTask: 'Next task',
+    pathStatistics: 'Path Statistics',
+    startNextStep: 'Start next step',
+    streak: 'Streak',
+    subtitle: 'The path ahead is ready for one clear step today.',
+    title: 'Good morning, Dreamer',
+    todaysQuest: "Today's Quest",
+    upcomingMilestone: 'Upcoming milestone',
+    viewAll: 'View all realms',
   };
 
   return (
@@ -152,12 +154,8 @@ export function GoalsDashboard({
         <section className="stitch-dashboard" aria-label={t.today}>
           <div className="stitch-main">
             <header className="stitch-welcome">
-              <h1>{language === 'ru' ? 'Добро пожаловать в GoalPath' : 'Good morning, Dreamer'}</h1>
-              <p>
-                {language === 'ru'
-                  ? 'Сегодня выбери один понятный шаг и продвинься в своём темпе.'
-                  : 'The path ahead is ready for one clear step today.'}
-              </p>
+              <h1>{questCopy.title}</h1>
+              <p>{questCopy.subtitle}</p>
             </header>
 
             <section className="stitch-quest" aria-label={questCopy.todaysQuest}>
@@ -181,13 +179,13 @@ export function GoalsDashboard({
               <div className="stitch-actions">
                 {focusGoal ? (
                   <Button onClick={() => onOpenGoal(focusGoal.id)}>
-                    {questCopy.startNextStep}
+                  {questCopy.startNextStep}
                   </Button>
                 ) : (
                   <Button onClick={onCreateClick}>{t.createGoal}</Button>
                 )}
                 <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
-                  {t.newGoal}
+                  New goal
                 </Button>
               </div>
             </section>
@@ -214,7 +212,7 @@ export function GoalsDashboard({
 
                     <div className="stitch-card-progress" aria-label={`${t.progress} ${goal.progress}%`}>
                       <div>
-                        <span>{t.progress}</span>
+                  <span>{t.progress}</span>
                         <strong>{goal.progress}%</strong>
                       </div>
                       <div className="progress-bar" aria-hidden="true">
@@ -262,7 +260,7 @@ export function GoalsDashboard({
                 {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
               </div>
               <strong>{companion.name}</strong>
-              <span>{t.aiMentor}</span>
+              <span>AI Mentor</span>
               <p>{questCopy.companionQuote}</p>
             </section>
 
@@ -271,21 +269,21 @@ export function GoalsDashboard({
               <article className="stitch-stat-card">
                 <span className="stitch-stat-icon" aria-hidden="true">★</span>
                 <div>
-                  <span>{t.activeGoals}</span>
+                  <span>{questCopy.activeGoals}</span>
                   <strong>{activeGoals}</strong>
                 </div>
               </article>
               <article className="stitch-stat-card">
                 <img className="stitch-stat-icon" src={focusTimeIcon} alt="" aria-hidden="true" />
                 <div>
-                  <span>{t.focusTime}</span>
+                  <span>{questCopy.focusTime}</span>
                   <strong>{focusTime}</strong>
                 </div>
               </article>
               <article className="stitch-stat-card">
                 <img className="stitch-stat-icon" src={streakIcon} alt="" aria-hidden="true" />
                 <div>
-                  <span>{t.streak}</span>
+                  <span>{questCopy.streak}</span>
                   <strong>{streakDays}</strong>
                 </div>
               </article>
