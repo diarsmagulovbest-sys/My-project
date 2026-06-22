@@ -45,8 +45,8 @@ export function AchievementsPage({ goals, onCreateGoal, onOpenGoals }: Achieveme
   ];
 
   return (
-    <div className="page-stack">
-      <section className="feature-panel">
+    <div className="page-stack achievements-stitch-page">
+      <section className="feature-panel achievements-stitch-hero">
         <span className="eyebrow">{t.achievements}</span>
         <h1>{t.yourProgressBadges}</h1>
         <p>{t.yourProgressBadgesDescription}</p>

@@ -136,12 +136,12 @@ const pageCopy = {
     avatar: 'Avatar placeholder',
     colorTheme: 'Theme',
     description:
-      'Choose the mentor personality you like. This only saves your UI preference for now and does not change AI answers yet.',
+      'Your journey is personal. Select the mentor whose energy matches the path you want to walk today.',
     emotions: 'Emotions',
     selected: 'Selected',
     select: 'Select',
     style: 'Style',
-    title: 'Mentor Characters',
+    title: 'Choose your Companion',
   },
   ru: {
     active: '\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0439 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u0436',
@@ -219,8 +219,8 @@ export function MentorCharactersPage() {
   };
 
   return (
-    <div className="page-stack">
-      <header className="page-header page-header-compact">
+    <div className="page-stack mentors-stitch-page">
+      <header className="mentors-stitch-header">
         <div>
           <span className="eyebrow">{copy.active}</span>
           <h1>{copy.title}</h1>
@@ -228,7 +228,7 @@ export function MentorCharactersPage() {
         </div>
       </header>
 
-      <section className="mentor-character-grid" aria-label={copy.title}>
+      <section className="mentor-character-grid mentors-stitch-grid" aria-label={copy.title}>
         {mentorCharacterIds.map((characterId) => {
           const character = mentorCharacters[characterId];
           const characterCopy = mentorCharacterCopy[language][characterId];
@@ -243,24 +243,28 @@ export function MentorCharactersPage() {
               }
               key={character.id}
             >
+              <MentorCharacterImage
+                alt={characterCopy.name}
+                className="mentor-character-avatar"
+                fallbackText={getAvatarText(character, characterCopy)}
+                src={character.avatarPath}
+              />
+
               <div className="mentor-character-card-top">
-                <MentorCharacterImage
-                  className="mentor-character-avatar"
-                  fallbackText={getAvatarText(character, characterCopy)}
-                  src={character.avatarPath}
-                />
-                <div>
-                  <span className="eyebrow">{characterCopy.shortName}</span>
-                  <h2>{characterCopy.name}</h2>
-                </div>
+                <span className="mentor-character-badge">{characterCopy.styles[0]}</span>
+                {isSelected ? <span className="mentor-character-selected-pill">{copy.selected}</span> : null}
               </div>
 
-              <p>{characterCopy.description}</p>
+              <div className="mentor-character-copy">
+                <span className="eyebrow">{characterCopy.shortName}</span>
+                <h2>{characterCopy.name}</h2>
+                <p>{characterCopy.description}</p>
+              </div>
 
               <div className="mentor-character-meta">
                 <span>{copy.style}</span>
                 <div className="mentor-character-tags">
-                  {characterCopy.styles.map((style) => (
+                  {characterCopy.styles.slice(0, 4).map((style) => (
                     <small key={style}>{style}</small>
                   ))}
                 </div>
@@ -277,7 +281,7 @@ export function MentorCharactersPage() {
                 <div className="mentor-character-emotions">
                   <span>{copy.emotions}</span>
                   <div>
-                    {mentorCharacterEmotionIds.map((emotionId) => (
+                    {mentorCharacterEmotionIds.slice(0, 4).map((emotionId) => (
                       <figure key={emotionId}>
                         <MentorCharacterImage
                           alt={emotionCopy[language][emotionId]}

@@ -6216,3 +6216,572 @@ img.stitch-stat-icon {
     font-size: 32px;
   }
 }
+
+.app-shell-today .button-primary,
+.app-shell-today .settings-code-enter {
+  border-color: transparent;
+  background: #865a6a;
+  color: #ffffff;
+  box-shadow: 0 14px 30px rgba(134, 90, 106, 0.2);
+}
+
+.app-shell-today .button-primary:not(:disabled):hover,
+.app-shell-today .settings-code-enter:hover,
+.app-shell-today .settings-code-enter:focus-visible {
+  background: #5f4050;
+}
+
+.app-shell-today .button-secondary,
+.app-shell-today .button-ghost {
+  border-color: rgba(134, 90, 106, 0.14);
+  background: rgba(255, 255, 255, 0.74);
+  color: #5f4050;
+}
+
+.app-shell-today .button-danger {
+  border-color: rgba(155, 81, 97, 0.16);
+  background: rgba(255, 245, 248, 0.86);
+  color: #9b5161;
+}
+
+.app-shell-today .status-active,
+.app-shell-today .form-success,
+.app-shell-today .inline-state-ready {
+  border-color: rgba(134, 90, 106, 0.12);
+  background: #fff5f8;
+  color: #5f4050;
+}
+
+:root.dark .app-shell-today,
+:root.dark .app-shell-today .sidebar {
+  background:
+    linear-gradient(90deg, #eaf8ff 0 252px, transparent 252px),
+    radial-gradient(circle at 76% 0%, rgba(247, 233, 239, 0.62), transparent 24vw),
+    #f7fbff;
+}
+
+:root.dark .app-shell-today .sidebar {
+  background: #eaf8ff;
+}
+
+:root.dark .app-shell-today .nav-item,
+:root.dark .app-shell-today .account-box span {
+  color: rgba(48, 52, 60, 0.68);
+}
+
+:root.dark .app-shell-today .nav-item-active,
+:root.dark .app-shell-today .brand-block strong {
+  color: #5f4050;
+}
+
+.app-shell-today .page-header,
+.settings-stitch-header,
+.mentors-stitch-header {
+  max-width: 980px;
+}
+
+.app-shell-today .page-header h1,
+.settings-stitch-header h1,
+.mentors-stitch-header h1,
+.achievements-stitch-hero h1 {
+  margin: 0;
+  color: #5f4050;
+  font-size: clamp(38px, 4vw, 54px);
+  line-height: 1.02;
+}
+
+.app-shell-today .page-header p,
+.settings-stitch-header p,
+.mentors-stitch-header p,
+.achievements-stitch-hero p {
+  max-width: 720px;
+  color: rgba(48, 52, 60, 0.66);
+  font-size: 18px;
+}
+
+.settings-stitch-page,
+.mentors-stitch-page,
+.achievements-stitch-page,
+.create-goal-stitch-page {
+  width: min(100%, 1200px);
+  margin: 0 auto;
+  gap: 28px;
+}
+
+.settings-stitch-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  min-width: 0;
+}
+
+.settings-stitch-card,
+.settings-stitch-page .settings-card,
+.achievements-stitch-page .feature-panel,
+.achievements-stitch-page .metric-card,
+.achievements-stitch-page .achievement-card,
+.create-goal-stitch-page .form-panel {
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 70px rgba(95, 64, 80, 0.08);
+}
+
+.settings-stitch-card,
+.settings-stitch-page .settings-card {
+  display: grid;
+  align-content: start;
+  gap: 22px;
+  min-width: 0;
+  padding: 30px;
+}
+
+.settings-stitch-card-tall {
+  min-height: 300px;
+}
+
+.settings-stitch-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.settings-stitch-card-heading span:not(.settings-stitch-icon),
+.settings-stitch-list span,
+.settings-stitch-toggle-line span,
+.settings-stitch-page .settings-card span,
+.settings-code-card label {
+  color: rgba(95, 64, 80, 0.62);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-stitch-card-heading h2,
+.settings-stitch-list strong,
+.settings-stitch-page .settings-card strong {
+  margin: 4px 0 0;
+  color: #5f4050;
+  font-size: 24px;
+  line-height: 1.18;
+}
+
+.settings-stitch-icon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 999px;
+  background: #fff5f8;
+  color: #865a6a;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.settings-stitch-list {
+  display: grid;
+  gap: 14px;
+  margin-top: auto;
+}
+
+.settings-stitch-list div,
+.settings-stitch-toggle-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  border-radius: 999px;
+  background: #f7fbff;
+  padding: 16px 18px;
+}
+
+.settings-stitch-toggle-line > span {
+  color: #18202c;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.settings-stitch-mentor-card {
+  grid-template-columns: 120px minmax(0, 1fr);
+  align-items: center;
+  background:
+    radial-gradient(circle at 18% 60%, rgba(247, 233, 239, 0.9), transparent 32%),
+    rgba(255, 255, 255, 0.9);
+}
+
+.settings-stitch-orb {
+  display: grid;
+  width: 112px;
+  height: 112px;
+  place-items: center;
+  border: 8px solid #ffffff;
+  border-radius: 999px;
+  background: radial-gradient(circle at 34% 28%, #f7e9ef, #865a6a 74%);
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 900;
+  box-shadow: 0 18px 44px rgba(95, 64, 80, 0.16);
+}
+
+.settings-stitch-mentor-card h2,
+.settings-stitch-mentor-card p {
+  margin: 0;
+}
+
+.settings-stitch-mentor-card p {
+  margin-top: 8px;
+  color: rgba(48, 52, 60, 0.64);
+  line-height: 1.55;
+}
+
+.settings-stitch-page .settings-palette-card {
+  min-height: 230px;
+}
+
+.settings-stitch-page .palette-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.settings-stitch-page .palette-option {
+  border-color: rgba(134, 90, 106, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.settings-stitch-page .palette-option-selected {
+  box-shadow: 0 0 0 3px rgba(134, 90, 106, 0.1);
+}
+
+.settings-stitch-page .settings-code-card {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.settings-stitch-page .settings-code-input {
+  border-color: rgba(134, 90, 106, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.mentors-stitch-page {
+  position: relative;
+}
+
+.mentors-stitch-header {
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mentors-stitch-header h1 {
+  color: #0c1520;
+}
+
+.mentors-stitch-header p {
+  margin-inline: auto;
+}
+
+.mentors-stitch-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.mentors-stitch-grid .mentor-character-card {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 36px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 26px 74px rgba(95, 64, 80, 0.08);
+}
+
+.mentors-stitch-grid .mentor-character-card-selected {
+  border-color: rgba(134, 90, 106, 0.46);
+  box-shadow:
+    0 26px 74px rgba(95, 64, 80, 0.1),
+    inset 0 0 0 2px rgba(134, 90, 106, 0.08);
+}
+
+.mentors-stitch-grid .mentor-character-avatar {
+  width: min(100%, 210px);
+  height: 210px;
+  margin: 0 auto 6px;
+  border-radius: 0;
+  background: linear-gradient(135deg, #eaf8ff, #fff5f8);
+  color: #865a6a;
+  font-size: 34px;
+}
+
+.mentors-stitch-grid .mentor-character-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+
+.mentor-character-card-top {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mentor-character-badge,
+.mentor-character-selected-pill,
+.mentor-character-tags small,
+.mentor-character-theme strong {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  background: #fff5f8;
+  color: #865a6a;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 12px;
+}
+
+.mentor-character-selected-pill {
+  background: #eaf8ff;
+  color: #1c6378;
+}
+
+.mentor-character-copy h2 {
+  margin: 0;
+  color: #865a6a;
+  font-size: 32px;
+}
+
+.mentor-character-copy p {
+  max-width: 280px;
+  margin: 10px auto 0;
+  color: rgba(48, 52, 60, 0.72);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.mentors-stitch-grid .mentor-character-meta,
+.mentors-stitch-grid .mentor-character-theme,
+.mentors-stitch-grid .mentor-character-emotions {
+  align-items: center;
+  text-align: center;
+}
+
+.mentors-stitch-grid .mentor-character-tags,
+.mentors-stitch-grid .mentor-character-emotions > div {
+  justify-content: center;
+}
+
+.mentors-stitch-grid .button {
+  width: 100%;
+  min-height: 58px;
+  margin-top: auto;
+  border-radius: 999px;
+  font-size: 16px;
+}
+
+.roadmap-stitch-view,
+.app-shell-today .roadmap-panel,
+.app-shell-today .roadmap-grid {
+  width: 100%;
+}
+
+.app-shell-today .roadmap-panel {
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 24px 70px rgba(95, 64, 80, 0.08);
+}
+
+.app-shell-today .roadmap-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 26px;
+  max-width: 820px;
+  margin: 0 auto;
+  padding-left: 54px;
+}
+
+.app-shell-today .roadmap-grid::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 22px;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(#d6eef8, #865a6a, #d6eef8);
+  content: '';
+}
+
+.app-shell-today .stage-panel {
+  position: relative;
+  border: 1px solid rgba(134, 90, 106, 0.16);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 28px;
+  box-shadow: 0 22px 62px rgba(95, 64, 80, 0.08);
+}
+
+.app-shell-today .stage-panel::before {
+  position: absolute;
+  top: 32px;
+  left: -70px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 6px solid #ffffff;
+  border-radius: 999px;
+  background: #d6eef8;
+  color: #1c6378;
+  box-shadow: 0 12px 30px rgba(38, 55, 92, 0.12);
+  content: '';
+}
+
+.app-shell-today .stage-panel-active {
+  border-color: rgba(134, 90, 106, 0.5);
+}
+
+.app-shell-today .stage-panel-completed::before {
+  background: #865a6a;
+}
+
+.app-shell-today .stage-heading strong {
+  color: #0c1520;
+  font-size: 28px;
+}
+
+.app-shell-today .stage-heading span,
+.app-shell-today .criteria-list li,
+.app-shell-today .task-row small {
+  color: rgba(95, 64, 80, 0.62);
+}
+
+.app-shell-today .criteria-list li {
+  background: #fff5f8;
+}
+
+.app-shell-today .task-row {
+  border-color: rgba(134, 90, 106, 0.1);
+  border-radius: 18px;
+  background: #f7fbff;
+}
+
+.app-shell-today .task-check {
+  border-color: rgba(134, 90, 106, 0.34);
+}
+
+.app-shell-today .task-check:hover:not(:disabled),
+.app-shell-today .task-check:focus-visible {
+  border-color: #865a6a;
+  box-shadow: 0 0 0 4px rgba(134, 90, 106, 0.14);
+}
+
+.app-shell-today .task-check.task-done {
+  border-color: #865a6a;
+  background: #865a6a;
+}
+
+.achievements-stitch-page .feature-panel {
+  padding: 34px;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(247, 233, 239, 0.92), transparent 26%),
+    rgba(255, 255, 255, 0.9);
+}
+
+.achievements-stitch-page .metric-grid,
+.achievements-stitch-page .achievement-grid {
+  gap: 20px;
+}
+
+.achievements-stitch-page .metric-card,
+.achievements-stitch-page .achievement-card {
+  padding: 24px;
+}
+
+.achievements-stitch-page .metric-card strong {
+  color: #5f4050;
+}
+
+.achievements-stitch-page .achievement-card-unlocked {
+  border-color: rgba(134, 90, 106, 0.24);
+  background: linear-gradient(135deg, #ffffff, #fff5f8);
+}
+
+.create-goal-stitch-page {
+  width: min(100%, 880px);
+}
+
+.create-goal-stitch-page .form-panel {
+  padding: 32px;
+}
+
+.create-goal-stitch-page .form-field input,
+.create-goal-stitch-page .form-field textarea,
+.create-goal-stitch-page .calendar-trigger {
+  border-color: rgba(134, 90, 106, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.create-goal-stitch-page .segment-active {
+  background: #865a6a;
+  color: #ffffff;
+}
+
+@media (max-width: 1180px) {
+  .mentors-stitch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .settings-stitch-grid,
+  .mentors-stitch-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-stitch-card-tall {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .settings-stitch-card,
+  .settings-stitch-page .settings-card,
+  .achievements-stitch-page .feature-panel,
+  .achievements-stitch-page .metric-card,
+  .achievements-stitch-page .achievement-card,
+  .create-goal-stitch-page .form-panel {
+    border-radius: 24px;
+    padding: 22px;
+  }
+
+  .settings-stitch-mentor-card {
+    grid-template-columns: 1fr;
+  }
+
+  .app-shell-today .roadmap-grid {
+    padding-left: 42px;
+  }
+
+  .app-shell-today .stage-panel::before {
+    left: -58px;
+  }
+
+  .mentors-stitch-grid .mentor-character-avatar {
+    height: 180px;
+  }
+}

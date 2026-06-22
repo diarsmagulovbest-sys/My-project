@@ -250,7 +250,7 @@ export function RoadmapView({ goal, onGoalProgressChange }: RoadmapViewProps) {
 
   if (isLoading) {
     return (
-      <section className="roadmap-panel">
+      <section className="roadmap-panel roadmap-stitch-view">
         <div className="inline-state">
           <strong>{t.checkingRoadmap}</strong>
           <p>{t.loadingSavedStages}</p>

@@ -66,7 +66,7 @@ export function CreateGoalForm({
   };
 
   return (
-    <div className="page-stack">
+    <div className="page-stack create-goal-stitch-page">
       <header className="page-header page-header-compact">
         <div>
           <span className="eyebrow">{t.newGoal}</span>

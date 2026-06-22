@@ -101,15 +101,14 @@ export function AppLayout({
   userEmail,
 }: AppLayoutProps) {
   const { t } = useLanguage();
-  const isPremiumOverviewPage = activePage === 'today' || activePage === 'goals' || activePage === 'detail';
 
   return (
-    <main className={isPremiumOverviewPage ? 'app-shell app-shell-today' : 'app-shell'}>
+    <main className="app-shell app-shell-today">
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
           <div>
-            <span className="eyebrow">{isPremiumOverviewPage ? 'AI mentor' : t.aiMentor}</span>
+            <span className="eyebrow">AI mentor</span>
             <strong>GoalPath</strong>
           </div>
         </div>
@@ -129,7 +128,7 @@ export function AppLayout({
                 <span className="nav-icon" aria-hidden="true">
                   <Icon />
                 </span>
-                <span>{isPremiumOverviewPage ? item.englishLabel : t[item.labelKey]}</span>
+                <span>{item.englishLabel}</span>
               </button>
             );
           })}
@@ -138,14 +137,12 @@ export function AppLayout({
         <div className="account-box">
           <span>{userEmail ?? t.account}</span>
           <Button variant="ghost" onClick={onSignOut}>
-            {isPremiumOverviewPage ? 'Sign out' : t.signOut}
+            Sign out
           </Button>
         </div>
       </aside>
 
-      <section className={isPremiumOverviewPage ? 'content-shell content-shell-today' : 'content-shell'}>
-        {children}
-      </section>
+      <section className="content-shell content-shell-today">{children}</section>
     </main>
   );
 }
