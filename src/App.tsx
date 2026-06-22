@@ -11,6 +11,7 @@ import { goalLimitsConfig } from './features/goals/goalLimits';
 import { createGoal, deleteGoal, fetchGoals } from './features/goals/goalsApi';
 import { GoalsDashboard } from './features/goals/GoalsDashboard';
 import { classifyGoalMentorProfile } from './features/mentor/classifyGoalMentorProfile';
+import { MentorCharactersPage } from './features/mentor/MentorCharactersPage';
 import { getDefaultMentorProfile } from './features/mentor/mentorProfiles';
 import { AchievementsPage } from './features/navigation/AchievementsPage';
 import { SecretPage } from './features/navigation/SecretPage';
@@ -323,6 +324,8 @@ export default function App() {
           onOpenGoals={() => setActivePage('goals')}
         />
       ) : null}
+
+      {activePage === 'mentorCharacters' ? <MentorCharactersPage /> : null}
 
       {activePage === 'settings' ? (
         <SettingsPage

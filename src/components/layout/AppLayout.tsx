@@ -2,6 +2,7 @@ import type { ElementType, ReactNode } from 'react';
 import {
   BarChartIcon,
   CheckCircledIcon,
+  FaceIcon,
   GearIcon,
   HomeIcon,
   ListBulletIcon,
@@ -60,6 +61,7 @@ const navItems: Array<{
     | 'navTasks'
     | 'navProgress'
     | 'navMentor'
+    | 'navMentorCharacters'
     | 'navAchievements'
     | 'navSettings';
   Icon: ElementType;
@@ -71,6 +73,12 @@ const navItems: Array<{
   { id: 'tasks', labelKey: 'navTasks', Icon: ListBulletIcon, target: { page: 'tasks' } },
   { id: 'progress', labelKey: 'navProgress', Icon: BarChartIcon, target: { page: 'progress' } },
   { id: 'mentor', labelKey: 'navMentor', Icon: MagicWandIcon, target: { page: 'mentor' } },
+  {
+    id: 'mentorCharacters',
+    labelKey: 'navMentorCharacters',
+    Icon: FaceIcon,
+    target: { page: 'mentorCharacters' },
+  },
   { id: 'achievements', labelKey: 'navAchievements', Icon: MedalIcon, target: { page: 'achievements' } },
   { id: 'settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
 ];

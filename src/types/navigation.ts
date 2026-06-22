@@ -5,6 +5,7 @@ export type SidebarPage =
   | 'tasks'
   | 'progress'
   | 'mentor'
+  | 'mentorCharacters'
   | 'achievements'
   | 'settings';
 

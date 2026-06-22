@@ -519,11 +519,14 @@ Done:
 
 ## Mentor Characters
 
-Status: Stage 1 completed.
+Status: Stage 2 completed.
 
 Done:
 
 - added Mentor Character TypeScript ids and structure;
 - added the first character list as code constants;
 - added helper functions for default character, id validation, character lookup, and future system prompt context;
-- did not connect characters to UI, AI, goals, Supabase, migrations, or navigation yet.
+- added localStorage helpers for the active character UI preference;
+- added a Mentor Characters page with cards, selected state, and character selection;
+- added a Mentors navigation item;
+- did not connect characters to AI, goals, Supabase, migrations, or goal creation yet.

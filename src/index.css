@@ -1069,6 +1069,7 @@ textarea {
 .stat-tile,
 .detail-summary div,
 .goal-card,
+.mentor-character-card,
 .mentor-profile-card,
 .form-panel,
 .state-panel,
@@ -1120,7 +1121,15 @@ textarea {
   gap: 16px;
 }
 
+.mentor-character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
 .goal-card,
+.mentor-character-card,
 .mentor-profile-card,
 .stage-panel,
 .state-panel,
@@ -1133,6 +1142,109 @@ textarea {
 .history-panel,
 .form-panel {
   padding: 22px;
+}
+
+.mentor-character-card {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.mentor-character-card-selected {
+  border-color: #4169e1;
+  box-shadow:
+    0 18px 54px rgba(27, 39, 66, 0.07),
+    0 0 0 3px rgba(65, 105, 225, 0.14);
+}
+
+.mentor-character-card-top {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.mentor-character-card-top > div:last-child {
+  min-width: 0;
+}
+
+.mentor-character-card h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.mentor-character-card p {
+  margin: 0;
+  color: #647086;
+  font-size: 15px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.mentor-character-avatar {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  overflow: hidden;
+  border-radius: 16px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #4169e1, #19a7ce);
+  box-shadow: 0 14px 30px rgba(65, 105, 225, 0.2);
+}
+
+.mentor-character-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mentor-character-avatar span {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.mentor-character-meta,
+.mentor-character-theme {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mentor-character-meta > span,
+.mentor-character-theme span {
+  color: #647086;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.mentor-character-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mentor-character-tags small,
+.mentor-character-theme strong {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 30px;
+  align-items: center;
+  border-radius: 999px;
+  color: #3156c8;
+  background: #eef3ff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 6px 10px;
+  overflow-wrap: anywhere;
 }
 
 .form-panel-compact {
@@ -2373,6 +2485,7 @@ textarea {
 
   .goal-grid,
   .roadmap-grid,
+  .mentor-character-grid,
   .ai-analysis-grid,
   .ai-analysis-columns,
   .dashboard-stat-grid,
@@ -2394,6 +2507,7 @@ textarea {
   .auth-panel,
   .form-panel,
 .goal-card,
+.mentor-character-card,
 .stage-panel,
 .state-panel,
 .mentor-profile-card,
@@ -2543,6 +2657,7 @@ textarea {
 :root.dark .section-heading h2,
 :root.dark .page-header h1,
 :root.dark .detail-header h1,
+:root.dark .mentor-character-card h2,
 :root.dark .mentor-profile-card strong,
 :root.dark .task-focus h2,
 :root.dark .ai-analysis-panel h2,
@@ -2572,6 +2687,7 @@ textarea {
 :root.dark .mentor-copy p,
 :root.dark .page-header p,
 :root.dark .detail-header p,
+:root.dark .mentor-character-card p,
 :root.dark .mentor-profile-card p,
 :root.dark .task-focus p,
 :root.dark .ai-analysis-panel p,
@@ -2603,6 +2719,7 @@ textarea {
 :root.dark .section-heading,
 :root.dark .stat-tile,
 :root.dark .detail-summary div,
+:root.dark .mentor-character-card,
 :root.dark .mentor-profile-card,
 :root.dark .goal-card,
 :root.dark .form-panel,
@@ -2782,6 +2899,24 @@ textarea {
 }
 
 :root.dark .criteria-list li {
+  color: #bfdbfe;
+  background: #1a2a4e;
+}
+
+:root.dark .mentor-character-card-selected {
+  border-color: var(--app-brand);
+  box-shadow:
+    0 18px 54px var(--app-shadow),
+    0 0 0 3px rgba(65, 105, 225, 0.24);
+}
+
+:root.dark .mentor-character-meta > span,
+:root.dark .mentor-character-theme span {
+  color: var(--app-text-muted);
+}
+
+:root.dark .mentor-character-tags small,
+:root.dark .mentor-character-theme strong {
   color: #bfdbfe;
   background: #1a2a4e;
 }

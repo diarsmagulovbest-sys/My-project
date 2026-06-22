@@ -23,6 +23,7 @@ export type MentorCharacter = {
 };
 
 const defaultMentorCharacterId: MentorCharacterId = 'calm_plant';
+const activeMentorCharacterStorageKey = 'active-mentor-character-id';
 
 export const mentorCharacters: Record<MentorCharacterId, MentorCharacter> = {
   strict_robot: {
@@ -135,4 +136,22 @@ export function getMentorCharacterSystemContext(id: unknown) {
     `Personality: ${character.personalityInstruction}`,
     `Communication style: ${character.communicationStyle.join(', ')}`,
   ].join('\n');
+}
+
+export function getActiveMentorCharacterId(): MentorCharacterId {
+  try {
+    const savedId = localStorage.getItem(activeMentorCharacterStorageKey);
+
+    return isMentorCharacterId(savedId) ? savedId : getDefaultMentorCharacter().id;
+  } catch {
+    return getDefaultMentorCharacter().id;
+  }
+}
+
+export function setActiveMentorCharacterId(id: MentorCharacterId) {
+  try {
+    localStorage.setItem(activeMentorCharacterStorageKey, id);
+  } catch {
+    // The selected character is a UI preference, so failing to persist it is non-blocking.
+  }
 }
