@@ -17,11 +17,9 @@ export function LanguageToggle() {
       role="switch"
       type="button"
     >
-      <span className="language-flag language-flag-us" aria-hidden="true" />
       <span className="language-toggle-thumb" aria-hidden="true">
         <span className={isRussian ? 'language-flag language-flag-ru' : 'language-flag language-flag-us'} />
       </span>
-      <span className="language-flag language-flag-ru" aria-hidden="true" />
     </button>
   );
 }

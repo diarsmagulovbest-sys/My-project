@@ -71,14 +71,8 @@ export function AnimatedThemeToggler({ isDark, onThemeChange }: AnimatedThemeTog
       role="switch"
       type="button"
     >
-      <span className="theme-toggle-icon theme-toggle-icon-light" aria-hidden="true">
-        <SunIcon />
-      </span>
       <span className="theme-toggle-thumb" aria-hidden="true">
         {isDark ? <MoonIcon /> : <SunIcon />}
-      </span>
-      <span className="theme-toggle-icon theme-toggle-icon-dark" aria-hidden="true">
-        <MoonIcon />
       </span>
     </button>
   );
