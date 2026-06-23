@@ -176,9 +176,7 @@ function MentorCharacterImage({
         <img src={src} alt={alt} onError={() => setHasImageError(true)} />
       ) : (
         <span className="mentor-avatar-mark" aria-label={fallbackText}>
-          <i />
-          <i />
-          <i />
+          {fallbackText}
         </span>
       )}
     </div>

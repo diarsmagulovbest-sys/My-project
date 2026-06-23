@@ -1022,10 +1022,43 @@ textarea {
     0 8px 18px rgba(84, 101, 128, 0.1);
 }
 
+.emoji-token {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--app-brand-strong);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--app-brand-rgb), 0.12),
+    0 8px 18px rgba(84, 101, 128, 0.1);
+}
+
+.emoji-token > span {
+  display: grid;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  place-items: center;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.58);
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+.emoji-token-blue {
+  background: var(--app-sky);
+  color: var(--app-sky-strong);
+}
+
+.emoji-token-pink {
+  background: var(--accent-soft);
+  color: var(--app-brand-strong);
+}
+
 .stitch-quest-avatar {
   width: 40px;
   height: 40px;
-  font-size: 13px;
+  font-size: 19px;
 }
 
 .stitch-quest-avatar > span,
@@ -1147,7 +1180,7 @@ textarea {
 .goals-world-icon {
   width: 58px;
   height: 58px;
-  font-size: 15px;
+  font-size: 26px;
 }
 
 .goal-card-accent-2 .stitch-goal-icon,
@@ -1319,7 +1352,16 @@ textarea {
 .stitch-stat-icon {
   width: 52px;
   height: 52px;
+  flex: 0 0 52px;
+  font-size: 22px;
   object-fit: contain;
+}
+
+.milestone-card-heading {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
 }
 
 .stitch-stat-card span:not(.stitch-stat-icon) {
@@ -1351,9 +1393,10 @@ textarea {
 }
 
 .stitch-milestone-card small {
+  display: block;
+  margin-top: 4px;
   color: var(--app-brand-strong);
   font-weight: 800;
-  text-align: right;
 }
 
 .goals-stitch-stats,
@@ -2534,7 +2577,7 @@ textarea {
   place-items: center;
   border-radius: 999px;
   background: #ffffff;
-  color: var(--app-brand-strong);
+  color: var(--accent);
   transition: transform 160ms ease;
 }
 
@@ -2630,7 +2673,17 @@ textarea {
 
 :root.dark .button-ghost,
 :root.dark .button-secondary {
+  color: var(--app-brand-strong);
   background: rgba(236, 244, 255, 0.08);
+}
+
+:root.dark .button-primary:hover:not(:disabled),
+:root.dark .button-primary:focus-visible,
+:root.dark .auth-submit:hover:not(:disabled),
+:root.dark .auth-submit:focus-visible,
+:root.dark .settings-code-enter:hover,
+:root.dark .settings-code-enter:focus-visible {
+  background: var(--accent);
 }
 
 :root.dark .progress-bar,
@@ -2647,6 +2700,19 @@ textarea {
 
 :root.dark .palette-option-selected {
   background: rgba(var(--app-brand-rgb), 0.2);
+}
+
+:root.dark .calendar-picker,
+:root.dark .plan-adaptation-result li {
+  border-color: var(--app-border);
+  background: var(--app-control-bg);
+}
+
+:root.dark .emoji-token > span,
+:root.dark .stitch-quest-avatar > span,
+:root.dark .stitch-goal-icon > span,
+:root.dark .goals-world-icon > span {
+  background: rgba(236, 244, 255, 0.12);
 }
 
 .mentors-stitch-page {
@@ -2698,14 +2764,14 @@ textarea {
 
 .mentor-character-avatar {
   display: grid;
-  width: min(100%, 204px);
+  width: min(100%, 152px);
   aspect-ratio: 1;
   height: auto;
   place-items: center;
   margin: 0 auto;
   overflow: hidden;
   border: 8px solid rgba(255, 255, 255, 0.82);
-  border-radius: 18px;
+  border-radius: 999px;
   background: var(--app-surface-soft);
   color: var(--app-brand-strong);
   font-size: 28px;
@@ -2716,37 +2782,16 @@ textarea {
 .mentor-avatar-mark {
   position: relative;
   display: grid;
-  width: 94px;
-  height: 94px;
+  width: 96px;
+  height: 96px;
   place-items: center;
   border: 8px solid #ffffff;
   border-radius: 999px;
   background: var(--accent-soft);
+  color: var(--app-brand-strong);
+  font-size: 22px;
+  font-weight: 900;
   box-shadow: 0 14px 30px rgba(84, 101, 128, 0.12);
-}
-
-.mentor-avatar-mark i {
-  position: absolute;
-  border-radius: 999px;
-  background: rgba(var(--app-brand-rgb), 0.42);
-}
-
-.mentor-avatar-mark i:nth-child(1) {
-  width: 40px;
-  height: 40px;
-}
-
-.mentor-avatar-mark i:nth-child(2) {
-  width: 70px;
-  height: 12px;
-  transform: rotate(38deg);
-}
-
-.mentor-avatar-mark i:nth-child(3) {
-  width: 12px;
-  height: 70px;
-  opacity: 0.7;
-  transform: rotate(38deg);
 }
 
 .mentor-character-avatar-ancient_totem {

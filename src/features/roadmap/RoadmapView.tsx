@@ -23,6 +23,7 @@ type RoadmapViewProps = {
 };
 
 const pendingRoadmapRequests = new Map<string, Promise<RoadmapStage[]>>();
+const roadmapLoadTimeoutMs = 10000;
 
 type DisplayRoadmapTask = RoadmapTask & {
   isFallback?: boolean;
@@ -110,6 +111,19 @@ function getShortText(value: string, maxLength = 132) {
   }
 
   return `${normalizedValue.slice(0, maxLength).trimEnd()}...`;
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+
+    promise
+      .then(resolve)
+      .catch(reject)
+      .finally(() => window.clearTimeout(timeoutId));
+  });
 }
 
 function updateStageStatuses(stages: RoadmapStage[]) {
@@ -310,20 +324,37 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
   useEffect(() => {
     let isActive = true;
 
-    Promise.all([fetchGoalQuestions(goal.id), fetchRoadmap(goal.id)])
-      .then(([nextQuestions, nextStages]) => {
+    withTimeout(
+      Promise.allSettled([fetchGoalQuestions(goal.id), fetchRoadmap(goal.id)]),
+      roadmapLoadTimeoutMs,
+      'Roadmap data took too long to load. Showing a safe preview path.',
+    )
+      .then(([questionsResult, stagesResult]) => {
         if (!isActive) {
           return;
         }
 
-        setQuestions(nextQuestions);
-        setStages(nextStages);
+        if (questionsResult.status === 'fulfilled') {
+          setQuestions(questionsResult.value);
+        } else {
+          setQuestions([]);
+          setError(getErrorMessage(questionsResult.reason));
+        }
+
+        if (stagesResult.status === 'fulfilled') {
+          setStages(stagesResult.value);
+        } else {
+          setStages([]);
+          setError(getErrorMessage(stagesResult.reason));
+        }
       })
       .catch((caughtError: unknown) => {
         if (!isActive) {
           return;
         }
 
+        setQuestions([]);
+        setStages([]);
         setError(getErrorMessage(caughtError));
       })
       .finally(() => {

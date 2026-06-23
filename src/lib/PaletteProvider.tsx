@@ -23,6 +23,7 @@ function applyPaletteVariables(root: HTMLElement, palette: AppPalette) {
   const softAccent = isDark ? `rgba(${rgbTriplet}, 0.24)` : palette.primarySoft;
   const mutedAccent = isDark ? `rgba(${rgbTriplet}, 0.16)` : palette.primarySoft;
   const accentBorder = isDark ? `rgba(${rgbTriplet}, 0.48)` : palette.border;
+  const brandText = isDark ? palette.primarySoft : palette.textAccent;
 
   root.dataset.appPalette = palette.id;
   root.style.setProperty('--app-bg', isDark ? '#111925' : palette.background);
@@ -30,7 +31,7 @@ function applyPaletteVariables(root: HTMLElement, palette: AppPalette) {
   root.style.setProperty('--app-surface', isDark ? '#1d2838' : palette.card);
   root.style.setProperty('--app-brand', palette.primary);
   root.style.setProperty('--app-brand-soft', softAccent);
-  root.style.setProperty('--app-brand-strong', isDark ? '#f5f8fc' : palette.textAccent);
+  root.style.setProperty('--app-brand-strong', brandText);
   root.style.setProperty('--app-brand-rgb', rgbTriplet);
   root.style.setProperty('--app-border-accent', accentBorder);
   root.style.setProperty('--accent', palette.primary);

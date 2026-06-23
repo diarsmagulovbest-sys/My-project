@@ -145,6 +145,7 @@ export default function App() {
   const isGoalSectionPage = activeDetailSection !== null;
   const isGoalsOverviewPage = activePage === 'today' || activePage === 'goals';
   const isRoadmapPage = activePage === 'roadmap';
+  const selectedRoadmapGoal = isRoadmapPage ? selectedGoal ?? goals[0] ?? null : null;
 
   const handleNavigate = (target: AppNavTarget) => {
     setCreateError(null);
@@ -338,22 +339,40 @@ export default function App() {
         />
       ) : null}
 
-      {isRoadmapPage && selectedGoal ? (
+      {isRoadmapPage && selectedRoadmapGoal ? (
         <RoadmapView
-          goal={selectedGoal}
-          key={`${selectedGoal.id}-${roadmapRefreshKey}`}
-          onBackToGoal={() => setActivePage('detail')}
+          goal={selectedRoadmapGoal}
+          key={`${selectedRoadmapGoal.id}-${roadmapRefreshKey}`}
+          onBackToGoal={() => {
+            setSelectedGoalId(selectedRoadmapGoal.id);
+            setActivePage('detail');
+          }}
           onGoalProgressChange={(progress, status) => {
             setGoals((currentGoals) =>
               currentGoals.map((goal) =>
-                goal.id === selectedGoal.id ? { ...goal, progress, status } : goal,
+                goal.id === selectedRoadmapGoal.id ? { ...goal, progress, status } : goal,
               ),
             );
           }}
         />
       ) : null}
 
-      {(isGoalSectionPage || isRoadmapPage) && !selectedGoal ? (
+      {isRoadmapPage && !selectedRoadmapGoal && isGoalsLoading ? (
+        <section className="state-panel" aria-live="polite">
+          <h2>{t.loadingGoals}</h2>
+          <p>{t.loadingGoalsDescription}</p>
+        </section>
+      ) : null}
+
+      {isGoalSectionPage && !selectedGoal ? (
+        <section className="state-panel">
+          <h2>{t.noGoalSelected}</h2>
+          <p>{t.noGoalSelectedDescription}</p>
+          <Button onClick={() => setActivePage('create')}>{t.createGoal}</Button>
+        </section>
+      ) : null}
+
+      {isRoadmapPage && !selectedRoadmapGoal && !isGoalsLoading ? (
         <section className="state-panel">
           <h2>{t.noGoalSelected}</h2>
           <p>{t.noGoalSelectedDescription}</p>
