@@ -1014,14 +1014,12 @@ textarea {
   place-items: center;
   overflow: hidden;
   border-radius: 999px;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.92), transparent 30%),
-    linear-gradient(135deg, var(--accent-soft), rgba(var(--app-brand-rgb), 0.42));
+  background: var(--accent-soft);
   color: var(--app-brand-strong);
   font-weight: 900;
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.86),
-    0 10px 22px rgba(var(--app-brand-rgb), 0.12);
+    inset 0 0 0 1px rgba(var(--app-brand-rgb), 0.12),
+    0 8px 18px rgba(84, 101, 128, 0.1);
 }
 
 .stitch-quest-avatar {
@@ -1038,8 +1036,7 @@ textarea {
   height: calc(100% - 10px);
   place-items: center;
   border-radius: inherit;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.36));
+  background: rgba(255, 255, 255, 0.62);
   box-shadow: inset 0 0 0 1px rgba(var(--app-brand-rgb), 0.08);
   line-height: 1;
 }
@@ -1119,7 +1116,7 @@ textarea {
 .stitch-goal-grid,
 .goals-world-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
 
@@ -1137,6 +1134,13 @@ textarea {
 .stitch-goal-card,
 .goals-world-card {
   align-content: start;
+  min-height: 300px;
+}
+
+.stitch-create-card,
+.goals-create-card {
+  align-content: center;
+  min-height: 300px;
 }
 
 .stitch-goal-icon,
@@ -1926,21 +1930,7 @@ textarea {
 }
 
 .roadmap-summary-card {
-  position: relative;
-  overflow: hidden;
   padding: 24px 28px;
-}
-
-.roadmap-summary-card::before {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(var(--app-brand-rgb), 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--app-brand-rgb), 0.045) 1px, transparent 1px);
-  background-size: 28px 28px;
-  content: "";
-  mask-image: radial-gradient(circle at 80% 50%, #000000 0, transparent 62%);
 }
 
 .panel-heading {
@@ -2011,7 +2001,7 @@ textarea {
   position: relative;
   display: grid;
   max-width: 820px;
-  gap: 18px;
+  gap: 16px;
   padding: 6px 0 6px 112px;
 }
 
@@ -2022,10 +2012,9 @@ textarea {
   left: 48px;
   width: 4px;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, rgba(216, 237, 248, 0.35), rgba(var(--app-brand-rgb), 0.72), rgba(216, 237, 248, 0.48));
+  background: linear-gradient(180deg, #d7edf8, var(--accent), #d7edf8);
   content: "";
-  opacity: 0.82;
+  opacity: 0.72;
 }
 
 .stage-panel {
@@ -2035,9 +2024,8 @@ textarea {
   border: 1px solid var(--app-border);
   border-radius: 26px;
   background: var(--app-surface-glass);
-  padding: 20px 22px;
+  padding: 18px 20px;
   box-shadow: var(--shadow-card);
-  animation: roadmap-stage-enter 420ms ease both;
 }
 
 .stage-panel::before {
@@ -2112,7 +2100,7 @@ textarea {
 
 .stage-panel-active {
   border-color: rgba(var(--app-brand-rgb), 0.5);
-  padding: 26px 28px;
+  padding: 24px 26px;
   box-shadow:
     0 22px 58px rgba(var(--app-brand-rgb), 0.16),
     inset 0 0 0 2px rgba(var(--app-brand-rgb), 0.08);
@@ -2231,6 +2219,14 @@ textarea {
   line-height: 1.55;
 }
 
+.stage-heading p {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--app-text-muted);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .criteria-list {
   display: flex;
   flex-wrap: wrap;
@@ -2252,6 +2248,25 @@ textarea {
   gap: 7px;
 }
 
+.stage-details {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--app-border-soft);
+  padding-top: 10px;
+}
+
+.stage-details summary {
+  width: fit-content;
+  color: var(--app-brand-strong);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.stage-details[open] {
+  gap: 12px;
+}
+
 .task-row {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
@@ -2260,18 +2275,6 @@ textarea {
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
   padding: 10px 12px;
-}
-
-@keyframes roadmap-stage-enter {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .task-row strong {
@@ -2668,16 +2671,15 @@ textarea {
   align-content: start;
   gap: 14px;
   min-height: 0;
-  padding: 26px 24px;
+  padding: 24px;
   text-align: center;
   transition:
     border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease;
+    box-shadow 160ms ease;
 }
 
 .mentor-character-card:hover {
-  transform: translateY(-2px);
+  border-color: rgba(var(--app-brand-rgb), 0.24);
 }
 
 .mentor-character-card-selected {
@@ -2696,18 +2698,15 @@ textarea {
 
 .mentor-character-avatar {
   display: grid;
-  width: min(100%, 220px);
+  width: min(100%, 204px);
   aspect-ratio: 1;
   height: auto;
   place-items: center;
   margin: 0 auto;
   overflow: hidden;
-  border: 10px solid rgba(255, 255, 255, 0.7);
+  border: 8px solid rgba(255, 255, 255, 0.82);
   border-radius: 18px;
-  background:
-    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.82), transparent 23%),
-    radial-gradient(circle at 70% 72%, rgba(var(--app-brand-rgb), 0.22), transparent 32%),
-    linear-gradient(135deg, var(--app-sky), var(--accent-soft));
+  background: var(--app-surface-soft);
   color: var(--app-brand-strong);
   font-size: 28px;
   font-weight: 900;
@@ -2717,21 +2716,19 @@ textarea {
 .mentor-avatar-mark {
   position: relative;
   display: grid;
-  width: 96px;
-  height: 96px;
+  width: 94px;
+  height: 94px;
   place-items: center;
-  border: 9px solid rgba(255, 255, 255, 0.72);
+  border: 8px solid #ffffff;
   border-radius: 999px;
-  background:
-    radial-gradient(circle at 35% 32%, rgba(255, 255, 255, 0.85), transparent 22%),
-    linear-gradient(135deg, rgba(var(--app-brand-rgb), 0.92), var(--app-sky-strong));
-  box-shadow: 0 18px 36px rgba(var(--app-brand-rgb), 0.18);
+  background: var(--accent-soft);
+  box-shadow: 0 14px 30px rgba(84, 101, 128, 0.12);
 }
 
 .mentor-avatar-mark i {
   position: absolute;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(var(--app-brand-rgb), 0.42);
 }
 
 .mentor-avatar-mark i:nth-child(1) {
@@ -2753,22 +2750,22 @@ textarea {
 }
 
 .mentor-character-avatar-ancient_totem {
-  background: linear-gradient(135deg, #dce8ef, var(--accent-soft));
+  background: var(--app-surface-soft);
 }
 
 .mentor-character-avatar-creative_terrarium,
 .mentor-character-avatar-lavender {
-  background: linear-gradient(135deg, #e7dcfb, #dff3fc);
+  background: var(--app-surface-soft);
 }
 
 .mentor-character-avatar-strict_robot,
 .mentor-character-avatar-mysterious_knight {
-  background: linear-gradient(135deg, #d9e5ef, #f7dbe7);
+  background: var(--app-surface-soft);
 }
 
 .mentor-character-avatar-energetic_dragon,
 .mentor-character-avatar-friendly_mushroom {
-  background: linear-gradient(135deg, #fde8df, #fde5ee);
+  background: var(--app-surface-soft);
 }
 
 .mentor-character-card-top,

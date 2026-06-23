@@ -102,6 +102,16 @@ function getStageStatusLabel(status: RoadmapStageStatus, t: TextDictionary) {
   return labels[status];
 }
 
+function getShortText(value: string, maxLength = 132) {
+  const normalizedValue = value.replace(/\s+/g, ' ').trim();
+
+  if (normalizedValue.length <= maxLength) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue.slice(0, maxLength).trimEnd()}...`;
+}
+
 function updateStageStatuses(stages: RoadmapStage[]) {
   const firstOpenStage = stages.find((stage) =>
     stage.tasks.some((task) => task.status !== 'completed'),
@@ -481,7 +491,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                     <div className="stage-heading">
                       <span>{`Stage ${index + 1}`}</span>
                       <strong>{stage.title}</strong>
-                      <p>{stage.description}</p>
+                      <p>{getShortText(stage.description)}</p>
                     </div>
 
                     <div className="stage-progress-row">
@@ -492,48 +502,52 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                       <span style={{ width: `${stageProgress}%` }} />
                     </div>
 
-                    {stage.successCriteria.length > 0 ? (
-                      <ul className="criteria-list" aria-label={t.successCriteria}>
-                        {stage.successCriteria.map((criterion) => (
-                          <li key={criterion}>{criterion}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+                    <details className="stage-details">
+                      <summary>View details</summary>
 
-                    <div className="task-list">
-                      {stage.tasks.map((task) => {
-                        const taskClassName = [
-                          'task-check',
-                          task.status === 'completed' ? 'task-done' : '',
-                          task.isFallback ? 'task-check-preview' : '',
-                        ]
-                          .filter(Boolean)
-                          .join(' ');
+                      {stage.successCriteria.length > 0 ? (
+                        <ul className="criteria-list" aria-label={t.successCriteria}>
+                          {stage.successCriteria.map((criterion) => (
+                            <li key={criterion}>{getShortText(criterion, 72)}</li>
+                          ))}
+                        </ul>
+                      ) : null}
 
-                        return (
-                          <div className="task-row" key={task.id}>
-                            <button
-                              aria-label={
-                                task.status === 'completed'
-                                  ? `Mark "${task.title}" as not done`
-                                  : `Mark "${task.title}" as done`
-                              }
-                              className={taskClassName}
-                              disabled={task.isFallback}
-                              onClick={() => void handleToggleTaskCompletion(task)}
-                              type="button"
-                            />
-                            <div>
-                              <strong>{task.title}</strong>
-                              <p>{task.description}</p>
-                              <small>
-                                {task.estimatedMinutes} {t.min} | {formatDate(task.dueDate, language)}
-                              </small>
+                      <div className="task-list">
+                        {stage.tasks.map((task) => {
+                          const taskClassName = [
+                            'task-check',
+                            task.status === 'completed' ? 'task-done' : '',
+                            task.isFallback ? 'task-check-preview' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ');
+
+                          return (
+                            <div className="task-row" key={task.id}>
+                              <button
+                                aria-label={
+                                  task.status === 'completed'
+                                    ? `Mark "${task.title}" as not done`
+                                    : `Mark "${task.title}" as done`
+                                }
+                                className={taskClassName}
+                                disabled={task.isFallback}
+                                onClick={() => void handleToggleTaskCompletion(task)}
+                                type="button"
+                              />
+                              <div>
+                                <strong>{task.title}</strong>
+                                <p>{getShortText(task.description, 116)}</p>
+                                <small>
+                                  {task.estimatedMinutes} {t.min} | {formatDate(task.dueDate, language)}
+                                </small>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    </details>
                   </article>
                 );
               })}
@@ -597,7 +611,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               </div>
               <strong>{companion.name}</strong>
               <span>{t.aiMentor}</span>
-              <p>{currentStage ? currentStage.description : t.roadmapActionDescription}</p>
+              <p>{currentStage ? getShortText(currentStage.description, 118) : t.roadmapActionDescription}</p>
             </section>
 
             <section className="roadmap-insight-card">
