@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MoonIcon, SunIcon } from '@radix-ui/react-icons';
+import { AnimatedThemeToggler } from '../magic/AnimatedThemeToggler';
 
 const themeStorageKey = 'app-theme';
 
@@ -29,28 +29,11 @@ export function ThemeToggle() {
     localStorage.setItem(themeStorageKey, theme);
   }, [theme]);
 
-  const handleToggle = () => {
-    setTheme((currentTheme) => (currentTheme === 'dark' ? 'light' : 'dark'));
+  const handleThemeChange = (nextTheme: Theme) => {
+    applyTheme(nextTheme);
+    localStorage.setItem(themeStorageKey, nextTheme);
+    setTheme(nextTheme);
   };
 
-  return (
-    <button
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}
-      aria-checked={isDark}
-      className="theme-toggle"
-      onClick={handleToggle}
-      role="switch"
-      type="button"
-    >
-      <span className="theme-toggle-icon theme-toggle-icon-light" aria-hidden="true">
-        <SunIcon />
-      </span>
-      <span className="theme-toggle-thumb" aria-hidden="true">
-        {isDark ? <MoonIcon /> : <SunIcon />}
-      </span>
-      <span className="theme-toggle-icon theme-toggle-icon-dark" aria-hidden="true">
-        <MoonIcon />
-      </span>
-    </button>
-  );
+  return <AnimatedThemeToggler isDark={isDark} onThemeChange={handleThemeChange} />;
 }

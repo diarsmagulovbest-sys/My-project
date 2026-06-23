@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
+import { AnimatedCircularProgressBar } from '../../components/magic/AnimatedCircularProgressBar';
 import { useLanguage, type AppLanguage, type TextDictionary } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
@@ -443,9 +444,12 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                       : t.roadmapActionDescription}
                   </p>
                 </div>
-                <div className="progress-ring" aria-label={`${t.progress} ${overallProgress}%`}>
-                  <span>{overallProgress}%</span>
-                </div>
+                <AnimatedCircularProgressBar
+                  className="progress-ring"
+                  gaugePrimaryColor="var(--accent)"
+                  gaugeSecondaryColor="rgba(var(--app-brand-rgb), 0.16)"
+                  value={overallProgress}
+                />
               </div>
               {error ? (
                 <div className="form-error questions-error" role="alert">
@@ -460,7 +464,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               ) : null}
             </section>
 
-            <section className="roadmap-grid" aria-label={t.roadmap}>
+            <section className="roadmap-grid roadmap-journey-map" aria-label={t.roadmap}>
               {displayStages.map((stage, index) => {
                 const stageProgress = getStageProgress(stage);
                 const stageCompletedTasks = stage.tasks.filter((task) => task.status === 'completed').length;
