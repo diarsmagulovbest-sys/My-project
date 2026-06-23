@@ -91,6 +91,16 @@ function getStageClassName(stage: DisplayRoadmapStage) {
     .join(' ');
 }
 
+function getStageStatusLabel(status: RoadmapStageStatus, t: TextDictionary) {
+  const labels: Record<RoadmapStageStatus, string> = {
+    active: t.active,
+    completed: t.completed,
+    locked: t.locked,
+  };
+
+  return labels[status];
+}
+
 function updateStageStatuses(stages: RoadmapStage[]) {
   const firstOpenStage = stages.find((stage) =>
     stage.tasks.some((task) => task.status !== 'completed'),
@@ -457,9 +467,15 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
 
                 return (
                   <article className={getStageClassName(stage)} key={stage.id}>
-                    <div className="stage-node" aria-hidden="true" />
+                    <div className="stage-node" aria-hidden="true">
+                      <span>{index + 1}</span>
+                    </div>
+                    <div className="stage-card-toolbar">
+                      <span className="stage-status-pill">{getStageStatusLabel(stage.status, t)}</span>
+                      <span className="stage-task-pill">{`${stageCompletedTasks}/${stage.tasks.length} ${t.loadingTasks}`}</span>
+                    </div>
                     <div className="stage-heading">
-                      <span>{`Stage ${index + 1} / ${stage.status}`}</span>
+                      <span>{`Stage ${index + 1}`}</span>
                       <strong>{stage.title}</strong>
                       <p>{stage.description}</p>
                     </div>

@@ -2,12 +2,14 @@
 
 :root {
   --app-bg: #f3f9fd;
+  --app-bg-end: #f7fbff;
   --app-bg-glow: rgba(247, 219, 231, 0.62);
   --app-sidebar-bg: #e6f2fb;
   --app-surface: #ffffff;
   --app-surface-glass: rgba(255, 255, 255, 0.9);
   --app-surface-soft: #f7fbff;
   --app-surface-muted: #edf7fd;
+  --app-control-bg: rgba(255, 255, 255, 0.82);
   --app-border: #d9e8f2;
   --app-border-soft: rgba(83, 107, 129, 0.12);
   --app-border-accent: #e6d7df;
@@ -64,15 +66,18 @@
 }
 
 :root.dark {
-  --app-bg: #121824;
-  --app-bg-glow: rgba(var(--app-brand-rgb), 0.18);
-  --app-sidebar-bg: #172233;
-  --app-surface: #1b2433;
-  --app-surface-glass: rgba(27, 36, 51, 0.92);
-  --app-surface-soft: #151e2d;
-  --app-surface-muted: #223047;
-  --app-border: #2a3a52;
+  --app-bg: #111925;
+  --app-bg-end: #141f2d;
+  --app-bg-glow: rgba(var(--app-brand-rgb), 0.2);
+  --app-sidebar-bg: #162233;
+  --app-surface: #1d2838;
+  --app-surface-glass: rgba(29, 40, 56, 0.93);
+  --app-surface-soft: #162231;
+  --app-surface-muted: #223248;
+  --app-control-bg: rgba(22, 34, 49, 0.92);
+  --app-border: #32445e;
   --app-border-soft: rgba(236, 244, 255, 0.1);
+  --app-border-accent: rgba(var(--app-brand-rgb), 0.36);
   --app-text: #d7e0ee;
   --app-text-strong: #f5f8fc;
   --app-text-muted: #9aa9ba;
@@ -96,7 +101,7 @@ body {
   overflow-x: hidden;
   background:
     radial-gradient(circle at 82% 10%, var(--app-bg-glow), transparent 34vw),
-    linear-gradient(180deg, var(--app-bg), #f7fbff 62%, var(--app-bg));
+    linear-gradient(180deg, var(--app-bg), var(--app-bg-end) 62%, var(--app-bg));
 }
 
 body.disco-mode::before {
@@ -528,7 +533,7 @@ textarea {
 
 .auth-tab-active {
   color: #ffffff;
-  background: var(--app-brand);
+  background: var(--accent);
 }
 
 .auth-form,
@@ -569,7 +574,7 @@ textarea {
   border: 1px solid var(--app-border);
   border-radius: var(--radius-control);
   color: var(--app-text-strong);
-  background: rgba(255, 255, 255, 0.82);
+  background: var(--app-control-bg);
   outline: none;
   padding: 12px 16px;
 }
@@ -582,7 +587,7 @@ textarea {
 .plan-adaptation-select:focus,
 .plan-adaptation-textarea:focus,
 .settings-code-input:focus {
-  border-color: var(--app-brand);
+  border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(var(--app-brand-rgb), 0.12);
 }
 
@@ -664,7 +669,7 @@ textarea {
 
 .segment-active {
   color: #ffffff;
-  background: var(--app-brand);
+  background: var(--accent);
 }
 
 .form-actions,
@@ -959,10 +964,10 @@ textarea {
 
 .stitch-quest {
   display: grid;
-  gap: 22px;
-  min-height: 280px;
+  gap: 18px;
+  min-height: 250px;
   align-content: center;
-  padding: 34px 40px;
+  padding: 30px 38px;
 }
 
 .stitch-quest-pill {
@@ -972,7 +977,7 @@ textarea {
   align-items: center;
   border-radius: 999px;
   color: #ffffff;
-  background: var(--app-brand);
+  background: var(--accent);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -995,8 +1000,8 @@ textarea {
 
 .stitch-quest-meta {
   display: grid;
-  grid-template-columns: 54px minmax(0, 220px) minmax(180px, 1fr);
-  gap: 14px;
+  grid-template-columns: 46px minmax(0, 240px) minmax(180px, 1fr);
+  gap: 16px;
   align-items: center;
 }
 
@@ -1008,15 +1013,32 @@ textarea {
   display: grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--app-brand-soft);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.78), transparent 28%),
+    var(--accent-soft);
   color: var(--app-brand-strong);
   font-weight: 900;
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--app-brand-rgb), 0.1),
+    0 10px 22px rgba(var(--app-brand-rgb), 0.1);
 }
 
 .stitch-quest-avatar {
-  width: 54px;
-  height: 54px;
-  font-size: 24px;
+  width: 46px;
+  height: 46px;
+  font-size: 15px;
+}
+
+.stitch-quest-avatar > span,
+.stitch-goal-icon > span,
+.goals-world-icon > span {
+  display: grid;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  place-items: center;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.48);
+  line-height: 1;
 }
 
 .stitch-quest-meta strong,
@@ -1056,7 +1078,7 @@ textarea {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: var(--app-brand);
+  background: var(--accent);
 }
 
 .stitch-goals-section,
@@ -1103,10 +1125,10 @@ textarea {
 .stitch-create-card,
 .goals-create-card {
   display: grid;
-  gap: 16px;
+  gap: 14px;
   min-width: 0;
   min-height: 0;
-  padding: 24px;
+  padding: 22px;
 }
 
 .stitch-goal-card,
@@ -1116,9 +1138,9 @@ textarea {
 
 .stitch-goal-icon,
 .goals-world-icon {
-  width: 64px;
-  height: 64px;
-  font-size: 28px;
+  width: 58px;
+  height: 58px;
+  font-size: 15px;
 }
 
 .goal-card-accent-2 .stitch-goal-icon,
@@ -1141,7 +1163,7 @@ textarea {
 }
 
 .goals-world-top {
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 58px minmax(0, 1fr);
   align-items: start;
 }
 
@@ -1365,7 +1387,7 @@ textarea {
 }
 
 .goal-detail-stitch {
-  gap: 22px;
+  gap: 14px;
 }
 
 .goal-detail-hero {
@@ -1395,15 +1417,15 @@ textarea {
 }
 
 .goal-detail-main {
-  gap: 18px;
+  gap: 14px;
 }
 
 .goal-command-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 18px;
   align-items: center;
-  padding: 26px;
+  padding: 22px 24px;
 }
 
 .goal-command-copy {
@@ -1416,7 +1438,7 @@ textarea {
   max-width: 760px;
   margin: 0;
   color: var(--app-text-strong);
-  font-size: clamp(32px, 3.4vw, 46px);
+  font-size: clamp(28px, 3vw, 40px);
   line-height: 1.04;
 }
 
@@ -1429,20 +1451,20 @@ textarea {
 
 .goal-command-progress {
   display: grid;
-  grid-template-columns: 94px minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 14px;
   align-items: center;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 16px;
+  padding: 14px;
 }
 
 .goal-command-ring {
-  flex-basis: 82px;
-  width: 82px;
-  height: 82px;
+  flex-basis: 74px;
+  width: 74px;
+  height: 74px;
   border-width: 8px;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .goal-command-metrics {
@@ -1469,6 +1491,13 @@ textarea {
   color: var(--app-text-strong);
 }
 
+.goal-work-lane {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(280px, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
 .task-focus,
 .goal-roadmap-preview,
 .goal-command-card,
@@ -1480,12 +1509,12 @@ textarea {
 .mentor-chat-panel,
 .plan-adaptation-panel,
 .history-panel {
-  padding: 24px;
+  padding: 20px;
 }
 
 .task-focus-primary {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   background:
     radial-gradient(circle at 88% 10%, var(--app-brand-soft), transparent 30%),
     var(--app-surface-glass);
@@ -1499,7 +1528,7 @@ textarea {
 .history-panel h2 {
   margin: 0;
   color: var(--app-text-strong);
-  font-size: 26px;
+  font-size: 22px;
 }
 
 .task-focus p,
@@ -1516,7 +1545,7 @@ textarea {
 .goal-roadmap-preview {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
 }
 
@@ -1535,18 +1564,18 @@ textarea {
 
 .goal-preview-timeline {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin-top: 2px;
 }
 
 .goal-preview-step {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr);
-  gap: 12px;
+  gap: 10px;
   align-items: start;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 .goal-preview-step > span {
@@ -1592,11 +1621,11 @@ textarea {
 
 .goal-preview-step p {
   margin-top: 3px;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .goal-detail-side {
-  gap: 18px;
+  gap: 14px;
 }
 
 .goal-side-actions {
@@ -1610,7 +1639,7 @@ textarea {
 .goal-next-card {
   display: grid;
   gap: 8px;
-  padding: 22px;
+  padding: 18px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(var(--app-brand-rgb), 0.08)),
     var(--app-surface-glass);
@@ -1890,10 +1919,11 @@ textarea {
 
 .roadmap-page-layout {
   grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 30px;
 }
 
 .roadmap-summary-card {
-  padding: 28px 30px;
+  padding: 24px 28px;
 }
 
 .panel-heading {
@@ -1952,53 +1982,129 @@ textarea {
 .roadmap-grid {
   position: relative;
   display: grid;
-  gap: 26px;
-  padding-left: 76px;
+  max-width: 860px;
+  gap: 22px;
+  padding: 8px 0 8px 108px;
 }
 
 .roadmap-grid::before {
   position: absolute;
-  top: 12px;
-  bottom: 12px;
-  left: 25px;
-  width: 4px;
+  top: 0;
+  bottom: 0;
+  left: 48px;
+  width: 5px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--app-sky), var(--accent), var(--app-sky));
+  background: linear-gradient(180deg, #d7edf8, var(--accent), #d7edf8);
   content: "";
+  opacity: 0.82;
 }
 
 .stage-panel {
   position: relative;
   display: grid;
-  gap: 16px;
+  gap: 12px;
   border: 1px solid var(--app-border);
-  border-radius: var(--radius-card);
+  border-radius: 26px;
   background: var(--app-surface-glass);
-  padding: 26px;
+  padding: 22px 24px;
   box-shadow: var(--shadow-card);
+}
+
+.stage-panel::before {
+  position: absolute;
+  top: 46px;
+  left: -29px;
+  width: 28px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--app-border);
+  content: "";
 }
 
 .stage-node {
   position: absolute;
-  top: 28px;
-  left: -73px;
-  width: 50px;
-  height: 50px;
-  border: 7px solid #ffffff;
+  top: 22px;
+  left: -89px;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 8px solid var(--app-surface);
   border-radius: 999px;
   background: var(--app-sky);
-  box-shadow: var(--shadow-soft);
+  color: var(--app-sky-strong);
+  font-weight: 900;
+  box-shadow:
+    0 12px 28px rgba(84, 101, 128, 0.16),
+    0 0 0 1px rgba(var(--app-brand-rgb), 0.08);
+}
+
+.stage-node span {
+  position: relative;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+}
+
+.stage-card-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stage-status-pill,
+.stage-task-pill {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  padding: 0 12px;
+  text-transform: uppercase;
+}
+
+.stage-status-pill {
+  color: var(--app-brand-strong);
+  background: var(--accent-soft);
+}
+
+.stage-task-pill {
+  color: var(--app-sky-strong);
+  background: var(--app-sky);
 }
 
 .stage-panel-active {
   border-color: rgba(var(--app-brand-rgb), 0.5);
+  padding: 28px 30px;
   box-shadow:
-    var(--shadow-card),
+    0 22px 58px rgba(var(--app-brand-rgb), 0.16),
     inset 0 0 0 2px rgba(var(--app-brand-rgb), 0.08);
 }
 
 .stage-panel-active .stage-node {
+  top: 30px;
+  left: -96px;
+  width: 72px;
+  height: 72px;
   background: var(--accent);
+  color: #ffffff;
+  box-shadow:
+    0 16px 34px rgba(var(--app-brand-rgb), 0.26),
+    0 0 0 8px var(--app-surface);
+}
+
+.stage-panel-active .stage-node span {
+  width: 38px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 15px;
 }
 
 .stage-panel-completed {
@@ -2007,6 +2113,18 @@ textarea {
 
 .stage-panel-completed .stage-node {
   background: var(--app-sky-strong);
+  color: #ffffff;
+}
+
+.stage-panel-completed .stage-node span {
+  background: transparent;
+  font-size: 0;
+}
+
+.stage-panel-completed .stage-node span::before {
+  color: #ffffff;
+  content: "\2713";
+  font-size: 22px;
 }
 
 .stage-panel-fallback {
@@ -2021,9 +2139,38 @@ textarea {
   opacity: 0.68;
 }
 
+.stage-panel-locked .stage-node {
+  background: var(--app-surface-muted);
+  color: var(--app-text-muted);
+}
+
+.stage-panel-locked .stage-node span {
+  background: transparent;
+  font-size: 0;
+}
+
+.stage-panel-locked .stage-node span::before {
+  width: 14px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  content: "";
+}
+
+.stage-panel-locked .stage-node span::after {
+  position: absolute;
+  width: 10px;
+  height: 8px;
+  margin-top: -15px;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 999px 999px 0 0;
+  content: "";
+}
+
 .stage-heading {
   display: grid;
-  gap: 8px;
+  gap: 7px;
 }
 
 .stage-heading span,
@@ -2039,8 +2186,12 @@ textarea {
 
 .stage-heading strong {
   color: var(--app-text-strong);
-  font-size: 28px;
+  font-size: 25px;
   line-height: 1.15;
+}
+
+.stage-panel-active .stage-heading strong {
+  font-size: 31px;
 }
 
 .stage-heading p,
@@ -2061,14 +2212,14 @@ textarea {
 
 .criteria-list li {
   border-radius: 999px;
-  background: var(--app-brand-soft);
+  background: var(--accent-soft);
   color: var(--app-brand-strong);
   padding: 8px 12px;
 }
 
 .task-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .task-row {
@@ -2078,7 +2229,7 @@ textarea {
   align-items: start;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 14px;
+  padding: 12px 14px;
 }
 
 .task-row strong {
@@ -2097,7 +2248,7 @@ textarea {
 
 .task-check:not(:disabled):hover,
 .task-check:not(:disabled):focus-visible {
-  border-color: var(--app-brand);
+  border-color: var(--accent);
   box-shadow: 0 0 0 4px rgba(var(--app-brand-rgb), 0.12);
   outline: none;
 }
@@ -2222,7 +2373,7 @@ textarea {
   place-items: center;
   border: 8px solid #ffffff;
   border-radius: 999px;
-  background: radial-gradient(circle at 34% 28%, var(--app-brand-soft), var(--app-brand) 74%);
+  background: radial-gradient(circle at 34% 28%, var(--accent-soft), var(--accent) 74%);
   color: #ffffff;
   font-size: 26px;
   font-weight: 900;
@@ -2265,7 +2416,7 @@ textarea {
 
 .palette-option:hover,
 .palette-option:focus-visible {
-  border-color: var(--palette-swatch, var(--app-brand));
+  border-color: var(--palette-swatch, var(--accent));
   outline: none;
 }
 
@@ -2372,8 +2523,82 @@ textarea {
   background: linear-gradient(#bf2f42 0 14%, #ffffff 14% 28%, #bf2f42 28% 42%, #ffffff 42% 56%, #bf2f42 56% 70%, #ffffff 70% 84%, #bf2f42 84%);
 }
 
+:root.dark .auth-panel,
+:root.dark .form-panel,
+:root.dark .state-panel,
+:root.dark .feature-panel,
+:root.dark .metric-card,
+:root.dark .achievement-card,
+:root.dark .settings-stitch-card,
+:root.dark .settings-card,
+:root.dark .mentor-character-card,
+:root.dark .roadmap-panel,
+:root.dark .task-focus,
+:root.dark .goal-command-card,
+:root.dark .goal-roadmap-preview,
+:root.dark .goal-next-card,
+:root.dark .mentor-profile-card,
+:root.dark .detail-summary,
+:root.dark .goal-collapsible,
+:root.dark .ai-analysis-panel,
+:root.dark .questions-panel,
+:root.dark .mentor-chat-panel,
+:root.dark .plan-adaptation-panel,
+:root.dark .history-panel,
+:root.dark .goals-world-card,
+:root.dark .goals-create-card,
+:root.dark .goals-mentor-panel,
+:root.dark .goals-tip-card,
+:root.dark .stitch-quest,
+:root.dark .stitch-goal-card,
+:root.dark .stitch-create-card,
+:root.dark .stitch-mentor-card,
+:root.dark .stitch-stat-card,
+:root.dark .stitch-milestone-card,
+:root.dark .roadmap-mentor-card,
+:root.dark .roadmap-insight-card,
+:root.dark .roadmap-generate-card {
+  border-color: rgba(236, 244, 255, 0.12);
+  background: var(--app-surface-glass);
+}
+
+:root.dark .nav-item-active,
+:root.dark .task-check,
+:root.dark .palette-option,
+:root.dark .question-item textarea,
+:root.dark .plan-adaptation-result li,
+:root.dark .task-row,
+:root.dark .inline-state,
+:root.dark .stitch-next-task,
+:root.dark .goals-world-task,
+:root.dark .goal-command-progress {
+  background: var(--app-control-bg);
+}
+
+:root.dark .button-ghost,
+:root.dark .button-secondary {
+  background: rgba(236, 244, 255, 0.08);
+}
+
+:root.dark .progress-bar,
+:root.dark .stitch-quest-progress {
+  background: rgba(207, 238, 253, 0.18);
+}
+
+:root.dark .stage-node,
+:root.dark .goal-preview-step > span,
+:root.dark .palette-swatch,
+:root.dark .settings-stitch-orb {
+  border-color: var(--app-surface);
+}
+
+:root.dark .palette-option-selected {
+  background: rgba(var(--app-brand-rgb), 0.2);
+}
+
 .mentors-stitch-page {
   position: relative;
+  gap: 22px;
 }
 
 .mentors-stitch-header {
@@ -2385,23 +2610,31 @@ textarea {
 .mentor-character-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  gap: 24px;
 }
 
 .mentor-character-card {
   display: grid;
   align-content: start;
-  gap: 13px;
+  gap: 14px;
   min-height: 0;
-  padding: 20px;
+  padding: 26px 24px;
   text-align: center;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.mentor-character-card:hover {
+  transform: translateY(-2px);
 }
 
 .mentor-character-card-selected {
   border-color: rgba(var(--app-brand-rgb), 0.58);
   box-shadow:
-    var(--shadow-card),
-    inset 0 0 0 3px rgba(var(--app-brand-rgb), 0.1);
+    0 24px 62px rgba(var(--app-brand-rgb), 0.15),
+    inset 0 0 0 3px rgba(var(--app-brand-rgb), 0.12);
 }
 
 .mentor-character-card-selected .mentor-character-avatar {
@@ -2413,15 +2646,17 @@ textarea {
 
 .mentor-character-avatar {
   display: grid;
-  width: min(100%, 184px);
-  height: 164px;
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  height: auto;
   place-items: center;
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  border-radius: 24px;
+  border: 10px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.82), transparent 24%),
+    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.82), transparent 23%),
+    radial-gradient(circle at 70% 72%, rgba(var(--app-brand-rgb), 0.22), transparent 32%),
     linear-gradient(135deg, var(--app-sky), var(--accent-soft));
   color: var(--app-brand-strong);
   font-size: 28px;
@@ -2429,14 +2664,42 @@ textarea {
   box-shadow: var(--shadow-soft);
 }
 
-.mentor-character-avatar span {
+.mentor-avatar-mark {
+  position: relative;
   display: grid;
-  width: 78px;
-  height: 78px;
+  width: 96px;
+  height: 96px;
   place-items: center;
-  border: 8px solid rgba(255, 255, 255, 0.78);
+  border: 9px solid rgba(255, 255, 255, 0.72);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.52);
+  background:
+    radial-gradient(circle at 35% 32%, rgba(255, 255, 255, 0.85), transparent 22%),
+    linear-gradient(135deg, rgba(var(--app-brand-rgb), 0.92), var(--app-sky-strong));
+  box-shadow: 0 18px 36px rgba(var(--app-brand-rgb), 0.18);
+}
+
+.mentor-avatar-mark i {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.mentor-avatar-mark i:nth-child(1) {
+  width: 40px;
+  height: 40px;
+}
+
+.mentor-avatar-mark i:nth-child(2) {
+  width: 70px;
+  height: 12px;
+  transform: rotate(38deg);
+}
+
+.mentor-avatar-mark i:nth-child(3) {
+  width: 12px;
+  height: 70px;
+  opacity: 0.7;
+  transform: rotate(38deg);
 }
 
 .mentor-character-avatar-ancient_totem {
@@ -2490,16 +2753,16 @@ textarea {
 .mentor-character-copy h2 {
   margin: 0;
   color: var(--app-brand-strong);
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .mentor-character-copy p {
   display: -webkit-box;
-  min-height: 64px;
-  margin: 10px 0 0;
+  min-height: 58px;
+  margin: 8px 0 0;
   overflow: hidden;
   color: var(--app-text);
-  line-height: 1.5;
+  line-height: 1.42;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
 }
@@ -2527,7 +2790,9 @@ textarea {
 
 .mentor-character-card .button {
   width: 100%;
+  min-height: 54px;
   margin-top: auto;
+  border-radius: 999px;
 }
 
 .achievements-stitch-hero {
@@ -2583,7 +2848,7 @@ textarea {
   border: 0;
   border-radius: 999px;
   color: #ffffff;
-  background: var(--app-brand);
+  background: var(--accent);
   font-weight: 900;
   padding: 0 26px;
 }
@@ -2655,6 +2920,7 @@ textarea {
 
   .goal-detail-hero,
   .goal-command-card,
+  .goal-work-lane,
   .settings-stitch-mentor-card {
     grid-template-columns: 1fr;
   }
@@ -2710,17 +2976,27 @@ textarea {
   }
 
   .roadmap-grid {
-    padding-left: 52px;
+    padding-left: 62px;
   }
 
   .roadmap-grid::before {
-    left: 18px;
+    left: 23px;
   }
 
-  .stage-node {
-    left: -55px;
-    width: 40px;
-    height: 40px;
+  .stage-node,
+  .stage-panel-active .stage-node {
+    top: 22px;
+    left: -58px;
+    width: 44px;
+    height: 44px;
+    border-width: 6px;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .stage-node span,
+  .stage-panel-active .stage-node span {
+    width: 24px;
+    height: 24px;
   }
 
   .settings-code-control {

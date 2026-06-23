@@ -176,50 +176,52 @@ export function GoalDetailMock({
             </div>
           </section>
 
-          <section className="task-focus task-focus-primary" ref={tasksRef}>
-            <div>
-              <span className="eyebrow">{t.doThisNext}</span>
-              <h2>{todayTitle}</h2>
-              <p>{todayDescription}</p>
-            </div>
-            {taskError ? <p className="form-error">{taskError}</p> : null}
-            <div className="task-focus-actions">
-              <Button
-                disabled={!currentTaskId || isCompletingTask}
-                onClick={() => void handleCompleteTask()}
-              >
-                {isCompletingTask ? t.saving : t.markDone}
-              </Button>
-              <Button variant="secondary" onClick={onOpenRoadmap}>
-                {t.roadmap}
-              </Button>
-            </div>
-          </section>
-
-          <section className="goal-roadmap-preview goal-roadmap-preview-command">
-            <div className="goal-roadmap-preview-heading">
+          <div className="goal-work-lane">
+            <section className="task-focus task-focus-primary" ref={tasksRef}>
               <div>
-                <span className="eyebrow">{t.plan}</span>
-                <h2>{t.roadmap}</h2>
-                <p>{goal.todayTask ? t.smallestActionToday : t.roadmapAfterQuestions}</p>
+                <span className="eyebrow">{t.doThisNext}</span>
+                <h2>{todayTitle}</h2>
+                <p>{todayDescription}</p>
               </div>
-              <Button variant="secondary" onClick={onOpenRoadmap}>
-                {t.open}
-              </Button>
-            </div>
-            <div className="goal-preview-timeline" aria-label={t.roadmap}>
-              {roadmapPreviewSteps.map((step) => (
-                <div className={`goal-preview-step goal-preview-step-${step.status}`} key={step.label}>
-                  <span aria-hidden="true" />
-                  <div>
-                    <small>{step.label}</small>
-                    <strong>{step.title}</strong>
-                    <p>{step.description}</p>
-                  </div>
+              {taskError ? <p className="form-error">{taskError}</p> : null}
+              <div className="task-focus-actions">
+                <Button
+                  disabled={!currentTaskId || isCompletingTask}
+                  onClick={() => void handleCompleteTask()}
+                >
+                  {isCompletingTask ? t.saving : t.markDone}
+                </Button>
+                <Button variant="secondary" onClick={onOpenRoadmap}>
+                  {t.roadmap}
+                </Button>
+              </div>
+            </section>
+
+            <section className="goal-roadmap-preview goal-roadmap-preview-command">
+              <div className="goal-roadmap-preview-heading">
+                <div>
+                  <span className="eyebrow">{t.plan}</span>
+                  <h2>{t.roadmap}</h2>
+                  <p>{goal.todayTask ? t.smallestActionToday : t.roadmapAfterQuestions}</p>
                 </div>
-              ))}
-            </div>
-          </section>
+                <Button variant="secondary" onClick={onOpenRoadmap}>
+                  {t.open}
+                </Button>
+              </div>
+              <div className="goal-preview-timeline" aria-label={t.roadmap}>
+                {roadmapPreviewSteps.map((step) => (
+                  <div className={`goal-preview-step goal-preview-step-${step.status}`} key={step.label}>
+                    <span aria-hidden="true" />
+                    <div>
+                      <small>{step.label}</small>
+                      <strong>{step.title}</strong>
+                      <p>{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
 
           <CollapsibleGoalSection
             eyebrow={t.goalDetails}

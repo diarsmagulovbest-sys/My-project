@@ -4,7 +4,6 @@ import streakIcon from '../../assets/ui/streak-flame.svg';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 import { getActiveMentorCharacterId, getMentorCharacter } from '../mentor/mentorCharacters';
-import { getGoalEmoji } from './goalEmoji';
 
 type GoalsDashboardProps = {
   canDeleteGoals: boolean;
@@ -71,6 +70,20 @@ function formatFocusTime(minutes: number) {
 
 function getGoalAccentClass(index: number) {
   return `goal-card-accent-${(index % 3) + 1}`;
+}
+
+function getGoalTokenLabel(goal: GoalSummary | undefined) {
+  const title = goal?.title.trim();
+
+  if (!title) {
+    return 'GP';
+  }
+
+  return title
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('');
 }
 
 export function GoalsDashboard({
@@ -209,7 +222,7 @@ export function GoalsDashboard({
                       <article className={`goals-world-card ${getGoalAccentClass(index)}`} key={goal.id}>
                         <div className="goals-world-top">
                           <span className="goals-world-icon" aria-hidden="true">
-                            {getGoalEmoji(goal)}
+                            <span>{getGoalTokenLabel(goal)}</span>
                           </span>
                           <div>
                             <span className={`status-pill status-${goal.status}`}>
@@ -338,7 +351,7 @@ export function GoalsDashboard({
 
               <div className="stitch-quest-meta">
                 <span className="stitch-quest-avatar" aria-hidden="true">
-                  {getGoalEmoji(focusGoal)}
+                  <span>{getGoalTokenLabel(focusGoal)}</span>
                 </span>
                 <div>
                   <strong>{focusGoal?.title ?? t.noGoal}</strong>
@@ -375,7 +388,7 @@ export function GoalsDashboard({
                 {goals.map((goal, index) => (
                   <article className={`stitch-goal-card ${getGoalAccentClass(index)}`} key={goal.id}>
                     <div className="stitch-goal-icon" aria-hidden="true">
-                      {getGoalEmoji(goal)}
+                      <span>{getGoalTokenLabel(goal)}</span>
                     </div>
                     <div className="stitch-goal-copy">
                       <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status, t)}</span>
@@ -440,7 +453,7 @@ export function GoalsDashboard({
             <section className="stitch-stat-stack" aria-label={t.weeklyStats}>
               <h2>{questCopy.pathStatistics}</h2>
               <article className="stitch-stat-card">
-                <span className="stitch-stat-icon" aria-hidden="true">★</span>
+                <span className="stitch-stat-icon" aria-hidden="true">AG</span>
                 <div>
                   <span>{questCopy.activeGoals}</span>
                   <strong>{activeGoals}</strong>
