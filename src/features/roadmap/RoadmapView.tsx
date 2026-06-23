@@ -193,6 +193,8 @@ async function generateAndSaveRoadmap(
 function createFallbackTask({
   description,
   goal,
+  id,
+  isFallback = true,
   sortOrder,
   stageId,
   status,
@@ -200,6 +202,8 @@ function createFallbackTask({
 }: {
   description: string;
   goal: GoalSummary;
+  id?: string;
+  isFallback?: boolean;
   sortOrder: number;
   stageId: string;
   status: RoadmapTaskStatus;
@@ -214,8 +218,8 @@ function createFallbackTask({
     dueDate: null,
     estimatedMinutes: Math.max(goal.availableTime, 15),
     goalId: goal.id,
-    id: `${stageId}-task-${sortOrder}`,
-    isFallback: true,
+    id: id ?? `${stageId}-task-${sortOrder}`,
+    isFallback,
     sortOrder,
     stageId,
     status,
@@ -229,6 +233,7 @@ function buildFallbackRoadmap(goal: GoalSummary, t: TextDictionary) {
   const hasProgress = goal.progress > 0;
   const firstAction = goal.aiAnalysis?.firstSmallAction || goal.description || goal.title;
   const currentAction = goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.createRoadmap;
+  const hasRealPreviewTask = Boolean(goal.todayTask?.id);
   const firstStageId = `${goal.id}-fallback-start`;
   const currentStageId = `${goal.id}-fallback-current`;
   const futureStageId = `${goal.id}-fallback-future`;
@@ -249,10 +254,12 @@ function buildFallbackRoadmap(goal: GoalSummary, t: TextDictionary) {
         createFallbackTask({
           description: goal.aiAnalysis?.goalSummary || goal.description || t.savedGoalDescription,
           goal,
+          id: !hasProgress ? goal.todayTask?.id : undefined,
+          isFallback: hasProgress || !hasRealPreviewTask,
           sortOrder: 0,
           stageId: firstStageId,
           status: hasProgress ? 'completed' : 'todo',
-          title: hasProgress ? t.startedMoving : firstAction,
+          title: hasProgress ? t.startedMoving : goal.todayTask?.title ?? firstAction,
         }),
       ],
       title: hasProgress ? t.startedMoving : t.firstDirection,
@@ -270,6 +277,8 @@ function buildFallbackRoadmap(goal: GoalSummary, t: TextDictionary) {
         createFallbackTask({
           description: goal.aiAnalysis?.goalSummary || t.unlockingTasksDescription,
           goal,
+          id: hasProgress ? goal.todayTask?.id : undefined,
+          isFallback: !hasProgress || !hasRealPreviewTask,
           sortOrder: 0,
           stageId: currentStageId,
           status: 'todo',
@@ -447,13 +456,17 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
 
   const handleToggleTaskCompletion = (task: RoadmapTask) => {
     const isCompleted = task.status !== 'completed';
-    const optimisticStages = getOptimisticStages(stages, task.id, isCompleted);
-    const optimisticProgress = getGoalProgress(optimisticStages);
-    const optimisticStatus = getGoalStatus(optimisticProgress);
 
     setError(null);
-    setStages(optimisticStages);
-    onGoalProgressChange?.(optimisticProgress, optimisticStatus);
+    if (stages.length > 0) {
+      const optimisticStages = getOptimisticStages(stages, task.id, isCompleted);
+      const optimisticProgress = getGoalProgress(optimisticStages);
+      const optimisticStatus = getGoalStatus(optimisticProgress);
+
+      setStages(optimisticStages);
+      onGoalProgressChange?.(optimisticProgress, optimisticStatus);
+    }
+
     desiredTaskCompletionRef.current.set(task.id, isCompleted);
     void persistLatestTaskCompletion(task.id);
   };
