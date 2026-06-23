@@ -3,6 +3,7 @@ import { EmojiToken } from '../../components/common/EmojiToken';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 import { getActiveMentorCharacterId, getMentorCharacter } from '../mentor/mentorCharacters';
+import { getGoalIcon } from './goalEmoji';
 
 type GoalsDashboardProps = {
   canDeleteGoals: boolean;
@@ -93,6 +94,7 @@ export function GoalsDashboard({
       ? Math.round(goals.reduce((total, goal) => total + goal.progress, 0) / goals.length)
       : 0;
   const focusGoal = goals.find((goal) => goal.status === 'active') ?? goals[0];
+  const focusGoalIcon = getGoalIcon(focusGoal);
   const nextAction = getNextAction(focusGoal, t);
   const companion = getMentorCharacter(getActiveMentorCharacterId());
   const companionFallback = companion.shortName.slice(0, 2);
@@ -203,53 +205,62 @@ export function GoalsDashboard({
                   </div>
 
                   <div className="goals-world-grid">
-                    {goals.map((goal, index) => (
-                      <article className={`goals-world-card ${getGoalAccentClass(index)}`} key={goal.id}>
-                        <div className="goals-world-top">
-                          <EmojiToken className="goals-world-icon" label={goal.title} symbol="🎯" tone="pink" />
-                          <div>
-                            <span className={`status-pill status-${goal.status}`}>
-                              {getStatusLabel(goal.status, t)}
-                            </span>
-                            <h3>{goal.title}</h3>
+                    {goals.map((goal, index) => {
+                      const goalIcon = getGoalIcon(goal);
+
+                      return (
+                        <article className={`goals-world-card ${getGoalAccentClass(index)}`} key={goal.id}>
+                          <div className="goals-world-top">
+                            <EmojiToken
+                              className="goals-world-icon"
+                              label={goalIcon.label}
+                              symbol={goalIcon.symbol}
+                              tone={goalIcon.tone}
+                            />
+                            <div>
+                              <span className={`status-pill status-${goal.status}`}>
+                                {getStatusLabel(goal.status, t)}
+                              </span>
+                              <h3>{goal.title}</h3>
+                            </div>
                           </div>
-                        </div>
 
-                        <p>{goal.description || t.savedGoalDescription}</p>
+                          <p>{goal.description || t.savedGoalDescription}</p>
 
-                        <div className="goals-world-progress" aria-label={`${t.progress} ${goal.progress}%`}>
-                          <div>
-                            <span>{t.progress}</span>
-                            <strong>{goal.progress}%</strong>
+                          <div className="goals-world-progress" aria-label={`${t.progress} ${goal.progress}%`}>
+                            <div>
+                              <span>{t.progress}</span>
+                              <strong>{goal.progress}%</strong>
+                            </div>
+                            <div className="progress-bar" aria-hidden="true">
+                              <span style={{ width: `${goal.progress}%` }} />
+                            </div>
                           </div>
-                          <div className="progress-bar" aria-hidden="true">
-                            <span style={{ width: `${goal.progress}%` }} />
+
+                          <div className="goals-world-task">
+                            <span>{goalsCopy.nextTask}</span>
+                            <strong>
+                              {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
+                            </strong>
                           </div>
-                        </div>
 
-                        <div className="goals-world-task">
-                          <span>{goalsCopy.nextTask}</span>
-                          <strong>
-                            {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
-                          </strong>
-                        </div>
-
-                        <div className="goals-world-actions">
-                          <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                            {goalsCopy.open}
-                          </Button>
-                          {canDeleteGoals ? (
-                            <Button
-                              disabled={deletingGoalId === goal.id}
-                              onClick={() => onDeleteGoal(goal.id)}
-                              variant="danger"
-                            >
-                              {deletingGoalId === goal.id ? t.deleting : t.delete}
+                          <div className="goals-world-actions">
+                            <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                              {goalsCopy.open}
                             </Button>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))}
+                            {canDeleteGoals ? (
+                              <Button
+                                disabled={deletingGoalId === goal.id}
+                                onClick={() => onDeleteGoal(goal.id)}
+                                variant="danger"
+                              >
+                                {deletingGoalId === goal.id ? t.deleting : t.delete}
+                              </Button>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
 
                     {canCreateGoal ? (
                       <button className="goals-create-card" onClick={onCreateClick} type="button">
@@ -333,7 +344,12 @@ export function GoalsDashboard({
               <p>{nextAction}</p>
 
               <div className="stitch-quest-meta">
-                <EmojiToken className="stitch-quest-avatar" label="Active quest" symbol="⚡" />
+                <EmojiToken
+                  className="stitch-quest-avatar"
+                  label={focusGoalIcon.label}
+                  symbol={focusGoalIcon.symbol}
+                  tone={focusGoalIcon.tone}
+                />
                 <div>
                   <strong>{focusGoal?.title ?? t.noGoal}</strong>
                   <span>{questCopy.nextTask}</span>
@@ -366,48 +382,57 @@ export function GoalsDashboard({
               </div>
 
               <div className="stitch-goal-grid">
-                {goals.map((goal, index) => (
-                  <article className={`stitch-goal-card ${getGoalAccentClass(index)}`} key={goal.id}>
-                    <EmojiToken className="stitch-goal-icon" label={goal.title} symbol="🌱" tone="pink" />
-                    <div className="stitch-goal-copy">
-                      <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status, t)}</span>
-                      <h3>{goal.title}</h3>
-                      <p>{goal.description || t.savedGoalDescription}</p>
-                    </div>
+                {goals.map((goal, index) => {
+                  const goalIcon = getGoalIcon(goal);
 
-                    <div className="stitch-card-progress" aria-label={`${t.progress} ${goal.progress}%`}>
-                      <div>
-                  <span>{t.progress}</span>
-                        <strong>{goal.progress}%</strong>
+                  return (
+                    <article className={`stitch-goal-card ${getGoalAccentClass(index)}`} key={goal.id}>
+                      <EmojiToken
+                        className="stitch-goal-icon"
+                        label={goalIcon.label}
+                        symbol={goalIcon.symbol}
+                        tone={goalIcon.tone}
+                      />
+                      <div className="stitch-goal-copy">
+                        <span className={`status-pill status-${goal.status}`}>{getStatusLabel(goal.status, t)}</span>
+                        <h3>{goal.title}</h3>
+                        <p>{goal.description || t.savedGoalDescription}</p>
                       </div>
-                      <div className="progress-bar" aria-hidden="true">
-                        <span style={{ width: `${goal.progress}%` }} />
+
+                      <div className="stitch-card-progress" aria-label={`${t.progress} ${goal.progress}%`}>
+                        <div>
+                          <span>{t.progress}</span>
+                          <strong>{goal.progress}%</strong>
+                        </div>
+                        <div className="progress-bar" aria-hidden="true">
+                          <span style={{ width: `${goal.progress}%` }} />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="stitch-next-task">
-                      <span>{questCopy.nextTask}</span>
-                      <strong>
-                        {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
-                      </strong>
-                    </div>
+                      <div className="stitch-next-task">
+                        <span>{questCopy.nextTask}</span>
+                        <strong>
+                          {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
+                        </strong>
+                      </div>
 
-                    <div className="stitch-card-actions">
-                      <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                        {t.open}
-                      </Button>
-                      {canDeleteGoals ? (
-                        <Button
-                          disabled={deletingGoalId === goal.id}
-                          onClick={() => onDeleteGoal(goal.id)}
-                          variant="danger"
-                        >
-                          {deletingGoalId === goal.id ? t.deleting : t.delete}
+                      <div className="stitch-card-actions">
+                        <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
+                          {t.open}
                         </Button>
-                      ) : null}
-                    </div>
-                  </article>
-                ))}
+                        {canDeleteGoals ? (
+                          <Button
+                            disabled={deletingGoalId === goal.id}
+                            onClick={() => onDeleteGoal(goal.id)}
+                            variant="danger"
+                          >
+                            {deletingGoalId === goal.id ? t.deleting : t.delete}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </article>
+                  );
+                })}
 
                 {canCreateGoal ? (
                   <button className="stitch-create-card" onClick={onCreateClick} type="button">
