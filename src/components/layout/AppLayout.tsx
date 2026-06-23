@@ -1,9 +1,11 @@
 import type { ElementType, ReactNode } from 'react';
 import {
+  BellIcon,
   CheckCircledIcon,
   FaceIcon,
   GearIcon,
   HomeIcon,
+  MagnifyingGlassIcon,
 } from '@radix-ui/react-icons';
 import { Button } from '../common/Button';
 import type { AppNavTarget, AppPage } from '../../types/navigation';
@@ -66,6 +68,20 @@ function isActiveNavItem(item: (typeof navItems)[number], activePage: AppPage) {
   return item.target.page === activePage;
 }
 
+function getTopbarTitle(activePage: AppPage, t: ReturnType<typeof useLanguage>['t']) {
+  if (activePage === 'detail') {
+    return t.goalPage;
+  }
+
+  if (activePage === 'mentorCharacters') {
+    return t.navMentorCharacters;
+  }
+
+  const navItem = navItems.find((item) => item.target.page === activePage);
+
+  return navItem ? t[navItem.labelKey] : 'GoalPath';
+}
+
 export function AppLayout({
   activePage,
   children,
@@ -74,6 +90,7 @@ export function AppLayout({
   userEmail,
 }: AppLayoutProps) {
   const { t } = useLanguage();
+  const topbarTitle = getTopbarTitle(activePage, t);
 
   return (
     <main className="app-shell">
@@ -121,7 +138,33 @@ export function AppLayout({
         </div>
       </aside>
 
-      <section className="content-shell">{children}</section>
+      <div className="app-main-frame">
+        <header className="app-topbar" aria-label="Workspace tools">
+          <div className="app-topbar-context">
+            <span className="app-topbar-spark" aria-hidden="true">
+              ✦
+            </span>
+            <span>{topbarTitle}</span>
+          </div>
+
+          <label className="app-search-pill">
+            <span className="sr-only">Search your path</span>
+            <input type="search" placeholder="Search your path..." />
+            <MagnifyingGlassIcon aria-hidden="true" />
+          </label>
+
+          <div className="app-topbar-actions">
+            <button className="app-icon-button" aria-label="Notifications" type="button">
+              <BellIcon />
+            </button>
+            <button className="app-pursue-button" onClick={() => onNavigate({ page: 'goals' })} type="button">
+              Pursue goal
+            </button>
+          </div>
+        </header>
+
+        <section className="content-shell">{children}</section>
+      </div>
     </main>
   );
 }
