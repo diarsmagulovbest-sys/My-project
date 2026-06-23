@@ -26,10 +26,10 @@ const mentorCharacterCopy: Record<AppLanguage, Record<MentorCharacterId, MentorC
       styles: ['observant', 'minimal', 'strategic', 'grounded'],
     },
     calm_plant: {
-      description: 'A gentle guide who helps you move forward with small steps and less pressure.',
-      name: 'Calm Plant',
-      shortName: 'Plant',
-      styles: ['calm', 'supportive', 'gentle', 'patient'],
+      description: 'A living plant companion that gets brighter when you act and worried when you avoid the goal.',
+      name: 'Sprout Mentor',
+      shortName: 'Sprout',
+      styles: ['living', 'direct', 'mischievous', 'growth-based'],
     },
     creative_terrarium: {
       description: 'A flexible idea-maker who suggests experiments, options, and creative practice.',
@@ -78,10 +78,10 @@ const mentorCharacterCopy: Record<AppLanguage, Record<MentorCharacterId, MentorC
     },
     calm_plant: {
       description:
-        '\u041c\u044f\u0433\u043a\u0438\u0439 \u043d\u0430\u0441\u0442\u0430\u0432\u043d\u0438\u043a, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043f\u043e\u043c\u043e\u0433\u0430\u0435\u0442 \u0438\u0434\u0442\u0438 \u043c\u0430\u043b\u0435\u043d\u044c\u043a\u0438\u043c\u0438 \u0448\u0430\u0433\u0430\u043c\u0438 \u0431\u0435\u0437 \u0434\u0430\u0432\u043b\u0435\u043d\u0438\u044f.',
-      name: '\u0421\u043f\u043e\u043a\u043e\u0439\u043d\u043e\u0435 \u0440\u0430\u0441\u0442\u0435\u043d\u0438\u0435',
-      shortName: '\u0420\u0430\u0441\u0442\u0435\u043d\u0438\u0435',
-      styles: ['\u0441\u043f\u043e\u043a\u043e\u0439\u043d\u044b\u0439', '\u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u044e\u0449\u0438\u0439', '\u043c\u044f\u0433\u043a\u0438\u0439', '\u0442\u0435\u0440\u043f\u0435\u043b\u0438\u0432\u044b\u0439'],
+        '\u0416\u0438\u0432\u043e\u0439 \u0440\u043e\u0441\u0442\u043e\u043a, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u0440\u0430\u0434\u0443\u0435\u0442\u0441\u044f \u0434\u0435\u043b\u0443 \u0438 \u0442\u0440\u0435\u0432\u043e\u0436\u0438\u0442\u0441\u044f, \u043a\u043e\u0433\u0434\u0430 \u0446\u0435\u043b\u044c \u0438\u0437\u0431\u0435\u0433\u0430\u044e\u0442.',
+      name: '\u0420\u043e\u0441\u0442\u043e\u043a-\u043d\u0430\u0441\u0442\u0430\u0432\u043d\u0438\u043a',
+      shortName: '\u0420\u043e\u0441\u0442\u043e\u043a',
+      styles: ['\u0436\u0438\u0432\u043e\u0439', '\u043f\u0440\u044f\u043c\u043e\u0439', '\u0445\u0438\u0442\u0440\u044b\u0439', '\u043f\u0440\u043e \u0440\u043e\u0441\u0442'],
     },
     creative_terrarium: {
       description:

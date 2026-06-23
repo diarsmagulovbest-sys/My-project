@@ -275,7 +275,7 @@ export function GoalsDashboard({
 
             <aside className="goals-stitch-side" aria-label="Goal mentor panel">
               <section className="goals-mentor-panel">
-                <div className="stitch-mentor-avatar" aria-hidden="true">
+                <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
                   {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
                 </div>
                 <div>
@@ -446,7 +446,7 @@ export function GoalsDashboard({
 
           <aside className="stitch-side" aria-label={t.aiMentor}>
             <section className="stitch-mentor-card">
-              <div className="stitch-mentor-avatar" aria-hidden="true">
+              <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
                 {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
               </div>
               <strong>{companion.name}</strong>

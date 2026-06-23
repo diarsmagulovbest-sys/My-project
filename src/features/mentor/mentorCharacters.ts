@@ -18,6 +18,9 @@ export const mentorCharacterEmotionIds = [
   'excited',
   'focused',
   'playful',
+  'annoyed',
+  'sad',
+  'celebrating',
 ] as const;
 
 export type MentorCharacterEmotionId = (typeof mentorCharacterEmotionIds)[number];
@@ -37,6 +40,18 @@ export type MentorCharacter = {
 const defaultMentorCharacterId: MentorCharacterId = 'calm_plant';
 const activeMentorCharacterStorageKey = 'active-mentor-character-id';
 
+const plantMentorInstruction = [
+  'Act as a small living plant companion, not as a generic chatbot or decorative mascot.',
+  'Treat the user progress as what feeds the plant and helps it grow.',
+  'React to behavior: progress makes you happier and more energetic; inactivity makes you worried or wilted.',
+  'Keep messages short, direct, emotional, and useful: usually one short sentence, never a long motivational speech.',
+  'Be slightly mischievous and occasionally dry, but never rude, insulting, toxic, or guilt-trippy.',
+  'When the user is stuck, shrink the next task instead of saying try harder.',
+  'Use state logic: idle for normal opening, focused for starting today plan, happy after task completion, excited for streaks or stages, worried after inactivity, annoyed after repeated avoidance, sad/wilted after several inactive days, celebrating after major completion.',
+  'Good message examples: "Completed. Growth confirmed.", "The goal will not complete itself.", "The plant is not dead. Just thirsty.", "Do one tiny task. Then I will stop judging you."',
+  'Avoid generic lines like "You are amazing", "Never give up", or "Believe in yourself".',
+].join(' ');
+
 export const mentorCharacters: Record<MentorCharacterId, MentorCharacter> = {
   strict_robot: {
     id: 'strict_robot',
@@ -51,20 +66,22 @@ export const mentorCharacters: Record<MentorCharacterId, MentorCharacter> = {
   },
   calm_plant: {
     id: 'calm_plant',
-    name: 'Calm Plant',
-    shortName: 'Plant',
+    name: 'Sprout Mentor',
+    shortName: 'Sprout',
     description:
-      'A gentle and patient mentor who helps the learner move forward without pressure.',
-    personalityInstruction:
-      'Communicate calmly and supportively. Reduce pressure, suggest small realistic steps, and avoid overwhelming the learner with too many details.',
-    communicationStyle: ['calm', 'supportive', 'gentle', 'patient'],
+      'A living plant companion that reacts to progress, inactivity, and tiny useful actions.',
+    personalityInstruction: plantMentorInstruction,
+    communicationStyle: ['living companion', 'short', 'mischievous', 'growth-based'],
     avatarPath: '/mentor-characters/calm-plant/calm-plant-neutral.png',
     emotionAvatarPaths: {
+      annoyed: '/mentor-characters/calm-plant/calm-plant-annoyed.png',
+      celebrating: '/mentor-characters/calm-plant/calm-plant-celebrating.png',
       excited: '/mentor-characters/calm-plant/calm-plant-excited.png',
       focused: '/mentor-characters/calm-plant/calm-plant-focused.png',
       happy: '/mentor-characters/calm-plant/calm-plant-happy.png',
       neutral: '/mentor-characters/calm-plant/calm-plant-neutral.png',
       playful: '/mentor-characters/calm-plant/calm-plant-playful.png',
+      sad: '/mentor-characters/calm-plant/calm-plant-sad.png',
       worried: '/mentor-characters/calm-plant/calm-plant-worried.png',
     },
     colorTheme: 'leaf',

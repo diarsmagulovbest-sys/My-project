@@ -5,9 +5,11 @@ import type { MentorMessage, ProgressLog } from '../../types/mentorChat';
 import type { RoadmapStage } from '../../types/roadmap';
 import type { MentorResponse } from '../../validations/aiResponses';
 import { validateMentorResponse } from '../../validations/aiResponses';
+import { getMentorCharacterSystemContext, type MentorCharacterId } from './mentorCharacters';
 import { getMentorProfile, getMentorProfileSystemContext } from './mentorProfiles';
 
 type GenerateMentorReplyInput = {
+  activeMentorCharacterId: MentorCharacterId;
   goal: Goal;
   language: AppLanguage;
   messages: MentorMessage[];
@@ -81,6 +83,7 @@ function buildMessageContext(messages: MentorMessage[]) {
 
 function buildMentorChatPrompt({
   goal,
+  activeMentorCharacterId,
   language,
   messages,
   progressLogs,
@@ -104,6 +107,9 @@ function buildMentorChatPrompt({
     '',
     'Mentor profile context:',
     getMentorProfileSystemContext(goal.mentorProfileId),
+    '',
+    'Selected mentor character context:',
+    getMentorCharacterSystemContext(activeMentorCharacterId),
     '',
     'Saved roadmap and tasks:',
     JSON.stringify(buildRoadmapContext(roadmapStages), null, 2),

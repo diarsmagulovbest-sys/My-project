@@ -1,17 +1,17 @@
-# Calm Plant Avatar Files
+# Sprout Mentor Avatar Files
 
-Put the six transparent PNG files for `calm_plant` in this folder:
+Local PNG assets for the `calm_plant` mentor live in this folder.
 
-- `calm-plant-neutral.png` - neutral/default face
+Current emotion files:
+
+- `calm-plant-neutral.png` - calm idle face
 - `calm-plant-worried.png` - worried or nervous face
 - `calm-plant-happy.png` - happy face
 - `calm-plant-excited.png` - excited face
 - `calm-plant-focused.png` - focused or determined face
-- `calm-plant-playful.png` - playful or wink face
+- `calm-plant-annoyed.png` - annoyed but not hostile face
+- `calm-plant-sad.png` - wilted/sad fallback face
+- `calm-plant-celebrating.png` - celebration fallback face
+- `calm-plant-playful.png` - playful fallback face
 
-Recommended export:
-
-- PNG
-- transparent background
-- square canvas if possible
-- same visual size and position in every file
+The files are square PNG crops generated from the plant mentor reference sheet and kept local so the app does not show broken avatar placeholders.

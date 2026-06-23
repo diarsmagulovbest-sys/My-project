@@ -11,6 +11,7 @@ import {
   fetchRecentProgressLogs,
   getOrCreateMentorConversation,
 } from './mentorChatApi';
+import { getActiveMentorCharacterId } from './mentorCharacters';
 
 type MentorChatProps = {
   goal: Goal;
@@ -80,6 +81,7 @@ export function MentorChat({ goal }: MentorChatProps) {
       fetchRecentProgressLogs(goal.id),
     ]);
     const mentorReply = await generateMentorReply({
+      activeMentorCharacterId: getActiveMentorCharacterId(),
       goal,
       language,
       messages: nextMessages,

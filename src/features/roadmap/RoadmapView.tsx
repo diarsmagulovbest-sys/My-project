@@ -661,7 +661,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
 
           <aside className="roadmap-side">
             <section className="roadmap-mentor-card">
-              <div className="stitch-mentor-avatar" aria-hidden="true">
+              <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
                 {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
               </div>
               <strong>{companion.name}</strong>

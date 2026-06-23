@@ -1306,6 +1306,30 @@ textarea {
   object-fit: cover;
 }
 
+.stitch-mentor-avatar-calm_plant {
+  background: radial-gradient(circle at 50% 38%, rgba(212, 245, 143, 0.9), rgba(103, 147, 55, 0.24) 72%);
+}
+
+.stitch-mentor-avatar-calm_plant img,
+.mentor-character-avatar-calm_plant img {
+  object-fit: contain;
+  padding: 2px;
+  animation: plant-mentor-breathe 4200ms ease-in-out infinite;
+}
+
+@keyframes plant-mentor-breathe {
+  0%,
+  100% {
+    filter: saturate(1);
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    filter: saturate(1.08);
+    transform: translateY(-2px) scale(1.018);
+  }
+}
+
 .stitch-mentor-card strong,
 .goals-mentor-panel strong,
 .roadmap-mentor-card strong {
