@@ -88,9 +88,19 @@ function getStageStatus(stage: RoadmapStage, firstOpenStageId: string | null): R
 }
 
 function getStageClassName(stage: DisplayRoadmapStage) {
-  return ['stage-panel', `stage-panel-${stage.status}`, stage.isFallback ? 'stage-panel-fallback' : '']
+  return ['stage-panel', 'stage-panel-revealed', `stage-panel-${stage.status}`, stage.isFallback ? 'stage-panel-fallback' : '']
     .filter(Boolean)
     .join(' ');
+}
+
+function getVisibleStages(stages: DisplayRoadmapStage[]) {
+  const activeStage = stages.find((stage) => stage.status === 'active');
+
+  if (!activeStage) {
+    return stages;
+  }
+
+  return stages.filter((stage) => stage.status === 'completed' || stage.id === activeStage.id);
 }
 
 function getStageStatusLabel(status: RoadmapStageStatus, t: TextDictionary) {
@@ -310,6 +320,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
     () => (hasPersistedRoadmap ? updateStageStatuses(stages) : buildFallbackRoadmap(goal, t)),
     [goal, hasPersistedRoadmap, stages, t],
   );
+  const visibleStages = useMemo(() => getVisibleStages(displayStages), [displayStages]);
   const totalTasks = displayStages.reduce((count, stage) => count + stage.tasks.length, 0);
   const completedTasks = displayStages.reduce(
     (count, stage) => count + stage.tasks.filter((task) => task.status === 'completed').length,
@@ -506,7 +517,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
             </section>
 
             <section className="roadmap-grid roadmap-journey-map" aria-label={t.roadmap}>
-              {displayStages.map((stage, index) => {
+              {visibleStages.map((stage, index) => {
                 const stageProgress = getStageProgress(stage);
                 const stageCompletedTasks = stage.tasks.filter((task) => task.status === 'completed').length;
 
