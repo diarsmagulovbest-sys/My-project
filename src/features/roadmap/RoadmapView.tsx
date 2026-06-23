@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button } from '../../components/common/Button';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
-import { useLanguage, type AppLanguage } from '../../lib/language';
-import type { Goal, GoalStatus } from '../../types/goal';
+import { useLanguage, type AppLanguage, type TextDictionary } from '../../lib/language';
+import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
 import type {
   RoadmapStage,
@@ -16,12 +16,21 @@ import { generateRoadmap } from './generateRoadmap';
 import { createRoadmap, fetchRoadmap, setRoadmapTaskCompletion } from './roadmapApi';
 
 type RoadmapViewProps = {
-  goal: Goal;
+  goal: GoalSummary;
   onBackToGoal?: () => void;
   onGoalProgressChange?: (progress: number, status: GoalStatus) => void;
 };
 
 const pendingRoadmapRequests = new Map<string, Promise<RoadmapStage[]>>();
+
+type DisplayRoadmapTask = RoadmapTask & {
+  isFallback?: boolean;
+};
+
+type DisplayRoadmapStage = Omit<RoadmapStage, 'tasks'> & {
+  isFallback?: boolean;
+  tasks: DisplayRoadmapTask[];
+};
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
@@ -42,7 +51,7 @@ function getAnsweredQuestions(questions: GoalQuestion[]) {
   return questions.filter((question) => question.answer.trim());
 }
 
-function getGoalProgress(stages: RoadmapStage[]) {
+function getGoalProgress(stages: DisplayRoadmapStage[]) {
   const tasks = stages.flatMap((stage) => stage.tasks);
 
   if (tasks.length === 0) {
@@ -58,7 +67,7 @@ function getGoalStatus(progress: number): GoalStatus {
   return progress === 100 ? 'completed' : 'active';
 }
 
-function getStageProgress(stage: RoadmapStage) {
+function getStageProgress(stage: DisplayRoadmapStage) {
   if (stage.tasks.length === 0) {
     return 0;
   }
@@ -76,8 +85,10 @@ function getStageStatus(stage: RoadmapStage, firstOpenStageId: string | null): R
   return stage.id === firstOpenStageId ? 'active' : 'locked';
 }
 
-function getStageClassName(stage: RoadmapStage) {
-  return ['stage-panel', `stage-panel-${stage.status}`].join(' ');
+function getStageClassName(stage: DisplayRoadmapStage) {
+  return ['stage-panel', `stage-panel-${stage.status}`, stage.isFallback ? 'stage-panel-fallback' : '']
+    .filter(Boolean)
+    .join(' ');
 }
 
 function updateStageStatuses(stages: RoadmapStage[]) {
@@ -112,7 +123,7 @@ function getOptimisticStages(stages: RoadmapStage[], taskId: string, isCompleted
 }
 
 async function generateAndSaveRoadmap(
-  goal: Goal,
+  goal: GoalSummary,
   questions: GoalQuestion[],
   language: AppLanguage,
 ) {
@@ -134,6 +145,118 @@ async function generateAndSaveRoadmap(
   return nextRequest;
 }
 
+function createFallbackTask({
+  description,
+  goal,
+  sortOrder,
+  stageId,
+  status,
+  title,
+}: {
+  description: string;
+  goal: GoalSummary;
+  sortOrder: number;
+  stageId: string;
+  status: RoadmapTaskStatus;
+  title: string;
+}): DisplayRoadmapTask {
+  const timestamp = goal.updatedAt || goal.createdAt;
+
+  return {
+    completedAt: status === 'completed' ? timestamp : null,
+    createdAt: timestamp,
+    description,
+    dueDate: null,
+    estimatedMinutes: Math.max(goal.availableTime, 15),
+    goalId: goal.id,
+    id: `${stageId}-task-${sortOrder}`,
+    isFallback: true,
+    sortOrder,
+    stageId,
+    status,
+    title,
+    updatedAt: timestamp,
+  };
+}
+
+function buildFallbackRoadmap(goal: GoalSummary, t: TextDictionary) {
+  const timestamp = goal.updatedAt || goal.createdAt;
+  const hasProgress = goal.progress > 0;
+  const firstAction = goal.aiAnalysis?.firstSmallAction || goal.description || goal.title;
+  const currentAction = goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.createRoadmap;
+  const firstStageId = `${goal.id}-fallback-start`;
+  const currentStageId = `${goal.id}-fallback-current`;
+  const futureStageId = `${goal.id}-fallback-future`;
+  const firstStageStatus: RoadmapStageStatus = hasProgress ? 'completed' : 'active';
+  const currentStageStatus: RoadmapStageStatus = hasProgress ? 'active' : 'locked';
+
+  return [
+    {
+      createdAt: timestamp,
+      description: hasProgress ? t.startedMovingText : t.smallestActionToday,
+      goalId: goal.id,
+      id: firstStageId,
+      isFallback: true,
+      sortOrder: 0,
+      status: firstStageStatus,
+      successCriteria: hasProgress ? [t.completed] : [t.unlocked],
+      tasks: [
+        createFallbackTask({
+          description: goal.aiAnalysis?.goalSummary || goal.description || t.savedGoalDescription,
+          goal,
+          sortOrder: 0,
+          stageId: firstStageId,
+          status: hasProgress ? 'completed' : 'todo',
+          title: hasProgress ? t.startedMoving : firstAction,
+        }),
+      ],
+      title: hasProgress ? t.startedMoving : t.firstDirection,
+    },
+    {
+      createdAt: timestamp,
+      description: hasProgress ? t.smallestActionToday : t.roadmapAfterQuestions,
+      goalId: goal.id,
+      id: currentStageId,
+      isFallback: true,
+      sortOrder: 1,
+      status: currentStageStatus,
+      successCriteria: [hasProgress ? t.today : t.locked],
+      tasks: [
+        createFallbackTask({
+          description: goal.aiAnalysis?.goalSummary || t.unlockingTasksDescription,
+          goal,
+          sortOrder: 0,
+          stageId: currentStageId,
+          status: 'todo',
+          title: currentAction,
+        }),
+      ],
+      title: hasProgress ? t.todaysNextStep : t.createRoadmap,
+    },
+    {
+      createdAt: timestamp,
+      description: goal.aiAnalysis?.steps[1] ?? t.createRoadmapToGetTask,
+      goalId: goal.id,
+      id: futureStageId,
+      isFallback: true,
+      sortOrder: 2,
+      status: 'locked',
+      successCriteria: [t.locked],
+      tasks: [
+        createFallbackTask({
+          description: t.roadmapReadyDescription,
+          goal,
+          sortOrder: 0,
+          stageId: futureStageId,
+          status: 'todo',
+          title: t.thisWeek,
+        }),
+      ],
+      title: t.thisWeek,
+    },
+  ] satisfies DisplayRoadmapStage[];
+}
+
 export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: RoadmapViewProps) {
   const { language, t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
@@ -147,13 +270,18 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
   const answeredQuestions = useMemo(() => getAnsweredQuestions(questions), [questions]);
   const canGenerateRoadmap =
     questions.length > 0 && answeredQuestions.length === questions.length && stages.length === 0;
-  const totalTasks = stages.reduce((count, stage) => count + stage.tasks.length, 0);
-  const completedTasks = stages.reduce(
+  const hasPersistedRoadmap = stages.some((stage) => stage.tasks.length > 0);
+  const displayStages: DisplayRoadmapStage[] = useMemo(
+    () => (hasPersistedRoadmap ? updateStageStatuses(stages) : buildFallbackRoadmap(goal, t)),
+    [goal, hasPersistedRoadmap, stages, t],
+  );
+  const totalTasks = displayStages.reduce((count, stage) => count + stage.tasks.length, 0);
+  const completedTasks = displayStages.reduce(
     (count, stage) => count + stage.tasks.filter((task) => task.status === 'completed').length,
     0,
   );
-  const overallProgress = getGoalProgress(stages);
-  const currentStage = stages.find((stage) => stage.status === 'active') ?? stages[0];
+  const overallProgress = hasPersistedRoadmap ? getGoalProgress(displayStages) : goal.progress;
+  const currentStage = displayStages.find((stage) => stage.status === 'active') ?? displayStages[0];
   const remainingTasks = Math.max(totalTasks - completedTasks, 0);
   const companion = getMentorCharacter(getActiveMentorCharacterId());
   const companionFallback = companion.shortName.slice(0, 2);
@@ -291,15 +419,19 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
         </section>
       ) : null}
 
-      {!isLoading && stages.length > 0 ? (
+      {!isLoading ? (
         <section className="roadmap-page-layout" aria-label={t.roadmap}>
           <main className="roadmap-main">
             <section className="roadmap-panel roadmap-summary-card">
               <div className="panel-heading">
                 <div>
                   <span className="eyebrow">{t.overallProgress}</span>
-                  <h2>{t.planReady}</h2>
-                  <p>{`${completedTasks} of ${totalTasks} tasks completed. ${remainingTasks} to go.`}</p>
+                  <h2>{hasPersistedRoadmap ? t.planReady : t.noRoadmapYet}</h2>
+                  <p>
+                    {hasPersistedRoadmap
+                      ? `${completedTasks} of ${totalTasks} tasks completed. ${remainingTasks} to go.`
+                      : t.roadmapActionDescription}
+                  </p>
                 </div>
                 <div className="progress-ring" aria-label={`${t.progress} ${overallProgress}%`}>
                   <span>{overallProgress}%</span>
@@ -310,10 +442,16 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                   <span>{error}</span>
                 </div>
               ) : null}
+              {!hasPersistedRoadmap ? (
+                <div className="roadmap-fallback-note">
+                  <strong>{t.plan}</strong>
+                  <p>{t.createRoadmapToGetTask}</p>
+                </div>
+              ) : null}
             </section>
 
             <section className="roadmap-grid" aria-label={t.roadmap}>
-              {stages.map((stage, index) => {
+              {displayStages.map((stage, index) => {
                 const stageProgress = getStageProgress(stage);
                 const stageCompletedTasks = stage.tasks.filter((task) => task.status === 'completed').length;
 
@@ -343,32 +481,93 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                     ) : null}
 
                     <div className="task-list">
-                      {stage.tasks.map((task) => (
-                        <div className="task-row" key={task.id}>
-                          <button
-                            aria-label={
-                              task.status === 'completed'
-                                ? `Mark "${task.title}" as not done`
-                                : `Mark "${task.title}" as done`
-                            }
-                            className={task.status === 'completed' ? 'task-check task-done' : 'task-check'}
-                            onClick={() => void handleToggleTaskCompletion(task)}
-                            type="button"
-                          />
-                          <div>
-                            <strong>{task.title}</strong>
-                            <p>{task.description}</p>
-                            <small>
-                              {task.estimatedMinutes} {t.min} | {formatDate(task.dueDate, language)}
-                            </small>
+                      {stage.tasks.map((task) => {
+                        const taskClassName = [
+                          'task-check',
+                          task.status === 'completed' ? 'task-done' : '',
+                          task.isFallback ? 'task-check-preview' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ');
+
+                        return (
+                          <div className="task-row" key={task.id}>
+                            <button
+                              aria-label={
+                                task.status === 'completed'
+                                  ? `Mark "${task.title}" as not done`
+                                  : `Mark "${task.title}" as done`
+                              }
+                              className={taskClassName}
+                              disabled={task.isFallback}
+                              onClick={() => void handleToggleTaskCompletion(task)}
+                              type="button"
+                            />
+                            <div>
+                              <strong>{task.title}</strong>
+                              <p>{task.description}</p>
+                              <small>
+                                {task.estimatedMinutes} {t.min} | {formatDate(task.dueDate, language)}
+                              </small>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </article>
                 );
               })}
             </section>
+
+            {!hasPersistedRoadmap ? (
+              <section className="roadmap-panel roadmap-generate-card">
+                <div>
+                  <span className="eyebrow">{t.doThisNext}</span>
+                  <h2>{t.createRoadmap}</h2>
+                  <p>
+                    {stages.length > 0
+                      ? t.roadmapActionDescription
+                      : canGenerateRoadmap
+                        ? t.roadmapReadyDescription
+                        : t.saveAnswersFirst}
+                  </p>
+                </div>
+
+                {stages.length > 0 ? (
+                  <div className="inline-state">
+                    <strong>{t.noRoadmapYet}</strong>
+                    <p>{t.roadmapActionDescription}</p>
+                  </div>
+                ) : !canGenerateRoadmap ? (
+                  <div className="inline-state">
+                    <strong>{t.answerQuickQuestionsFirst}</strong>
+                    <p>{t.saveAnswersFirst}</p>
+                  </div>
+                ) : (
+                  <div className="inline-state inline-state-ready">
+                    <strong>{t.readyToCreate}</strong>
+                    <p>{t.roadmapReadyDescription}</p>
+                  </div>
+                )}
+
+                <div className="question-actions">
+                  <Button disabled={isGenerating || !canGenerateRoadmap} onClick={() => void handleGenerate()}>
+                    {isGenerating ? (
+                      <ProgressiveFluxLoader
+                        className="progressive-flux-loader-compact"
+                        phases={[
+                          { at: 0, label: t.loadingStages },
+                          { at: 45, label: t.loadingTasks },
+                          { at: 80, label: t.loadingReady },
+                        ]}
+                      />
+                    ) : (
+                      t.createRoadmap
+                    )}
+                  </Button>
+                </div>
+              </section>
+            ) : null}
           </main>
 
           <aside className="roadmap-side">
@@ -384,72 +583,13 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
             <section className="roadmap-insight-card">
               <span>{t.thisWeek}</span>
               <strong>{currentStage?.title ?? t.createRoadmap}</strong>
-              <p>{remainingTasks > 0 ? `${remainingTasks} tasks left on this path.` : t.completed}</p>
-            </section>
-          </aside>
-        </section>
-      ) : null}
-
-      {!isLoading && stages.length === 0 ? (
-        <section className="roadmap-page-layout roadmap-empty-layout">
-          <main className="roadmap-main">
-            <section className="roadmap-panel roadmap-action-panel">
-              <div className="panel-heading">
-                <div>
-                  <span className="eyebrow">{t.doThisNext}</span>
-                  <h2>{t.createRoadmap}</h2>
-                  <p>{t.roadmapActionDescription}</p>
-                </div>
-              </div>
-
-              {error ? (
-                <div className="form-error questions-error" role="alert">
-                  <span>{error}</span>
-                  <Button variant="secondary" onClick={() => void handleGenerate()}>
-                    {t.retry}
-                  </Button>
-                </div>
-              ) : null}
-
-              {!canGenerateRoadmap ? (
-                <div className="inline-state">
-                  <strong>{t.answerQuickQuestionsFirst}</strong>
-                  <p>{t.saveAnswersFirst}</p>
-                </div>
-              ) : (
-                <div className="inline-state inline-state-ready">
-                  <strong>{t.readyToCreate}</strong>
-                  <p>{t.roadmapReadyDescription}</p>
-                </div>
-              )}
-
-              <div className="question-actions">
-                <Button disabled={isGenerating || !canGenerateRoadmap} onClick={() => void handleGenerate()}>
-                  {isGenerating ? (
-                    <ProgressiveFluxLoader
-                      className="progressive-flux-loader-compact"
-                      phases={[
-                        { at: 0, label: t.loadingStages },
-                        { at: 45, label: t.loadingTasks },
-                        { at: 80, label: t.loadingReady },
-                      ]}
-                    />
-                  ) : (
-                    t.createRoadmap
-                  )}
-                </Button>
-              </div>
-            </section>
-          </main>
-
-          <aside className="roadmap-side">
-            <section className="roadmap-mentor-card">
-              <div className="stitch-mentor-avatar" aria-hidden="true">
-                {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
-              </div>
-              <strong>{companion.name}</strong>
-              <span>{t.aiMentor}</span>
-              <p>{t.roadmapAfterQuestions}</p>
+              <p>
+                {hasPersistedRoadmap
+                  ? remainingTasks > 0
+                    ? `${remainingTasks} tasks left on this path.`
+                    : t.completed
+                  : t.roadmapAfterQuestions}
+              </p>
             </section>
           </aside>
         </section>

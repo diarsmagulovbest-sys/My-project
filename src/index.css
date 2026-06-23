@@ -19,6 +19,10 @@
   --app-brand-soft: #f7dbe7;
   --app-brand-faint: rgba(131, 93, 107, 0.12);
   --app-brand-rgb: 131, 93, 107;
+  --accent: #835d6b;
+  --accent-soft: #f7dbe7;
+  --accent-muted: #f7dbe7;
+  --accent-border: #e6d7df;
   --app-sky: #cfeefd;
   --app-sky-strong: #2d6c84;
   --app-blush: #f7dbe7;
@@ -209,7 +213,7 @@ textarea {
 .auth-submit,
 .settings-code-enter {
   color: #ffffff;
-  background: var(--app-brand);
+  background: var(--accent);
   box-shadow: 0 14px 28px rgba(var(--app-brand-rgb), 0.22);
 }
 
@@ -224,7 +228,7 @@ textarea {
 
 .button-secondary {
   color: var(--app-brand-strong);
-  background: var(--app-brand-soft);
+  background: var(--accent-soft);
   box-shadow: inset 0 0 0 1px rgba(var(--app-brand-rgb), 0.12);
 }
 
@@ -251,7 +255,9 @@ textarea {
 .mentor-character-card,
 .roadmap-panel,
 .task-focus,
+.goal-command-card,
 .goal-roadmap-preview,
+.goal-next-card,
 .mentor-profile-card,
 .detail-summary,
 .goal-collapsible,
@@ -271,7 +277,8 @@ textarea {
 .stitch-stat-card,
 .stitch-milestone-card,
 .roadmap-mentor-card,
-.roadmap-insight-card {
+.roadmap-insight-card,
+.roadmap-generate-card {
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: var(--radius-card);
   background: var(--app-surface-glass);
@@ -373,7 +380,7 @@ textarea {
   color: var(--app-brand-strong);
   background: #ffffff;
   box-shadow:
-    inset -4px 0 0 var(--app-brand),
+    inset -4px 0 0 var(--accent),
     0 10px 24px rgba(84, 101, 128, 0.08);
 }
 
@@ -842,7 +849,7 @@ textarea {
   width: 0;
   height: 100%;
   border-radius: inherit;
-  background: var(--app-brand);
+  background: var(--accent);
 }
 
 .status-pill {
@@ -852,7 +859,7 @@ textarea {
   align-items: center;
   border-radius: 999px;
   color: var(--app-brand-strong);
-  background: var(--app-brand-soft);
+  background: var(--accent-soft);
   font-size: 12px;
   font-weight: 800;
   padding: 0 12px;
@@ -1391,8 +1398,81 @@ textarea {
   gap: 18px;
 }
 
+.goal-command-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 22px;
+  align-items: center;
+  padding: 26px;
+}
+
+.goal-command-copy {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.goal-command-copy h1 {
+  max-width: 760px;
+  margin: 0;
+  color: var(--app-text-strong);
+  font-size: clamp(32px, 3.4vw, 46px);
+  line-height: 1.04;
+}
+
+.goal-command-copy p {
+  max-width: 780px;
+  margin: 0;
+  color: var(--app-text);
+  line-height: 1.5;
+}
+
+.goal-command-progress {
+  display: grid;
+  grid-template-columns: 94px minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+  border-radius: var(--radius-inner);
+  background: var(--app-surface-soft);
+  padding: 16px;
+}
+
+.goal-command-ring {
+  flex-basis: 82px;
+  width: 82px;
+  height: 82px;
+  border-width: 8px;
+  font-size: 22px;
+}
+
+.goal-command-metrics {
+  display: grid;
+  gap: 8px;
+}
+
+.goal-command-metrics div {
+  display: grid;
+  gap: 3px;
+}
+
+.goal-command-metrics span,
+.goal-next-card span {
+  color: var(--app-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.goal-command-metrics strong,
+.goal-next-card strong {
+  color: var(--app-text-strong);
+}
+
 .task-focus,
 .goal-roadmap-preview,
+.goal-command-card,
+.goal-next-card,
 .mentor-profile-card,
 .detail-summary,
 .ai-analysis-panel,
@@ -1440,8 +1520,106 @@ textarea {
   align-items: center;
 }
 
+.goal-roadmap-preview-command {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
+
+.goal-roadmap-preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+}
+
+.goal-preview-timeline {
+  display: grid;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.goal-preview-step {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  border-radius: var(--radius-inner);
+  background: var(--app-surface-soft);
+  padding: 12px 14px;
+}
+
+.goal-preview-step > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 7px solid #ffffff;
+  border-radius: 999px;
+  background: var(--app-sky);
+  box-shadow: var(--shadow-soft);
+}
+
+.goal-preview-step-completed > span {
+  background: var(--app-sky-strong);
+}
+
+.goal-preview-step-active {
+  background: rgba(var(--app-brand-rgb), 0.09);
+}
+
+.goal-preview-step-active > span {
+  background: var(--accent);
+}
+
+.goal-preview-step-locked {
+  opacity: 0.72;
+}
+
+.goal-preview-step small {
+  color: var(--app-text-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.goal-preview-step strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--app-text-strong);
+}
+
+.goal-preview-step p {
+  margin-top: 3px;
+  font-size: 14px;
+}
+
 .goal-detail-side {
   gap: 18px;
+}
+
+.goal-side-actions {
+  justify-content: stretch;
+}
+
+.goal-side-actions .button {
+  flex: 1 1 auto;
+}
+
+.goal-next-card {
+  display: grid;
+  gap: 8px;
+  padding: 22px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(var(--app-brand-rgb), 0.08)),
+    var(--app-surface-glass);
+}
+
+.goal-next-card p {
+  margin: 0;
+  color: var(--app-text-muted);
+  line-height: 1.45;
 }
 
 .mentor-profile-card {
@@ -1745,11 +1923,30 @@ textarea {
   height: 96px;
   place-items: center;
   border: 10px solid #d8edf8;
-  border-right-color: var(--app-brand);
+  border-right-color: var(--accent);
   border-radius: 999px;
   color: var(--app-brand-strong);
   font-size: 24px;
   font-weight: 800;
+}
+
+.roadmap-fallback-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 16px;
+  border-radius: var(--radius-inner);
+  background: rgba(var(--app-brand-rgb), 0.08);
+  padding: 14px 16px;
+}
+
+.roadmap-fallback-note strong {
+  color: var(--app-brand-strong);
+}
+
+.roadmap-fallback-note p {
+  margin: 0;
+  color: var(--app-text-muted);
+  line-height: 1.45;
 }
 
 .roadmap-grid {
@@ -1766,7 +1963,7 @@ textarea {
   left: 25px;
   width: 4px;
   border-radius: 999px;
-  background: linear-gradient(180deg, var(--app-sky), var(--app-brand), var(--app-sky));
+  background: linear-gradient(180deg, var(--app-sky), var(--accent), var(--app-sky));
   content: "";
 }
 
@@ -1801,7 +1998,7 @@ textarea {
 }
 
 .stage-panel-active .stage-node {
-  background: var(--app-brand);
+  background: var(--accent);
 }
 
 .stage-panel-completed {
@@ -1810,6 +2007,14 @@ textarea {
 
 .stage-panel-completed .stage-node {
   background: var(--app-sky-strong);
+}
+
+.stage-panel-fallback {
+  border-style: dashed;
+}
+
+.stage-panel-fallback .stage-heading span::after {
+  content: " preview";
 }
 
 .stage-panel-locked {
@@ -1890,17 +2095,42 @@ textarea {
   background: #ffffff;
 }
 
-.task-check:hover,
-.task-check:focus-visible {
+.task-check:not(:disabled):hover,
+.task-check:not(:disabled):focus-visible {
   border-color: var(--app-brand);
   box-shadow: 0 0 0 4px rgba(var(--app-brand-rgb), 0.12);
   outline: none;
 }
 
 .task-done {
-  border-color: var(--app-brand);
-  background: var(--app-brand);
+  border-color: var(--accent);
+  background: var(--accent);
   box-shadow: inset 0 0 0 5px #ffffff;
+}
+
+.task-check:disabled {
+  opacity: 0.72;
+}
+
+.task-check-preview {
+  border-style: dashed;
+  background: var(--app-surface);
+}
+
+.roadmap-generate-card {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.roadmap-generate-card h2,
+.roadmap-generate-card p {
+  margin: 0;
+}
+
+.roadmap-generate-card p {
+  color: var(--app-text-muted);
+  line-height: 1.5;
 }
 
 .settings-stitch-page,
@@ -2013,14 +2243,15 @@ textarea {
 .palette-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
 }
 
 .palette-option {
+  position: relative;
   display: grid;
-  gap: 8px;
-  width: 92px;
-  min-height: 102px;
+  gap: 7px;
+  width: 96px;
+  min-height: 104px;
   justify-items: center;
   border: 1px solid var(--palette-swatch-border, var(--app-border));
   border-radius: var(--radius-inner);
@@ -2039,8 +2270,13 @@ textarea {
 }
 
 .palette-option-selected {
+  border-color: var(--palette-swatch, var(--accent));
   color: var(--app-brand-strong);
-  box-shadow: 0 0 0 4px rgba(var(--app-brand-rgb), 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), var(--palette-swatch-soft, var(--accent-soft)));
+  box-shadow:
+    0 0 0 3px var(--palette-swatch-soft, var(--accent-soft)),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.82);
 }
 
 .palette-swatch {
@@ -2052,6 +2288,19 @@ textarea {
   box-shadow: 0 0 0 2px var(--palette-swatch-soft);
 }
 
+.palette-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--palette-swatch, var(--accent));
+}
+
 .theme-toggle,
 .language-toggle {
   position: relative;
@@ -2061,7 +2310,7 @@ textarea {
   align-items: center;
   border: 0;
   border-radius: 999px;
-  background: var(--app-brand);
+  background: var(--accent);
   padding: 4px;
 }
 
@@ -2136,37 +2385,77 @@ textarea {
 .mentor-character-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  gap: 18px;
 }
 
 .mentor-character-card {
   display: grid;
   align-content: start;
-  gap: 16px;
+  gap: 13px;
   min-height: 0;
-  padding: 26px;
+  padding: 20px;
   text-align: center;
 }
 
 .mentor-character-card-selected {
-  border-color: rgba(var(--app-brand-rgb), 0.44);
+  border-color: rgba(var(--app-brand-rgb), 0.58);
   box-shadow:
     var(--shadow-card),
-    inset 0 0 0 2px rgba(var(--app-brand-rgb), 0.08);
+    inset 0 0 0 3px rgba(var(--app-brand-rgb), 0.1);
+}
+
+.mentor-character-card-selected .mentor-character-avatar {
+  border-color: rgba(var(--app-brand-rgb), 0.3);
+  box-shadow:
+    0 0 0 4px rgba(var(--app-brand-rgb), 0.1),
+    var(--shadow-soft);
 }
 
 .mentor-character-avatar {
   display: grid;
-  width: min(100%, 220px);
-  height: 210px;
+  width: min(100%, 184px);
+  height: 164px;
   place-items: center;
   margin: 0 auto;
   overflow: hidden;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--app-sky), var(--app-brand-soft));
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.82), transparent 24%),
+    linear-gradient(135deg, var(--app-sky), var(--accent-soft));
   color: var(--app-brand-strong);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 900;
+  box-shadow: var(--shadow-soft);
+}
+
+.mentor-character-avatar span {
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border: 8px solid rgba(255, 255, 255, 0.78);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.mentor-character-avatar-ancient_totem {
+  background: linear-gradient(135deg, #dce8ef, var(--accent-soft));
+}
+
+.mentor-character-avatar-creative_terrarium,
+.mentor-character-avatar-lavender {
+  background: linear-gradient(135deg, #e7dcfb, #dff3fc);
+}
+
+.mentor-character-avatar-strict_robot,
+.mentor-character-avatar-mysterious_knight {
+  background: linear-gradient(135deg, #d9e5ef, #f7dbe7);
+}
+
+.mentor-character-avatar-energetic_dragon,
+.mentor-character-avatar-friendly_mushroom {
+  background: linear-gradient(135deg, #fde8df, #fde5ee);
 }
 
 .mentor-character-card-top,
@@ -2186,7 +2475,7 @@ textarea {
   align-items: center;
   min-height: 28px;
   border-radius: 999px;
-  background: var(--app-brand-soft);
+  background: var(--accent-soft);
   color: var(--app-brand-strong);
   font-size: 12px;
   font-weight: 800;
@@ -2194,19 +2483,19 @@ textarea {
 }
 
 .mentor-character-selected-pill {
-  background: var(--app-sky);
-  color: var(--app-sky-strong);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .mentor-character-copy h2 {
   margin: 0;
   color: var(--app-brand-strong);
-  font-size: 30px;
+  font-size: 24px;
 }
 
 .mentor-character-copy p {
   display: -webkit-box;
-  min-height: 72px;
+  min-height: 64px;
   margin: 10px 0 0;
   overflow: hidden;
   color: var(--app-text);
@@ -2219,7 +2508,7 @@ textarea {
 .mentor-character-theme,
 .mentor-character-emotions {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   justify-items: center;
 }
 
@@ -2365,6 +2654,7 @@ textarea {
   }
 
   .goal-detail-hero,
+  .goal-command-card,
   .settings-stitch-mentor-card {
     grid-template-columns: 1fr;
   }
@@ -2393,21 +2683,30 @@ textarea {
 
   .stitch-quest,
   .goal-detail-hero,
+  .goal-command-card,
   .form-panel,
   .settings-stitch-card,
   .settings-card,
   .task-focus,
   .goal-roadmap-preview,
+  .goal-next-card,
   .mentor-profile-card,
   .detail-summary,
-  .stage-panel {
+  .stage-panel,
+  .roadmap-generate-card {
     border-radius: 24px;
     padding: 22px;
   }
 
   .stitch-quest-meta,
-  .goal-roadmap-preview {
+  .goal-roadmap-preview,
+  .goal-roadmap-preview-heading,
+  .goal-command-progress {
     grid-template-columns: 1fr;
+  }
+
+  .goal-roadmap-preview-heading {
+    display: grid;
   }
 
   .roadmap-grid {

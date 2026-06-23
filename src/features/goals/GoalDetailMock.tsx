@@ -40,6 +40,13 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
+type GoalPreviewStep = {
+  description: string;
+  label: string;
+  status: 'completed' | 'active' | 'locked';
+  title: string;
+};
+
 function CollapsibleGoalSection({
   children,
   defaultOpen = false,
@@ -90,6 +97,29 @@ export function GoalDetailMock({
   const todayDescription = goal.todayTask
     ? t.smallestActionToday
     : aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
+  const availableTimeLabel = `${goal.availableTime} ${t.min} ${
+    goal.timePeriod === 'day' ? t.perDay : t.perWeek
+  }`;
+  const roadmapPreviewSteps: GoalPreviewStep[] = [
+    {
+      description: goal.progress > 0 ? t.startedMovingText : goal.description || t.savedGoalDescription,
+      label: goal.progress > 0 ? t.completed : t.unlocked,
+      status: goal.progress > 0 ? 'completed' : 'active',
+      title: goal.progress > 0 ? t.startedMoving : t.firstDirection,
+    },
+    {
+      description: todayDescription,
+      label: t.today,
+      status: goal.progress > 0 ? 'active' : 'locked',
+      title: todayTitle,
+    },
+    {
+      description: aiAnalysis?.steps[1] ?? t.roadmapAfterQuestions,
+      label: t.locked,
+      status: 'locked',
+      title: t.thisWeek,
+    },
+  ];
 
   useEffect(() => {
     const sectionRefs: Partial<Record<DetailSectionId, HTMLElement | HTMLDivElement | null>> = {
@@ -121,39 +151,31 @@ export function GoalDetailMock({
 
   return (
     <div className="page-stack goal-detail-stitch">
-      <header className="detail-header goal-detail-hero">
-        <div>
-          <span className="eyebrow">{t.goalPage}</span>
-          <h1>{goal.title}</h1>
-          <p>{goal.description || t.refineDescription}</p>
-          <div className="goal-hero-progress" aria-label={`${t.progress} ${goal.progress}%`}>
-            <div>
-              <span>{t.progress}</span>
-              <strong>{goal.progress}%</strong>
-            </div>
-            <div className="progress-bar" aria-hidden="true">
-              <span style={{ width: `${goal.progress}%` }} />
-            </div>
-          </div>
-        </div>
-        <div className="detail-actions">
-          <Button variant="ghost" onClick={onBack}>
-            {t.back}
-          </Button>
-          {canDeleteGoal ? (
-            <Button
-              disabled={deletingGoalId === goal.id}
-              onClick={() => onDeleteGoal?.(goal.id)}
-              variant="danger"
-            >
-              {deletingGoalId === goal.id ? t.deleting : t.delete}
-            </Button>
-          ) : null}
-        </div>
-      </header>
-
       <div className="goal-detail-grid">
         <main className="goal-detail-main">
+          <section className="goal-command-card">
+            <div className="goal-command-copy">
+              <span className="eyebrow">{t.goalPage}</span>
+              <h1>{goal.title}</h1>
+              <p>{goal.description || t.refineDescription}</p>
+            </div>
+            <div className="goal-command-progress">
+              <div className="progress-ring goal-command-ring" aria-label={`${t.progress} ${goal.progress}%`}>
+                <span>{goal.progress}%</span>
+              </div>
+              <div className="goal-command-metrics">
+                <div>
+                  <span>{t.target}</span>
+                  <strong>{formatDate(goal.targetDate, language)}</strong>
+                </div>
+                <div>
+                  <span>{t.time}</span>
+                  <strong>{availableTimeLabel}</strong>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <section className="task-focus task-focus-primary" ref={tasksRef}>
             <div>
               <span className="eyebrow">{t.doThisNext}</span>
@@ -174,19 +196,32 @@ export function GoalDetailMock({
             </div>
           </section>
 
-          <section className="goal-roadmap-preview">
-            <div>
-              <span className="eyebrow">{t.plan}</span>
-              <h2>{t.roadmap}</h2>
-              <p>{goal.todayTask ? t.smallestActionToday : t.roadmapAfterQuestions}</p>
+          <section className="goal-roadmap-preview goal-roadmap-preview-command">
+            <div className="goal-roadmap-preview-heading">
+              <div>
+                <span className="eyebrow">{t.plan}</span>
+                <h2>{t.roadmap}</h2>
+                <p>{goal.todayTask ? t.smallestActionToday : t.roadmapAfterQuestions}</p>
+              </div>
+              <Button variant="secondary" onClick={onOpenRoadmap}>
+                {t.open}
+              </Button>
             </div>
-            <Button variant="secondary" onClick={onOpenRoadmap}>
-              {t.open}
-            </Button>
+            <div className="goal-preview-timeline" aria-label={t.roadmap}>
+              {roadmapPreviewSteps.map((step) => (
+                <div className={`goal-preview-step goal-preview-step-${step.status}`} key={step.label}>
+                  <span aria-hidden="true" />
+                  <div>
+                    <small>{step.label}</small>
+                    <strong>{step.title}</strong>
+                    <p>{step.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </section>
 
           <CollapsibleGoalSection
-            defaultOpen
             eyebrow={t.goalDetails}
             summary={t.answersEnough}
             title={t.answerFewQuestions}
@@ -229,6 +264,21 @@ export function GoalDetailMock({
         </main>
 
         <aside className="goal-detail-side">
+          <div className="detail-actions goal-side-actions">
+            <Button variant="ghost" onClick={onBack}>
+              {t.back}
+            </Button>
+            {canDeleteGoal ? (
+              <Button
+                disabled={deletingGoalId === goal.id}
+                onClick={() => onDeleteGoal?.(goal.id)}
+                variant="danger"
+              >
+                {deletingGoalId === goal.id ? t.deleting : t.delete}
+              </Button>
+            ) : null}
+          </div>
+
           <section className="mentor-profile-card" aria-label={t.selectedMentor}>
             <div>
               <span className="eyebrow">{t.selectedMentor}</span>
@@ -238,6 +288,12 @@ export function GoalDetailMock({
             <small>{t.mentorShapes}</small>
           </section>
 
+          <section className="goal-next-card" aria-label={t.todaysNextStep}>
+            <span>{t.todaysNextStep}</span>
+            <strong>{todayTitle}</strong>
+            <p>{todayDescription}</p>
+          </section>
+
           <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>
             <div>
               <span>{t.target}</span>
@@ -245,9 +301,7 @@ export function GoalDetailMock({
             </div>
             <div>
               <span>{t.time}</span>
-              <strong>
-                {goal.availableTime} {t.min} {goal.timePeriod === 'day' ? t.perDay : t.perWeek}
-              </strong>
+              <strong>{availableTimeLabel}</strong>
             </div>
             <div>
               <span>{t.progress}</span>

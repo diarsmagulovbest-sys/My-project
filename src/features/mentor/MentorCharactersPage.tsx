@@ -3,12 +3,10 @@ import { Button } from '../../components/common/Button';
 import { useLanguage, type AppLanguage } from '../../lib/language';
 import {
   getActiveMentorCharacterId,
-  mentorCharacterEmotionIds,
   mentorCharacterIds,
   mentorCharacters,
   setActiveMentorCharacterId,
   type MentorCharacter,
-  type MentorCharacterEmotionId,
   type MentorCharacterId,
 } from './mentorCharacters';
 
@@ -134,10 +132,8 @@ const pageCopy = {
   en: {
     active: 'Active character',
     avatar: 'Avatar placeholder',
-    colorTheme: 'Theme',
     description:
       'Your journey is personal. Select the mentor whose energy matches the path you want to walk today.',
-    emotions: 'Emotions',
     selected: 'Selected',
     select: 'Select',
     style: 'Style',
@@ -146,35 +142,14 @@ const pageCopy = {
   ru: {
     active: '\u0410\u043a\u0442\u0438\u0432\u043d\u044b\u0439 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u0436',
     avatar: '\u0417\u0430\u0433\u043b\u0443\u0448\u043a\u0430 \u0430\u0432\u0430\u0442\u0430\u0440\u0430',
-    colorTheme: '\u0422\u0435\u043c\u0430',
     description:
       '\u0412\u044b\u0431\u0435\u0440\u0438 \u0445\u0430\u0440\u0430\u043a\u0442\u0435\u0440 \u043d\u0430\u0441\u0442\u0430\u0432\u043d\u0438\u043a\u0430. \u041f\u043e\u043a\u0430 \u044d\u0442\u043e \u0442\u043e\u043b\u044c\u043a\u043e UI-\u0432\u044b\u0431\u043e\u0440, \u043e\u043d \u0435\u0449\u0435 \u043d\u0435 \u043c\u0435\u043d\u044f\u0435\u0442 \u043e\u0442\u0432\u0435\u0442\u044b AI.',
-    emotions: '\u042d\u043c\u043e\u0446\u0438\u0438',
     selected: '\u0412\u044b\u0431\u0440\u0430\u043d',
     select: '\u0412\u044b\u0431\u0440\u0430\u0442\u044c',
     style: '\u0421\u0442\u0438\u043b\u044c',
     title: '\u041f\u0435\u0440\u0441\u043e\u043d\u0430\u0436\u0438-\u043d\u0430\u0441\u0442\u0430\u0432\u043d\u0438\u043a\u0438',
   },
 } satisfies Record<AppLanguage, Record<string, string>>;
-
-const emotionCopy: Record<AppLanguage, Record<MentorCharacterEmotionId, string>> = {
-  en: {
-    excited: 'Excited',
-    focused: 'Focused',
-    happy: 'Happy',
-    neutral: 'Neutral',
-    playful: 'Playful',
-    worried: 'Worried',
-  },
-  ru: {
-    excited: '\u0412\u043e\u043e\u0434\u0443\u0448\u0435\u0432\u043b\u0435\u043d',
-    focused: '\u0421\u043e\u0431\u0440\u0430\u043d',
-    happy: '\u0420\u0430\u0434\u043e\u0441\u0442\u043d\u044b\u0439',
-    neutral: '\u041e\u0431\u044b\u0447\u043d\u044b\u0439',
-    playful: '\u0418\u0433\u0440\u0438\u0432\u044b\u0439',
-    worried: '\u0412\u043e\u043b\u043d\u0443\u0435\u0442\u0441\u044f',
-  },
-};
 
 function getAvatarText(character: MentorCharacter, copy: MentorCharacterCopy) {
   return copy.shortName.slice(0, 2) || character.shortName.slice(0, 2);
@@ -245,7 +220,7 @@ export function MentorCharactersPage() {
             >
               <MentorCharacterImage
                 alt={characterCopy.name}
-                className="mentor-character-avatar"
+                className={`mentor-character-avatar mentor-character-avatar-${character.id}`}
                 fallbackText={getAvatarText(character, characterCopy)}
                 src={character.avatarPath}
               />
@@ -264,37 +239,11 @@ export function MentorCharactersPage() {
               <div className="mentor-character-meta">
                 <span>{copy.style}</span>
                 <div className="mentor-character-tags">
-                  {characterCopy.styles.slice(0, 4).map((style) => (
+                  {characterCopy.styles.slice(0, 3).map((style) => (
                     <small key={style}>{style}</small>
                   ))}
                 </div>
               </div>
-
-              {character.colorTheme ? (
-                <div className="mentor-character-theme">
-                  <span>{copy.colorTheme}</span>
-                  <strong>{character.colorTheme}</strong>
-                </div>
-              ) : null}
-
-              {character.emotionAvatarPaths ? (
-                <div className="mentor-character-emotions">
-                  <span>{copy.emotions}</span>
-                  <div>
-                    {mentorCharacterEmotionIds.slice(0, 4).map((emotionId) => (
-                      <figure key={emotionId}>
-                        <MentorCharacterImage
-                          alt={emotionCopy[language][emotionId]}
-                          className="mentor-character-emotion-avatar"
-                          fallbackText={emotionCopy[language][emotionId].slice(0, 2)}
-                          src={character.emotionAvatarPaths?.[emotionId]}
-                        />
-                        <figcaption>{emotionCopy[language][emotionId]}</figcaption>
-                      </figure>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
 
               <Button
                 disabled={isSelected}

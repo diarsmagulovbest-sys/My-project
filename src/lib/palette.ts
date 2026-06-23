@@ -24,7 +24,7 @@ export const paletteStorageKey = 'app-palette';
 export const appPalettes = [
   {
     id: 'plum_mauve',
-    label: { en: 'Plum Mauve', ru: 'Plum Mauve' },
+    label: { en: 'Plum', ru: 'Plum' },
     primary: '#835d6b',
     primarySoft: '#f7dbe7',
     background: '#f3f9fd',
@@ -34,7 +34,7 @@ export const appPalettes = [
   },
   {
     id: 'sky_blue',
-    label: { en: 'Sky Blue', ru: 'Sky Blue' },
+    label: { en: 'Sky', ru: 'Sky' },
     primary: '#2d6c84',
     primarySoft: '#dff3fc',
     background: '#f3f9fd',
@@ -44,7 +44,7 @@ export const appPalettes = [
   },
   {
     id: 'soft_pink',
-    label: { en: 'Soft Pink', ru: 'Soft Pink' },
+    label: { en: 'Rose', ru: 'Rose' },
     primary: '#c86f91',
     primarySoft: '#fde5ee',
     background: '#fff7fb',
