@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
 import { useLanguage, type AppLanguage } from '../../lib/language';
-import type { GoalSummary } from '../../types/goal';
+import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
 import { MentorChat } from '../mentor/MentorChat';
 import { PlanAdaptationPanel } from '../mentor/PlanAdaptationPanel';
@@ -40,12 +40,34 @@ function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
 
+function getStatusLabel(status: GoalStatus, t: ReturnType<typeof useLanguage>['t']) {
+  const labels: Record<GoalStatus, string> = {
+    active: t.active,
+    archived: t.archived,
+    completed: t.completed,
+    draft: t.draft,
+    paused: t.paused,
+  };
+
+  return labels[status];
+}
+
 type GoalPreviewStep = {
-  description: string;
+  description?: string;
   label: string;
   status: 'completed' | 'active' | 'locked';
   title: string;
 };
+
+function getShortText(value: string, maxLength = 96) {
+  const normalizedValue = value.replace(/\s+/g, ' ').trim();
+
+  if (normalizedValue.length <= maxLength) {
+    return normalizedValue;
+  }
+
+  return `${normalizedValue.slice(0, maxLength).trimEnd()}...`;
+}
 
 function CollapsibleGoalSection({
   children,
@@ -97,24 +119,26 @@ export function GoalDetailMock({
   const todayDescription = goal.todayTask
     ? t.smallestActionToday
     : aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
+  const shortDescription = getShortText(goal.description || t.refineDescription, 128);
+  const mentorDescription = getShortText(mentorProfile.description, 108);
   const availableTimeLabel = `${goal.availableTime} ${t.min} ${
     goal.timePeriod === 'day' ? t.perDay : t.perWeek
   }`;
   const roadmapPreviewSteps: GoalPreviewStep[] = [
     {
-      description: goal.progress > 0 ? t.startedMovingText : goal.description || t.savedGoalDescription,
+      description: goal.progress > 0 ? undefined : getShortText(goal.description || t.savedGoalDescription, 72),
       label: goal.progress > 0 ? t.completed : t.unlocked,
       status: goal.progress > 0 ? 'completed' : 'active',
       title: goal.progress > 0 ? t.startedMoving : t.firstDirection,
     },
     {
-      description: todayDescription,
+      description: getShortText(todayTitle, 72),
       label: t.today,
       status: goal.progress > 0 ? 'active' : 'locked',
-      title: todayTitle,
+      title: goal.todayTask ? t.todaysNextStep : t.createRoadmap,
     },
     {
-      description: aiAnalysis?.steps[1] ?? t.roadmapAfterQuestions,
+      description: aiAnalysis?.steps[1] ? getShortText(aiAnalysis.steps[1], 72) : undefined,
       label: t.locked,
       status: 'locked',
       title: t.thisWeek,
@@ -157,7 +181,7 @@ export function GoalDetailMock({
             <div className="goal-command-copy">
               <span className="eyebrow">{t.goalPage}</span>
               <h1>{goal.title}</h1>
-              <p>{goal.description || t.refineDescription}</p>
+              <p>{shortDescription}</p>
             </div>
             <div className="goal-command-progress">
               <div className="progress-ring goal-command-ring" aria-label={`${t.progress} ${goal.progress}%`}>
@@ -200,13 +224,14 @@ export function GoalDetailMock({
             <section className="goal-roadmap-preview goal-roadmap-preview-command">
               <div className="goal-roadmap-preview-heading">
                 <div>
-                  <span className="eyebrow">{t.plan}</span>
-                  <h2>{t.roadmap}</h2>
-                  <p>{goal.todayTask ? t.smallestActionToday : t.roadmapAfterQuestions}</p>
+                  <span className="eyebrow">{t.roadmap}</span>
+                  <h2>{language === 'ru' ? 'Предпросмотр пути' : 'Roadmap Preview'}</h2>
                 </div>
-                <Button variant="secondary" onClick={onOpenRoadmap}>
-                  {t.open}
-                </Button>
+                {onOpenRoadmap ? (
+                  <Button variant="secondary" onClick={onOpenRoadmap}>
+                    {language === 'ru' ? 'Открыть карту' : 'Open roadmap'}
+                  </Button>
+                ) : null}
               </div>
               <div className="goal-preview-timeline" aria-label={t.roadmap}>
                 {roadmapPreviewSteps.map((step) => (
@@ -215,7 +240,7 @@ export function GoalDetailMock({
                     <div>
                       <small>{step.label}</small>
                       <strong>{step.title}</strong>
-                      <p>{step.description}</p>
+                      {step.description ? <p>{step.description}</p> : null}
                     </div>
                   </div>
                 ))}
@@ -285,29 +310,15 @@ export function GoalDetailMock({
             <div>
               <span className="eyebrow">{t.selectedMentor}</span>
               <strong>{mentorProfile.label}</strong>
-              <p>{mentorProfile.description}</p>
+              <p>{mentorDescription}</p>
             </div>
             <small>{t.mentorShapes}</small>
           </section>
 
-          <section className="goal-next-card" aria-label={t.todaysNextStep}>
-            <span>{t.todaysNextStep}</span>
-            <strong>{todayTitle}</strong>
-            <p>{todayDescription}</p>
-          </section>
-
           <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>
             <div>
-              <span>{t.target}</span>
-              <strong>{formatDate(goal.targetDate, language)}</strong>
-            </div>
-            <div>
-              <span>{t.time}</span>
-              <strong>{availableTimeLabel}</strong>
-            </div>
-            <div>
-              <span>{t.progress}</span>
-              <strong>{goal.progress}%</strong>
+              <span>{language === 'ru' ? 'Статус' : 'Status'}</span>
+              <strong>{getStatusLabel(goal.status, t)}</strong>
             </div>
             <div>
               <span>{t.level}</span>

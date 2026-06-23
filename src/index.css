@@ -1437,7 +1437,7 @@ textarea {
 }
 
 .goal-detail-stitch {
-  gap: 14px;
+  gap: 12px;
 }
 
 .goal-detail-hero {
@@ -1467,15 +1467,15 @@ textarea {
 }
 
 .goal-detail-main {
-  gap: 14px;
+  gap: 12px;
 }
 
 .goal-command-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
   gap: 18px;
   align-items: center;
-  padding: 22px 24px;
+  padding: 20px 22px;
 }
 
 .goal-command-copy {
@@ -1488,25 +1488,25 @@ textarea {
   max-width: 760px;
   margin: 0;
   color: var(--app-text-strong);
-  font-size: clamp(28px, 3vw, 40px);
-  line-height: 1.04;
+  font-size: clamp(28px, 2.6vw, 38px);
+  line-height: 1.08;
 }
 
 .goal-command-copy p {
   max-width: 780px;
   margin: 0;
-  color: var(--app-text);
+  color: var(--app-text-muted);
   line-height: 1.5;
 }
 
 .goal-command-progress {
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 12px;
   align-items: center;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 14px;
+  padding: 12px;
 }
 
 .goal-command-ring {
@@ -1519,12 +1519,17 @@ textarea {
 
 .goal-command-metrics {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
 .goal-command-metrics div {
   display: grid;
   gap: 3px;
+  min-width: 0;
+  border-radius: 16px;
+  background: var(--app-surface-glass);
+  padding: 10px 11px;
 }
 
 .goal-command-metrics span,
@@ -1539,6 +1544,8 @@ textarea {
 .goal-command-metrics strong,
 .goal-next-card strong {
   color: var(--app-text-strong);
+  font-size: 13px;
+  line-height: 1.25;
 }
 
 .goal-work-lane {
@@ -1565,9 +1572,8 @@ textarea {
 .task-focus-primary {
   display: grid;
   gap: 14px;
-  background:
-    radial-gradient(circle at 88% 10%, var(--app-brand-soft), transparent 30%),
-    var(--app-surface-glass);
+  align-content: start;
+  background: var(--app-surface-glass);
 }
 
 .task-focus h2,
@@ -1589,7 +1595,7 @@ textarea {
 .history-panel p {
   margin: 0;
   color: var(--app-text-muted);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .goal-roadmap-preview {
@@ -1606,7 +1612,7 @@ textarea {
 
 .goal-roadmap-preview-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
   min-width: 0;
@@ -1620,20 +1626,20 @@ textarea {
 
 .goal-preview-step {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
+  grid-template-columns: 30px minmax(0, 1fr);
   gap: 10px;
   align-items: start;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 10px 12px;
+  padding: 9px 11px;
 }
 
 .goal-preview-step > span {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  border: 7px solid #ffffff;
+  border: 6px solid #ffffff;
   border-radius: 999px;
   background: var(--app-sky);
   box-shadow: var(--shadow-soft);
@@ -1672,6 +1678,11 @@ textarea {
 .goal-preview-step p {
   margin-top: 3px;
   font-size: 13px;
+  line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
 .goal-detail-side {
@@ -1703,19 +1714,19 @@ textarea {
 
 .mentor-profile-card {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .mentor-profile-card strong {
   display: block;
   color: var(--app-text-strong);
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .mentor-profile-card p {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   color: var(--app-text-muted);
-  line-height: 1.55;
+  line-height: 1.45;
 }
 
 .mentor-profile-card small {
@@ -1730,7 +1741,8 @@ textarea {
 
 .detail-summary {
   display: grid;
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .detail-summary div,
@@ -1739,7 +1751,7 @@ textarea {
   gap: 5px;
   border-radius: var(--radius-inner);
   background: var(--app-surface-soft);
-  padding: 16px;
+  padding: 14px;
 }
 
 .detail-summary span,
