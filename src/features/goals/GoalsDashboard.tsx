@@ -464,7 +464,7 @@ export function GoalsDashboard({
                 </div>
               </article>
               <article className="stitch-stat-card">
-                <EmojiToken className="stitch-stat-icon" label={questCopy.focusTime} symbol="⏱" tone="blue" />
+                <EmojiToken className="stitch-stat-icon" label={questCopy.focusTime} symbol="↗" tone="blue" />
                 <div>
                   <span>{questCopy.focusTime}</span>
                   <strong>{focusTime}</strong>
