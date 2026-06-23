@@ -12,9 +12,17 @@ export function PaletteProvider({ children }: { children: ReactNode }) {
   const palette = useMemo(() => getPaletteById(paletteId), [paletteId]);
 
   useEffect(() => {
-    document.documentElement.dataset.appPalette = palette.id;
+    const root = document.documentElement;
+
+    root.dataset.appPalette = palette.id;
+    root.style.setProperty('--app-bg', palette.background);
+    root.style.setProperty('--app-surface', palette.card);
+    root.style.setProperty('--app-brand', palette.primary);
+    root.style.setProperty('--app-brand-soft', palette.primarySoft);
+    root.style.setProperty('--app-brand-strong', palette.textAccent);
+    root.style.setProperty('--app-border-accent', palette.border);
     localStorage.setItem(paletteStorageKey, palette.id);
-  }, [palette.id]);
+  }, [palette]);
 
   const value = useMemo(() => ({ palette, setPaletteId }), [palette]);
 

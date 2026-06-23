@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 import type { AppLanguage } from './language';
 
-export type AppPaletteId = 'sky_blue' | 'soft_pink' | 'salad_green' | 'lavender' | 'warm_peach';
+export type AppPaletteId = 'plum_mauve' | 'sky_blue' | 'soft_pink' | 'lavender' | 'warm_peach';
 
 export type AppPalette = {
   id: AppPaletteId;
@@ -23,54 +23,54 @@ export const paletteStorageKey = 'app-palette';
 
 export const appPalettes = [
   {
-    id: 'sky_blue',
-    label: { en: 'Sky Blue', ru: 'Небесный' },
-    primary: '#2f6df6',
-    primarySoft: '#eaf2ff',
-    background: '#f5f8ff',
+    id: 'plum_mauve',
+    label: { en: 'Plum Mauve', ru: 'Plum Mauve' },
+    primary: '#835d6b',
+    primarySoft: '#f7dbe7',
+    background: '#f3f9fd',
     card: '#ffffff',
-    border: '#dbe8ff',
-    textAccent: '#2458d3',
+    border: '#e6d7df',
+    textAccent: '#694451',
+  },
+  {
+    id: 'sky_blue',
+    label: { en: 'Sky Blue', ru: 'Sky Blue' },
+    primary: '#2d6c84',
+    primarySoft: '#dff3fc',
+    background: '#f3f9fd',
+    card: '#ffffff',
+    border: '#cbe5f2',
+    textAccent: '#245a70',
   },
   {
     id: 'soft_pink',
-    label: { en: 'Soft Pink', ru: 'Нежный розовый' },
-    primary: '#df5f92',
-    primarySoft: '#fff0f6',
+    label: { en: 'Soft Pink', ru: 'Soft Pink' },
+    primary: '#c86f91',
+    primarySoft: '#fde5ee',
     background: '#fff7fb',
     card: '#ffffff',
-    border: '#f5d5e4',
-    textAccent: '#bf4778',
-  },
-  {
-    id: 'salad_green',
-    label: { en: 'Salad Green', ru: 'Салатовый' },
-    primary: '#35a853',
-    primarySoft: '#edf9ef',
-    background: '#f7fcf6',
-    card: '#ffffff',
-    border: '#d7efdc',
-    textAccent: '#268540',
+    border: '#f1cbd9',
+    textAccent: '#a45473',
   },
   {
     id: 'lavender',
-    label: { en: 'Lavender', ru: 'Лаванда' },
-    primary: '#7a62d6',
-    primarySoft: '#f2efff',
+    label: { en: 'Lavender', ru: 'Lavender' },
+    primary: '#8d68bf',
+    primarySoft: '#efe3fb',
     background: '#f8f6ff',
     card: '#ffffff',
-    border: '#e2dcfb',
-    textAccent: '#624bbd',
+    border: '#decdf2',
+    textAccent: '#6f4c9d',
   },
   {
     id: 'warm_peach',
-    label: { en: 'Warm Peach', ru: 'Тёплый персик' },
-    primary: '#e0784f',
-    primarySoft: '#fff2ec',
+    label: { en: 'Peach', ru: 'Peach' },
+    primary: '#c97962',
+    primarySoft: '#fde8df',
     background: '#fff8f3',
     card: '#ffffff',
-    border: '#f4dccf',
-    textAccent: '#c66240',
+    border: '#efd3c8',
+    textAccent: '#9f5d4a',
   },
 ] as const satisfies AppPalette[];
 
@@ -88,9 +88,9 @@ export function getInitialPaletteId(): AppPaletteId {
   try {
     const savedPalette = localStorage.getItem(paletteStorageKey);
 
-    return isPaletteId(savedPalette) ? savedPalette : 'sky_blue';
+    return isPaletteId(savedPalette) ? savedPalette : 'plum_mauve';
   } catch {
-    return 'sky_blue';
+    return 'plum_mauve';
   }
 }
 

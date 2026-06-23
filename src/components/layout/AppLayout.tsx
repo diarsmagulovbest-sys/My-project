@@ -1,12 +1,9 @@
 import type { ElementType, ReactNode } from 'react';
 import {
-  BarChartIcon,
   CheckCircledIcon,
   FaceIcon,
   GearIcon,
   HomeIcon,
-  ListBulletIcon,
-  MagicWandIcon,
 } from '@radix-ui/react-icons';
 import { Button } from '../common/Button';
 import type { AppNavTarget, AppPage } from '../../types/navigation';
@@ -38,51 +35,27 @@ function RoadmapPathIcon() {
   );
 }
 
-function MedalIcon() {
-  return (
-    <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <path d="M5.2 2.4h3.1l1.1 4.2H6.7L5.2 2.4Z" fill="currentColor" opacity="0.78" />
-      <path d="M9.7 2.4h3.1l-1.5 4.2H8.6l1.1-4.2Z" fill="currentColor" opacity="0.56" />
-      <circle cx="9" cy="10.6" r="4.4" stroke="currentColor" strokeWidth="1.8" />
-      <path
-        d="m9 8.1.7 1.4 1.6.2-1.1 1.1.2 1.6L9 11.7l-1.4.7.2-1.6-1.1-1.1 1.6-.2L9 8.1Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 const navItems: Array<{
   id: string;
-  englishLabel: string;
   labelKey:
     | 'navToday'
     | 'navGoals'
     | 'navRoadmap'
-    | 'navTasks'
-    | 'navProgress'
-    | 'navMentor'
     | 'navMentorCharacters'
-    | 'navAchievements'
     | 'navSettings';
   Icon: ElementType;
   target: AppNavTarget;
 }> = [
-  { id: 'today', englishLabel: 'Today', labelKey: 'navToday', Icon: HomeIcon, target: { page: 'today' } },
-  { id: 'goals', englishLabel: 'Goals', labelKey: 'navGoals', Icon: CheckCircledIcon, target: { page: 'goals' } },
-  { id: 'roadmap', englishLabel: 'Roadmap', labelKey: 'navRoadmap', Icon: RoadmapPathIcon, target: { page: 'roadmap' } },
-  { id: 'tasks', englishLabel: 'Tasks', labelKey: 'navTasks', Icon: ListBulletIcon, target: { page: 'tasks' } },
-  { id: 'progress', englishLabel: 'Progress', labelKey: 'navProgress', Icon: BarChartIcon, target: { page: 'progress' } },
-  { id: 'mentor', englishLabel: 'AI Mentor', labelKey: 'navMentor', Icon: MagicWandIcon, target: { page: 'mentor' } },
+  { id: 'today', labelKey: 'navToday', Icon: HomeIcon, target: { page: 'today' } },
+  { id: 'goals', labelKey: 'navGoals', Icon: CheckCircledIcon, target: { page: 'goals' } },
   {
     id: 'mentorCharacters',
-    englishLabel: 'Mentors',
     labelKey: 'navMentorCharacters',
     Icon: FaceIcon,
     target: { page: 'mentorCharacters' },
   },
-  { id: 'achievements', englishLabel: 'Achievements', labelKey: 'navAchievements', Icon: MedalIcon, target: { page: 'achievements' } },
-  { id: 'settings', englishLabel: 'Settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
+  { id: 'roadmap', labelKey: 'navRoadmap', Icon: RoadmapPathIcon, target: { page: 'roadmap' } },
+  { id: 'settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
 ];
 
 function isActiveNavItem(item: (typeof navItems)[number], activePage: AppPage) {
@@ -103,12 +76,12 @@ export function AppLayout({
   const { t } = useLanguage();
 
   return (
-    <main className="app-shell app-shell-today">
+    <main className="app-shell">
       <aside className="sidebar" aria-label="Main navigation">
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
           <div>
-            <span className="eyebrow">AI mentor</span>
+            <span className="eyebrow">Your Magical Journey</span>
             <strong>GoalPath</strong>
           </div>
         </div>
@@ -128,21 +101,27 @@ export function AppLayout({
                 <span className="nav-icon" aria-hidden="true">
                   <Icon />
                 </span>
-                <span>{item.englishLabel}</span>
+                <span>{t[item.labelKey]}</span>
               </button>
             );
           })}
         </nav>
 
         <div className="account-box">
-          <span>{userEmail ?? t.account}</span>
+          <span className="account-avatar" aria-hidden="true">
+            {(userEmail ?? 'GP').slice(0, 2).toUpperCase()}
+          </span>
+          <div>
+            <strong>{userEmail ?? t.account}</strong>
+            <small>Pathfinder</small>
+          </div>
           <Button variant="ghost" onClick={onSignOut}>
-            Sign out
+            {t.signOut}
           </Button>
         </div>
       </aside>
 
-      <section className="content-shell content-shell-today">{children}</section>
+      <section className="content-shell">{children}</section>
     </main>
   );
 }

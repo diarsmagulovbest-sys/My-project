@@ -17,6 +17,7 @@ import { AchievementsPage } from './features/navigation/AchievementsPage';
 import { SecretPage } from './features/navigation/SecretPage';
 import { SettingsPage } from './features/navigation/SettingsPage';
 import { RoadmapView } from './features/roadmap/RoadmapView';
+import { setRoadmapTaskCompletion } from './features/roadmap/roadmapApi';
 import { useLanguage } from './lib/language';
 import { supabase } from './lib/supabase';
 import type { CreateGoalInput, GoalSummary } from './types/goal';
@@ -25,7 +26,6 @@ import type { AppNavTarget, AppPage, DetailSectionId } from './types/navigation'
 const detailSectionByPage: Partial<Record<AppPage, DetailSectionId>> = {
   mentor: 'mentor',
   progress: 'progress',
-  roadmap: 'roadmap',
   tasks: 'tasks',
 };
 
@@ -144,9 +144,21 @@ export default function App() {
   const activeDetailSection = detailSectionByPage[activePage] ?? null;
   const isGoalSectionPage = activeDetailSection !== null;
   const isGoalsOverviewPage = activePage === 'today' || activePage === 'goals';
+  const isRoadmapPage = activePage === 'roadmap';
 
   const handleNavigate = (target: AppNavTarget) => {
     setCreateError(null);
+
+    if (target.page === 'roadmap') {
+      const goalId = selectedGoalId || goals[0]?.id;
+
+      if (goalId) {
+        setSelectedGoalId(goalId);
+      }
+
+      setActivePage('roadmap');
+      return;
+    }
 
     if (detailSectionByPage[target.page]) {
       const goalId = selectedGoalId || goals[0]?.id;
@@ -194,6 +206,29 @@ export default function App() {
     } finally {
       setIsCreatingGoal(false);
     }
+  };
+
+  const handleCompleteCurrentTask = async (goalId: string, taskId: string) => {
+    if (!session) {
+      throw new Error(t.signInRequired);
+    }
+
+    const result = await setRoadmapTaskCompletion(goalId, taskId, true);
+
+    setGoals((currentGoals) =>
+      currentGoals.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              progress: result.goalProgress,
+              status: result.goalStatus,
+              todayTask: goal.todayTask?.id === taskId ? undefined : goal.todayTask,
+            }
+          : goal,
+      ),
+    );
+    setRoadmapRefreshKey((currentKey) => currentKey + 1);
+    void loadGoals(session.user.id);
   };
 
   const handleDeleteGoal = async (goalId: string) => {
@@ -285,6 +320,8 @@ export default function App() {
             setActivePage('goals');
           }}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
+          onOpenRoadmap={() => setActivePage('roadmap')}
+          onCompleteTask={(taskId) => handleCompleteCurrentTask(selectedGoal.id, taskId)}
           questionsPanel={
             <GoalQuestionsPanel
               goal={selectedGoal}
@@ -298,23 +335,25 @@ export default function App() {
               }}
             />
           }
-          roadmapPanel={
-            <RoadmapView
-              goal={selectedGoal}
-              key={`${selectedGoal.id}-${roadmapRefreshKey}`}
-              onGoalProgressChange={(progress, status) => {
-                setGoals((currentGoals) =>
-                  currentGoals.map((goal) =>
-                    goal.id === selectedGoal.id ? { ...goal, progress, status } : goal,
-                  ),
-                );
-              }}
-            />
-          }
         />
       ) : null}
 
-      {isGoalSectionPage && !selectedGoal ? (
+      {isRoadmapPage && selectedGoal ? (
+        <RoadmapView
+          goal={selectedGoal}
+          key={`${selectedGoal.id}-${roadmapRefreshKey}`}
+          onBackToGoal={() => setActivePage('detail')}
+          onGoalProgressChange={(progress, status) => {
+            setGoals((currentGoals) =>
+              currentGoals.map((goal) =>
+                goal.id === selectedGoal.id ? { ...goal, progress, status } : goal,
+              ),
+            );
+          }}
+        />
+      ) : null}
+
+      {(isGoalSectionPage || isRoadmapPage) && !selectedGoal ? (
         <section className="state-panel">
           <h2>{t.noGoalSelected}</h2>
           <p>{t.noGoalSelectedDescription}</p>
