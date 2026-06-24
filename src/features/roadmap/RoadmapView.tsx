@@ -12,7 +12,11 @@ import type {
   RoadmapTaskStatus,
 } from '../../types/roadmap';
 import { fetchGoalQuestions } from '../goals/questionsApi';
-import { getActiveMentorCharacterId, getMentorCharacter } from '../mentor/mentorCharacters';
+import {
+  getMentorCharacter,
+  getMentorCharacterLine,
+} from '../mentor/mentorCharacters';
+import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 import { generateRoadmap } from './generateRoadmap';
 import { createRoadmap, fetchRoadmap, setRoadmapTaskCompletion } from './roadmapApi';
 
@@ -94,13 +98,18 @@ function getStageClassName(stage: DisplayRoadmapStage) {
 }
 
 function getVisibleStages(stages: DisplayRoadmapStage[]) {
-  const activeStage = stages.find((stage) => stage.status === 'active');
+  const activeStageIndex = stages.findIndex((stage) => stage.status === 'active');
 
-  if (!activeStage) {
+  if (activeStageIndex === -1) {
     return stages;
   }
 
-  return stages.filter((stage) => stage.status === 'completed' || stage.id === activeStage.id);
+  return stages.filter(
+    (stage, index) =>
+      stage.status === 'completed' ||
+      index === activeStageIndex ||
+      index === activeStageIndex + 1,
+  );
 }
 
 function getStageStatusLabel(status: RoadmapStageStatus, t: TextDictionary) {
@@ -338,7 +347,8 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
   const overallProgress = hasPersistedRoadmap ? getGoalProgress(displayStages) : goal.progress;
   const currentStage = displayStages.find((stage) => stage.status === 'active') ?? displayStages[0];
   const remainingTasks = Math.max(totalTasks - completedTasks, 0);
-  const companion = getMentorCharacter(getActiveMentorCharacterId());
+  const activeMentorCharacterId = useActiveMentorCharacterId();
+  const companion = getMentorCharacter(activeMentorCharacterId);
   const companionFallback = companion.shortName.slice(0, 2);
 
   useEffect(() => {
@@ -505,8 +515,8 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                   <h2>{hasPersistedRoadmap ? t.planReady : t.noRoadmapYet}</h2>
                   <p>
                     {hasPersistedRoadmap
-                      ? `${completedTasks} of ${totalTasks} tasks completed. ${remainingTasks} to go.`
-                      : t.roadmapActionDescription}
+                      ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapInsight')
+                      : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
                   </p>
                 </div>
                 <AnimatedCircularProgressBar
@@ -524,7 +534,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               {!hasPersistedRoadmap ? (
                 <div className="roadmap-fallback-note">
                   <strong>{t.plan}</strong>
-                  <p>{t.createRoadmapToGetTask}</p>
+                  <p>{getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}</p>
                 </div>
               ) : null}
             </section>
@@ -544,7 +554,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                       <span className="stage-task-pill">{`${stageCompletedTasks}/${stage.tasks.length} ${t.loadingTasks}`}</span>
                     </div>
                     <div className="stage-heading">
-                      <span>{`Stage ${index + 1}`}</span>
+                      <span>{getStageStatusLabel(stage.status, t)}</span>
                       <strong>{stage.title}</strong>
                       <p>{getShortText(stage.description)}</p>
                     </div>
@@ -570,10 +580,11 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
 
                       <div className="task-list">
                         {stage.tasks.map((task) => {
+                          const isTaskLocked = stage.status === 'locked' || task.isFallback;
                           const taskClassName = [
                             'task-check',
                             task.status === 'completed' ? 'task-done' : '',
-                            task.isFallback ? 'task-check-preview' : '',
+                            isTaskLocked ? 'task-check-preview' : '',
                           ]
                             .filter(Boolean)
                             .join(' ');
@@ -587,7 +598,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                                     : `Mark "${task.title}" as done`
                                 }
                                 className={taskClassName}
-                                disabled={task.isFallback}
+                                disabled={isTaskLocked}
                                 onClick={() => void handleToggleTaskCompletion(task)}
                                 type="button"
                               />
@@ -666,7 +677,11 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               </div>
               <strong>{companion.name}</strong>
               <span>{t.aiMentor}</span>
-              <p>{currentStage ? getShortText(currentStage.description, 118) : t.roadmapActionDescription}</p>
+              <p>
+                {currentStage
+                  ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapMentor')
+                  : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
+              </p>
             </section>
 
             <section className="roadmap-insight-card">
@@ -675,9 +690,9 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               <p>
                 {hasPersistedRoadmap
                   ? remainingTasks > 0
-                    ? `${remainingTasks} tasks left on this path.`
+                    ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapInsight')
                     : t.completed
-                  : t.roadmapAfterQuestions}
+                  : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
               </p>
             </section>
           </aside>

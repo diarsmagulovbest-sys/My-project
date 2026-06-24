@@ -26,26 +26,39 @@ export function CreateGoalForm({
   onCancel,
   onCreate,
 }: CreateGoalFormProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
-  const [availableTime, setAvailableTime] = useState('30');
+  const [availableHours, setAvailableHours] = useState('0');
+  const [availableMinutes, setAvailableMinutes] = useState('30');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('day');
   const [currentLevel, setCurrentLevel] = useState('');
   const [wasSubmitted, setWasSubmitted] = useState(false);
 
-  const parsedTime = Number(availableTime);
+  const parsedHours = Number(availableHours);
+  const parsedMinutes = Number(availableMinutes);
+  const parsedTime =
+    Number.isFinite(parsedHours) && Number.isFinite(parsedMinutes)
+      ? parsedHours * 60 + parsedMinutes
+      : Number.NaN;
+  const isTimeValid =
+    Number.isFinite(parsedHours) &&
+    Number.isFinite(parsedMinutes) &&
+    parsedHours >= 0 &&
+    parsedMinutes >= 0 &&
+    parsedMinutes < 60 &&
+    parsedTime > 0;
   const canCreateMoreGoals = !isGoalLimitEnabled || goalCount < maxGoals;
   const canSubmit = useMemo(
     () =>
       canCreateMoreGoals &&
       title.trim().length >= 3 &&
       targetDate.length > 0 &&
-      Number.isFinite(parsedTime) &&
-      parsedTime > 0,
-    [canCreateMoreGoals, parsedTime, targetDate, title],
+      isTimeValid,
+    [canCreateMoreGoals, isTimeValid, targetDate, title],
   );
+  const hoursLabel = language === 'ru' ? 'hr' : 'hours';
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -109,15 +122,32 @@ export function CreateGoalForm({
           </div>
 
           <div className="form-field goal-time-field">
-            <label className="goal-time-input">
-              <span>{t.availableTime}</span>
-              <input
-                min={1}
-                type="number"
-                value={availableTime}
-                onChange={(event) => setAvailableTime(event.target.value)}
-              />
-            </label>
+            <div className="goal-time-label">{t.availableTime}</div>
+            <div className="goal-time-picker">
+              <label className="goal-time-input">
+                <span>{hoursLabel}</span>
+                <input
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  type="number"
+                  value={availableHours}
+                  onChange={(event) => setAvailableHours(event.target.value)}
+                />
+              </label>
+              <label className="goal-time-input">
+                <span>{t.min}</span>
+                <input
+                  inputMode="numeric"
+                  max={59}
+                  min={0}
+                  step={5}
+                  type="number"
+                  value={availableMinutes}
+                  onChange={(event) => setAvailableMinutes(event.target.value)}
+                />
+              </label>
+            </div>
             <fieldset className="segmented-field segmented-field-compact">
               <legend>{t.timePeriod}</legend>
               <div>
@@ -137,9 +167,7 @@ export function CreateGoalForm({
                 </button>
               </div>
             </fieldset>
-            {wasSubmitted && (!Number.isFinite(parsedTime) || parsedTime <= 0) ? (
-              <small>{t.timePositive}</small>
-            ) : null}
+            {wasSubmitted && !isTimeValid ? <small>{t.timePositive}</small> : null}
           </div>
         </div>
 

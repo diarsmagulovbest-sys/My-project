@@ -29,6 +29,71 @@ const detailSectionByPage: Partial<Record<AppPage, DetailSectionId>> = {
   tasks: 'tasks',
 };
 
+type RouteState = {
+  page: AppPage;
+  selectedGoalId?: string;
+};
+
+function getRouteState(pathname: string): RouteState {
+  const cleanPath = pathname.replace(/\/+$/, '') || '/';
+  const goalMatch = cleanPath.match(/^\/goals\/([^/]+)$/);
+
+  if (goalMatch && goalMatch[1] !== 'new') {
+    return { page: 'detail', selectedGoalId: decodeURIComponent(goalMatch[1]) };
+  }
+
+  const routeByPath: Record<string, AppPage> = {
+    '/': 'today',
+    '/achievements': 'achievements',
+    '/goals': 'goals',
+    '/goals/new': 'create',
+    '/mentor': 'mentor',
+    '/mentors': 'mentorCharacters',
+    '/progress': 'progress',
+    '/roadmap': 'roadmap',
+    '/secret': 'secret',
+    '/settings': 'settings',
+    '/tasks': 'tasks',
+    '/today': 'today',
+  };
+
+  return { page: routeByPath[cleanPath] ?? 'today' };
+}
+
+function getPathForPage(page: AppPage, selectedGoalId = '') {
+  const pathByPage: Record<AppPage, string> = {
+    achievements: '/achievements',
+    create: '/goals/new',
+    detail: selectedGoalId ? `/goals/${encodeURIComponent(selectedGoalId)}` : '/goals',
+    goals: '/goals',
+    mentor: '/mentor',
+    mentorCharacters: '/mentors',
+    progress: '/progress',
+    roadmap: '/roadmap',
+    secret: '/secret',
+    settings: '/settings',
+    tasks: '/tasks',
+    today: '/today',
+  };
+
+  return pathByPage[page];
+}
+
+function pushRoute(page: AppPage, selectedGoalId = '') {
+  const nextPath = getPathForPage(page, selectedGoalId);
+  const nextState: RouteState = {
+    page,
+    selectedGoalId: selectedGoalId || undefined,
+  };
+
+  if (window.location.pathname !== nextPath) {
+    window.history.pushState(nextState, '', nextPath);
+    return;
+  }
+
+  window.history.replaceState(nextState, '', nextPath);
+}
+
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
 }
@@ -46,11 +111,12 @@ async function getSafeMentorProfileId(input: CreateGoalInput) {
 
 export default function App() {
   const { language, t } = useLanguage();
+  const initialRoute = useMemo(() => getRouteState(window.location.pathname), []);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [activePage, setActivePage] = useState<AppPage>('today');
+  const [activePage, setActivePage] = useState<AppPage>(initialRoute.page);
   const [goals, setGoals] = useState<GoalSummary[]>([]);
-  const [selectedGoalId, setSelectedGoalId] = useState<string>('');
+  const [selectedGoalId, setSelectedGoalId] = useState<string>(initialRoute.selectedGoalId ?? '');
   const [isGoalsLoading, setIsGoalsLoading] = useState(false);
   const [goalsError, setGoalsError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -121,6 +187,7 @@ export default function App() {
         setGoals([]);
         setSelectedGoalId('');
         setActivePage('today');
+        pushRoute('today');
         return;
       }
 
@@ -132,6 +199,42 @@ export default function App() {
       subscription.unsubscribe();
     };
   }, [loadGoals]);
+
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      const nextRoute = getRouteState(window.location.pathname);
+      const nextState = event.state as Partial<RouteState> | null;
+      const nextSelectedGoalId = nextRoute.selectedGoalId ?? nextState?.selectedGoalId;
+
+      setActivePage(nextRoute.page);
+
+      if (nextSelectedGoalId) {
+        setSelectedGoalId(nextSelectedGoalId);
+      }
+    };
+
+    window.history.replaceState(
+      {
+        page: initialRoute.page,
+        selectedGoalId: initialRoute.selectedGoalId || undefined,
+      } satisfies RouteState,
+      '',
+      window.location.pathname,
+    );
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [initialRoute.page, initialRoute.selectedGoalId]);
+
+  const goToPage = useCallback((page: AppPage, nextSelectedGoalId = selectedGoalId) => {
+    setActivePage(page);
+    if (nextSelectedGoalId) {
+      setSelectedGoalId(nextSelectedGoalId);
+    }
+    pushRoute(page, nextSelectedGoalId);
+  }, [selectedGoalId]);
 
   const selectedGoal = useMemo(
     () => goals.find((goal) => goal.id === selectedGoalId) ?? null,
@@ -157,7 +260,7 @@ export default function App() {
         setSelectedGoalId(goalId);
       }
 
-      setActivePage('roadmap');
+      goToPage('roadmap', goalId);
       return;
     }
 
@@ -168,11 +271,11 @@ export default function App() {
         setSelectedGoalId(goalId);
       }
 
-      setActivePage(target.page);
+      goToPage(target.page, goalId);
       return;
     }
 
-    setActivePage(target.page);
+    goToPage(target.page);
   };
 
   const handleCreateGoal = async (input: CreateGoalInput) => {
@@ -183,7 +286,7 @@ export default function App() {
 
     if (isGoalLimitReached) {
       setCreateError(t.createGoalLimitReachedDescription(maxGoalsPerUser));
-      setActivePage('create');
+      goToPage('create');
       return;
     }
 
@@ -201,7 +304,7 @@ export default function App() {
 
       setGoals((currentGoals) => [newGoal, ...currentGoals]);
       setSelectedGoalId(newGoal.id);
-      setActivePage('detail');
+      goToPage('detail', newGoal.id);
     } catch (error) {
       setCreateError(getErrorMessage(error));
     } finally {
@@ -246,7 +349,7 @@ export default function App() {
 
       if (selectedGoalId === goalId) {
         setSelectedGoalId('');
-        setActivePage('goals');
+        goToPage('goals', '');
       }
     } catch (error) {
       setGoalsError(getErrorMessage(error));
@@ -286,12 +389,13 @@ export default function App() {
           view={activePage === 'goals' ? 'goals' : 'today'}
           onCreateClick={() => {
             setCreateError(null);
-            setActivePage('create');
+            goToPage('create');
           }}
           onOpenGoal={(goalId) => {
             setSelectedGoalId(goalId);
-            setActivePage('detail');
+            goToPage('detail', goalId);
           }}
+          onOpenGoals={() => goToPage('goals')}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
         />
       ) : null}
@@ -305,7 +409,7 @@ export default function App() {
           maxGoals={maxGoalsPerUser}
           onCancel={() => {
             setCreateError(null);
-            setActivePage('goals');
+            goToPage('goals');
           }}
           onCreate={handleCreateGoal}
         />
@@ -318,10 +422,10 @@ export default function App() {
           deletingGoalId={deletingGoalId}
           goal={selectedGoal}
           onBack={() => {
-            setActivePage('goals');
+            goToPage('goals');
           }}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
-          onOpenRoadmap={() => setActivePage('roadmap')}
+          onOpenRoadmap={() => goToPage('roadmap')}
           onCompleteTask={(taskId) => handleCompleteCurrentTask(selectedGoal.id, taskId)}
           questionsPanel={
             <GoalQuestionsPanel
@@ -331,7 +435,7 @@ export default function App() {
                 setRoadmapRefreshKey((currentKey) => currentKey + 1);
 
                 if (options?.openRoadmap) {
-                  setActivePage('roadmap');
+                  goToPage('roadmap');
                 }
               }}
             />
@@ -345,7 +449,7 @@ export default function App() {
           key={`${selectedRoadmapGoal.id}-${roadmapRefreshKey}`}
           onBackToGoal={() => {
             setSelectedGoalId(selectedRoadmapGoal.id);
-            setActivePage('detail');
+            goToPage('detail', selectedRoadmapGoal.id);
           }}
           onGoalProgressChange={(progress, status) => {
             setGoals((currentGoals) =>
@@ -368,7 +472,7 @@ export default function App() {
         <section className="state-panel">
           <h2>{t.noGoalSelected}</h2>
           <p>{t.noGoalSelectedDescription}</p>
-          <Button onClick={() => setActivePage('create')}>{t.createGoal}</Button>
+          <Button onClick={() => goToPage('create')}>{t.createGoal}</Button>
         </section>
       ) : null}
 
@@ -376,15 +480,15 @@ export default function App() {
         <section className="state-panel">
           <h2>{t.noGoalSelected}</h2>
           <p>{t.noGoalSelectedDescription}</p>
-          <Button onClick={() => setActivePage('create')}>{t.createGoal}</Button>
+          <Button onClick={() => goToPage('create')}>{t.createGoal}</Button>
         </section>
       ) : null}
 
       {activePage === 'achievements' ? (
         <AchievementsPage
           goals={goals}
-          onCreateGoal={() => setActivePage('create')}
-          onOpenGoals={() => setActivePage('goals')}
+          onCreateGoal={() => goToPage('create')}
+          onOpenGoals={() => goToPage('goals')}
         />
       ) : null}
 
@@ -395,7 +499,7 @@ export default function App() {
           canDeleteGoals={canDeleteGoals}
           isGoalLimitEnabled={isGoalLimitEnabled}
           maxGoals={maxGoalsPerUser}
-          onOpenSecret={() => setActivePage('secret')}
+          onOpenSecret={() => goToPage('secret')}
           userEmail={session.user.email}
         />
       ) : null}

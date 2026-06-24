@@ -5,7 +5,12 @@ import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
 import { MentorChat } from '../mentor/MentorChat';
 import { PlanAdaptationPanel } from '../mentor/PlanAdaptationPanel';
+import {
+  getMentorCharacter,
+  getMentorCharacterLine,
+} from '../mentor/mentorCharacters';
 import { getMentorProfile } from '../mentor/mentorProfiles';
+import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 
 type GoalDetailMockProps = {
   activeSection?: DetailSectionId | null;
@@ -113,14 +118,16 @@ export function GoalDetailMock({
   const [isCompletingTask, setIsCompletingTask] = useState(false);
   const [taskError, setTaskError] = useState<string | null>(null);
   const mentorProfile = getMentorProfile(goal.mentorProfileId);
+  const activeMentorCharacterId = useActiveMentorCharacterId();
+  const mentorCharacter = getMentorCharacter(activeMentorCharacterId);
   const aiAnalysis = goal.aiAnalysis;
   const currentTaskId = goal.todayTask?.id ?? null;
   const todayTitle = goal.todayTask?.title ?? aiAnalysis?.firstSmallAction ?? t.createRoadmap;
   const todayDescription = goal.todayTask
-    ? t.smallestActionToday
+    ? getMentorCharacterLine(activeMentorCharacterId, 'goalNextStep')
     : aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
   const shortDescription = getShortText(goal.description || t.refineDescription, 128);
-  const mentorDescription = getShortText(mentorProfile.description, 108);
+  const mentorDescription = getMentorCharacterLine(activeMentorCharacterId, 'goalMentor');
   const availableTimeLabel = `${goal.availableTime} ${t.min} ${
     goal.timePeriod === 'day' ? t.perDay : t.perWeek
   }`;
@@ -309,10 +316,10 @@ export function GoalDetailMock({
           <section className="mentor-profile-card" aria-label={t.selectedMentor}>
             <div>
               <span className="eyebrow">{t.selectedMentor}</span>
-              <strong>{mentorProfile.label}</strong>
+              <strong>{mentorCharacter.name}</strong>
               <p>{mentorDescription}</p>
             </div>
-            <small>{t.mentorShapes}</small>
+            <small>{mentorProfile.label}</small>
           </section>
 
           <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>

@@ -5,6 +5,7 @@ import type { ProgressLog } from '../../types/mentorChat';
 import type { RoadmapStage, RoadmapTask } from '../../types/roadmap';
 import type { PlanAdaptationResponse } from '../../validations/aiResponses';
 import { validatePlanAdaptationResponse } from '../../validations/aiResponses';
+import { getMentorCharacterSystemContext, type MentorCharacterId } from './mentorCharacters';
 import { getMentorProfile, getMentorProfileSystemContext } from './mentorProfiles';
 
 export const planAdaptationReasons = [
@@ -48,6 +49,7 @@ export function getPlanAdaptationReasonLabel(
 }
 
 export type GeneratePlanAdaptationInput = {
+  activeMentorCharacterId: MentorCharacterId;
   comment: string;
   goal: Goal;
   language: AppLanguage;
@@ -120,6 +122,7 @@ function buildProgressLogContext(progressLogs: ProgressLog[]) {
 }
 
 function buildPlanAdaptationPrompt({
+  activeMentorCharacterId,
   comment,
   goal,
   language,
@@ -145,6 +148,9 @@ function buildPlanAdaptationPrompt({
     '',
     'Mentor profile context:',
     getMentorProfileSystemContext(goal.mentorProfileId),
+    '',
+    'Selected mentor character context:',
+    getMentorCharacterSystemContext(activeMentorCharacterId),
     '',
     'Roadmap and tasks:',
     JSON.stringify(buildRoadmapContext(roadmapStages), null, 2),

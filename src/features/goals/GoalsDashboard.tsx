@@ -2,7 +2,11 @@ import { Button } from '../../components/common/Button';
 import { EmojiToken } from '../../components/common/EmojiToken';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
-import { getActiveMentorCharacterId, getMentorCharacter } from '../mentor/mentorCharacters';
+import {
+  getMentorCharacter,
+  getMentorCharacterLine,
+} from '../mentor/mentorCharacters';
+import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 import { getGoalIcon } from './goalEmoji';
 
 type GoalsDashboardProps = {
@@ -15,6 +19,7 @@ type GoalsDashboardProps = {
   maxGoals: number;
   onCreateClick: () => void;
   onDeleteGoal: (goalId: string) => void;
+  onOpenGoals: () => void;
   onOpenGoal: (goalId: string) => void;
   view: 'goals' | 'today';
 };
@@ -82,6 +87,7 @@ export function GoalsDashboard({
   maxGoals,
   onCreateClick,
   onDeleteGoal,
+  onOpenGoals,
   onOpenGoal,
   view,
 }: GoalsDashboardProps) {
@@ -96,7 +102,8 @@ export function GoalsDashboard({
   const focusGoal = goals.find((goal) => goal.status === 'active') ?? goals[0];
   const focusGoalIcon = getGoalIcon(focusGoal);
   const nextAction = getNextAction(focusGoal, t);
-  const companion = getMentorCharacter(getActiveMentorCharacterId());
+  const activeMentorCharacterId = useActiveMentorCharacterId();
+  const companion = getMentorCharacter(activeMentorCharacterId);
   const companionFallback = companion.shortName.slice(0, 2);
   const streakDays =
     goals.length > 0
@@ -106,7 +113,7 @@ export function GoalsDashboard({
   const questCopy = {
     activeGoals: 'Active goals',
     activeQuest: 'ACTIVE QUEST',
-    companionQuote: 'I will help you choose the next small step. Keep it calm, keep it moving.',
+    companionQuote: getMentorCharacterLine(activeMentorCharacterId, 'dashboardToday'),
     createNewGoal: 'Create new goal',
     focusTime: 'Focus time',
     goalWorlds: 'Goal Worlds',
@@ -126,7 +133,7 @@ export function GoalsDashboard({
     createNewGoal: 'Create new goal',
     focusTime: 'Focus time',
     goalWorlds: 'Goal Worlds',
-    mentorNote: 'Keep each goal moving with one clear step, then open the quest when you are ready to continue.',
+    mentorNote: getMentorCharacterLine(activeMentorCharacterId, 'dashboardGoals'),
     nextTask: 'Next task',
     open: 'Open',
     pageSubtitle: 'Track every learning world, review progress, and jump back into the next useful step.',
@@ -376,9 +383,9 @@ export function GoalsDashboard({
             <section className="stitch-goals-section" aria-label={t.goals}>
               <div className="stitch-section-header">
                 <h2>{questCopy.goalWorlds}</h2>
-                <button disabled={!canCreateGoal} onClick={onCreateClick} type="button">
+                <Button variant="ghost" onClick={onOpenGoals}>
                   {questCopy.viewAll}
-                </button>
+                </Button>
               </div>
 
               <div className="stitch-goal-grid">

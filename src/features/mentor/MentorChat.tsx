@@ -11,7 +11,8 @@ import {
   fetchRecentProgressLogs,
   getOrCreateMentorConversation,
 } from './mentorChatApi';
-import { getActiveMentorCharacterId } from './mentorCharacters';
+import { getMentorCharacterLine } from './mentorCharacters';
+import { useActiveMentorCharacterId } from './useActiveMentorCharacterId';
 
 type MentorChatProps = {
   goal: Goal;
@@ -36,6 +37,7 @@ export function MentorChat({ goal }: MentorChatProps) {
   const [messages, setMessages] = useState<MentorMessage[]>([]);
   const [retryState, setRetryState] = useState<MentorReplyRetryState | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const activeMentorCharacterId = useActiveMentorCharacterId();
 
   useEffect(() => {
     let isActive = true;
@@ -81,7 +83,7 @@ export function MentorChat({ goal }: MentorChatProps) {
       fetchRecentProgressLogs(goal.id),
     ]);
     const mentorReply = await generateMentorReply({
-      activeMentorCharacterId: getActiveMentorCharacterId(),
+      activeMentorCharacterId,
       goal,
       language,
       messages: nextMessages,
@@ -171,7 +173,7 @@ export function MentorChat({ goal }: MentorChatProps) {
         <div>
           <span className="eyebrow">{t.aiMentor}</span>
           <h2>{t.askTheMentor}</h2>
-          <p>{t.useMentorWhenStuck}</p>
+          <p>{getMentorCharacterLine(activeMentorCharacterId, 'chatIntro')}</p>
         </div>
       </div>
 
@@ -185,7 +187,7 @@ export function MentorChat({ goal }: MentorChatProps) {
       {!isLoading && messages.length === 0 ? (
         <div className="inline-state inline-state-ready">
           <strong>{t.mentorReady}</strong>
-          <p>{t.askShortQuestion}</p>
+          <p>{getMentorCharacterLine(activeMentorCharacterId, 'chatEmpty')}</p>
         </div>
       ) : null}
 

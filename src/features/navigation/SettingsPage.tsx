@@ -4,6 +4,11 @@ import { LanguageToggle } from '../../components/settings/LanguageToggle';
 import { PaletteSelector } from '../../components/settings/PaletteSelector';
 import { ThemeToggle } from '../../components/settings/ThemeToggle';
 import { useLanguage } from '../../lib/language';
+import {
+  getMentorCharacter,
+  getMentorCharacterLine,
+} from '../mentor/mentorCharacters';
+import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 
 type SettingsPageProps = {
   canDeleteGoals: boolean;
@@ -21,6 +26,8 @@ export function SettingsPage({
   userEmail,
 }: SettingsPageProps) {
   const { t } = useLanguage();
+  const activeMentorCharacterId = useActiveMentorCharacterId();
+  const mentorCharacter = getMentorCharacter(activeMentorCharacterId);
   const [isDiscoActive, setIsDiscoActive] = useState(false);
   const [promoValue, setPromoValue] = useState('');
   const promoInputRef = useRef<HTMLTextAreaElement>(null);
@@ -162,8 +169,8 @@ export function SettingsPage({
           <div className="settings-stitch-orb" aria-hidden="true">AI</div>
           <div>
             <span className="eyebrow">Mentor</span>
-            <h2>GoalPath Companion</h2>
-            <p>Your selected mentor and character choices shape the feel of your journey.</p>
+            <h2>{mentorCharacter.name}</h2>
+            <p>{getMentorCharacterLine(activeMentorCharacterId, 'settings')}</p>
           </div>
         </article>
       </section>

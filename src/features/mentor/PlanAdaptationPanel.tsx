@@ -11,6 +11,8 @@ import {
 } from './generatePlanAdaptation';
 import type { PlanAdaptationReasonId } from './generatePlanAdaptation';
 import { fetchRecentProgressLogs } from './mentorChatApi';
+import { getMentorCharacterLine } from './mentorCharacters';
+import { useActiveMentorCharacterId } from './useActiveMentorCharacterId';
 
 type PlanAdaptationPanelProps = {
   goal: Goal;
@@ -32,6 +34,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [reasonId, setReasonId] = useState<PlanAdaptationReasonId>('too_difficult');
+  const activeMentorCharacterId = useActiveMentorCharacterId();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -45,6 +48,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
         fetchRecentProgressLogs(goal.id),
       ]);
       const nextAdaptation = await generatePlanAdaptation({
+        activeMentorCharacterId,
         comment,
         goal,
         language,
@@ -67,7 +71,7 @@ export function PlanAdaptationPanel({ goal }: PlanAdaptationPanelProps) {
         <div>
           <span className="eyebrow">{t.iAmStuck}</span>
           <h2>{t.stuckAdaptationTitle}</h2>
-          <p>{t.stuckAdaptationDescription}</p>
+          <p>{getMentorCharacterLine(activeMentorCharacterId, 'stuckHelp')}</p>
         </div>
       </div>
 

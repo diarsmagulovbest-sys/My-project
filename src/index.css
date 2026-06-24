@@ -629,10 +629,52 @@ textarea {
   padding: 30px;
 }
 
+.form-panel-compact {
+  width: min(100%, 760px);
+  padding: 24px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+}
+
+.form-grid-compact {
+  gap: 14px;
+}
+
+.goal-time-label {
+  color: var(--app-text);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.goal-time-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.goal-time-picker .goal-time-input {
+  gap: 6px;
+}
+
+.goal-time-picker .goal-time-input input {
+  min-height: 44px;
+  border-radius: 16px;
+  padding: 10px 10px 10px 14px;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.goal-time-picker .goal-time-input input::-webkit-inner-spin-button,
+.goal-time-picker .goal-time-input input::-webkit-outer-spin-button {
+  width: 28px;
+  min-height: 36px;
+  border-radius: 14px;
+  cursor: pointer;
+  opacity: 1;
 }
 
 .segmented-field {
@@ -991,17 +1033,21 @@ textarea {
 }
 
 .stitch-quest > p {
+  display: -webkit-box;
   max-width: 720px;
   margin: 0;
+  overflow: hidden;
   color: var(--app-text);
   font-size: 18px;
   line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .stitch-quest-meta {
   display: grid;
-  grid-template-columns: 40px minmax(0, 260px) minmax(180px, 1fr);
-  gap: 14px;
+  grid-template-columns: 60px minmax(0, 260px) minmax(180px, 1fr);
+  gap: 16px;
   align-items: center;
 }
 
@@ -1056,9 +1102,9 @@ textarea {
 }
 
 .stitch-quest-avatar {
-  width: 40px;
-  height: 40px;
-  font-size: 19px;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
 }
 
 .stitch-quest-avatar > span,
@@ -1074,14 +1120,15 @@ textarea {
   line-height: 1;
 }
 
-.stitch-quest-meta strong,
-.stitch-quest-meta span,
+.stitch-quest-meta > div strong,
+.stitch-quest-meta > div > span,
 .stitch-next-task strong,
 .goals-world-task strong {
   display: block;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stitch-quest-meta strong {
@@ -1324,6 +1371,33 @@ textarea {
 .mentor-character-avatar-calm_plant {
   border-color: rgba(255, 255, 255, 0.92);
   background: #ffffff;
+}
+
+.stitch-mentor-avatar-wise_golem {
+  width: 104px;
+  height: 104px;
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, #eef4ee, #d9e2dc);
+  box-shadow:
+    0 18px 42px rgba(51, 61, 60, 0.16),
+    inset 0 0 0 1px rgba(63, 75, 74, 0.08);
+}
+
+.stitch-mentor-avatar-wise_golem img,
+.mentor-character-avatar-wise_golem img {
+  object-fit: contain;
+  object-position: center;
+  padding: 0;
+}
+
+.mentor-character-avatar-wise_golem {
+  width: min(100%, 168px);
+  border-color: rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, #edf3ed, #d8e0db);
 }
 
 @keyframes plant-mentor-breathe {
@@ -2854,7 +2928,6 @@ textarea {
   background: var(--app-surface-soft);
 }
 
-.mentor-character-avatar-energetic_dragon,
 .mentor-character-avatar-friendly_mushroom {
   background: var(--app-surface-soft);
 }
@@ -3293,12 +3366,13 @@ textarea {
 }
 
 .stitch-quest-meta {
-  grid-template-columns: 44px minmax(0, 300px) minmax(180px, 1fr);
+  grid-template-columns: 64px minmax(0, 300px) minmax(180px, 1fr);
 }
 
 .stitch-quest-avatar {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
+  font-size: 32px;
 }
 
 .stitch-goal-grid {
@@ -3369,72 +3443,105 @@ textarea {
 }
 
 .roadmap-page-layout {
-  grid-template-columns: minmax(0, 1fr) 322px;
-  gap: 38px;
+  grid-template-columns: minmax(0, 1fr) 332px;
+  gap: 44px;
 }
 
 .roadmap-main {
-  gap: 28px;
+  gap: 30px;
 }
 
 .roadmap-summary-card {
-  padding: 32px 36px;
+  overflow: hidden;
+  border-color: rgba(255, 255, 255, 0.92);
+  background:
+    radial-gradient(circle at 86% 48%, rgba(var(--app-brand-rgb), 0.12), transparent 30%),
+    linear-gradient(100deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.78));
+  padding: 36px 38px;
 }
 
 .roadmap-grid {
-  max-width: 860px;
-  gap: 34px;
-  padding: 18px 0 24px 148px;
+  max-width: 900px;
+  gap: 38px;
+  padding: 18px 0 30px 150px;
 }
 
 .roadmap-grid::before {
-  left: 66px;
+  top: 6px;
+  bottom: 6px;
+  left: 67px;
   width: 5px;
-  background: linear-gradient(180deg, rgba(45, 108, 132, 0.2), var(--accent), rgba(45, 108, 132, 0.18));
+  background: linear-gradient(180deg, rgba(84, 101, 128, 0.18), rgba(var(--app-brand-rgb), 0.58), rgba(84, 101, 128, 0.14));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
 .stage-panel {
-  border-color: rgba(45, 108, 132, 0.24);
+  overflow: visible;
+  border-color: rgba(45, 108, 132, 0.3);
   border-radius: 34px;
-  padding: 28px 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.82)),
+    var(--app-surface-glass);
+  padding: 28px 34px;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .stage-panel::before {
-  top: 50px;
-  left: -56px;
-  width: 56px;
-  background: linear-gradient(90deg, rgba(var(--app-brand-rgb), 0.5), rgba(45, 108, 132, 0.22));
+  top: 54px;
+  left: -58px;
+  width: 58px;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(var(--app-brand-rgb), 0.46), rgba(45, 108, 132, 0.18));
 }
 
 .stage-node {
-  top: 22px;
-  left: -116px;
+  top: 24px;
+  left: -118px;
   width: 68px;
   height: 68px;
   border-width: 7px;
+  background: #dff3fb;
+  color: var(--app-sky-strong);
 }
 
 .stage-node span {
   width: 34px;
   height: 34px;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .stage-panel-active {
-  border-color: rgba(var(--app-brand-rgb), 0.72);
+  min-height: 260px;
+  align-content: center;
+  border-color: rgba(var(--app-brand-rgb), 0.82);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.88)),
+    var(--app-surface);
+  padding: 34px 38px;
   box-shadow:
-    0 28px 80px rgba(var(--app-brand-rgb), 0.14),
-    inset 0 0 0 2px rgba(var(--app-brand-rgb), 0.1);
+    0 34px 90px rgba(var(--app-brand-rgb), 0.16),
+    inset 0 0 0 2px rgba(var(--app-brand-rgb), 0.12);
 }
 
 .stage-panel-active .stage-node {
-  top: 24px;
-  left: -124px;
-  width: 78px;
-  height: 78px;
+  top: 34px;
+  left: -126px;
+  width: 82px;
+  height: 82px;
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow:
+    0 18px 38px rgba(var(--app-brand-rgb), 0.28),
+    0 0 0 9px var(--app-surface);
 }
 
 .stage-panel-locked {
-  opacity: 0.68;
+  min-height: 160px;
+  border-color: rgba(84, 101, 128, 0.08);
+  opacity: 0.72;
 }
 
 .stage-heading strong {
@@ -3445,17 +3552,79 @@ textarea {
   font-size: 34px;
 }
 
+.stage-panel-active .stage-heading p {
+  max-width: 680px;
+  color: var(--app-text);
+  font-size: 19px;
+}
+
+.stage-panel-locked .stage-heading strong,
+.stage-panel-locked .stage-heading p,
+.stage-panel-locked .stage-card-toolbar,
+.stage-panel-locked .stage-progress-row,
+.stage-panel-locked .stage-details {
+  filter: grayscale(0.25);
+}
+
+.stage-card-toolbar {
+  align-items: center;
+}
+
+.stage-status-pill,
+.stage-task-pill {
+  min-height: 31px;
+  letter-spacing: 0.08em;
+}
+
+.stage-panel-active .stage-status-pill {
+  background: rgba(var(--app-brand-rgb), 0.1);
+}
+
+.stage-progress-row {
+  margin-top: 8px;
+}
+
+.progress-bar {
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(45, 108, 132, 0.16);
+}
+
+.progress-bar span {
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--app-sky-strong));
+}
+
+.stage-panel-active .progress-bar {
+  height: 16px;
+}
+
+.stage-details {
+  border-top-color: rgba(83, 107, 129, 0.16);
+}
+
+.stage-details summary {
+  min-height: 34px;
+}
+
+.task-row {
+  background: rgba(247, 251, 255, 0.86);
+}
+
 .roadmap-side {
   gap: 28px;
 }
 
 .roadmap-mentor-card {
-  min-height: 420px;
+  min-height: 438px;
   align-content: center;
+  text-align: center;
 }
 
 .roadmap-insight-card {
   border-color: rgba(45, 108, 132, 0.35);
+  background: rgba(255, 255, 255, 0.78);
+  padding: 28px;
 }
 
 .settings-stitch-page,
@@ -3618,6 +3787,29 @@ textarea {
   background: rgba(34, 50, 72, 0.74);
 }
 
+:root.dark .roadmap-summary-card,
+:root.dark .stage-panel {
+  background:
+    linear-gradient(180deg, rgba(29, 40, 56, 0.94), rgba(22, 34, 49, 0.88)),
+    var(--app-surface-glass);
+}
+
+:root.dark .stage-panel-active {
+  background:
+    linear-gradient(180deg, rgba(29, 40, 56, 0.96), rgba(29, 40, 56, 0.9)),
+    var(--app-surface);
+}
+
+:root.dark .stage-panel-active .stage-node {
+  box-shadow:
+    0 18px 38px rgba(0, 0, 0, 0.32),
+    0 0 0 9px var(--app-surface);
+}
+
+:root.dark .task-row {
+  background: rgba(22, 34, 49, 0.72);
+}
+
 @media (max-width: 1180px) {
   .stitch-dashboard,
   .goals-stitch-layout,
@@ -3733,11 +3925,26 @@ textarea {
     padding: 22px;
   }
 
+  .stitch-quest {
+    min-height: auto;
+  }
+
   .stitch-quest-meta,
   .goal-roadmap-preview,
   .goal-roadmap-preview-heading,
   .goal-command-progress {
     grid-template-columns: 1fr;
+  }
+
+  .stitch-quest-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 28px;
+  }
+
+  .stitch-quest-meta > div strong,
+  .stitch-quest-meta > div > span {
+    white-space: normal;
   }
 
   .goal-roadmap-preview-heading {
