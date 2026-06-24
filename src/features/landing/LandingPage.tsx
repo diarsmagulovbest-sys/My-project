@@ -25,27 +25,24 @@ const navLinks: Array<{ id: LandingSectionId; label: string }> = [
 const featureCards = [
   {
     Icon: MagicWandIcon,
-    eyebrow: 'AI planning',
     title: 'Turn a big goal into a first clear move',
-    text: 'GoalPath asks a few smart questions, then turns the answer into a practical roadmap.',
+    text: 'GoalPath uses a few smart prompts, then turns the answer into a practical roadmap.',
   },
   {
     Icon: TargetIcon,
-    eyebrow: 'Daily focus',
     title: 'Know exactly what to do today',
     text: 'Every roadmap highlights the smallest useful next task, so starting feels less heavy.',
   },
   {
     Icon: BarChartIcon,
-    eyebrow: 'Progress',
     title: 'Watch momentum build over time',
-    text: 'Progress rings, streaks, task history, and badges make effort visible.',
+    text: 'Momentum rings, streaks, task history, and badges make effort visible.',
   },
 ];
 
 const steps = [
   'Describe what you want to learn or finish',
-  'Answer quick mentor questions',
+  'Answer quick mentor prompts',
   'Follow the roadmap one task at a time',
 ];
 
@@ -53,7 +50,7 @@ const faqs = [
   {
     question: 'Is this just another to-do app?',
     answer:
-      'No. GoalPath connects the full flow: goal setup, quick mentor questions, roadmap generation, daily tasks, and progress tracking in one place.',
+      'No. GoalPath connects the full flow: goal setup, quick mentor prompts, roadmap generation, daily tasks, and activity tracking in one place.',
   },
   {
     question: 'Does it help with procrastination?',
@@ -196,10 +193,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
       <section className="landing-hero" id="top">
         <div className="landing-hero-copy landing-reveal landing-reveal-hero">
-          <span className="landing-pill">AI mentor for goals</span>
           <h1>A goal system students can actually finish</h1>
           <p>
-            Build goals, generate a roadmap, break tasks into small steps, and track progress with an AI mentor that
+            Build goals, generate a roadmap, break tasks into small steps, and track momentum with an AI mentor that
             keeps the next move clear.
           </p>
           <div className="landing-hero-actions">
@@ -210,11 +206,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
             <a className="landing-secondary-button" href="#features" onClick={(event) => handleSectionClick(event, 'features')}>
               See how it works
             </a>
-          </div>
-          <div className="landing-trust-row" aria-label="Product highlights">
-            <span>No credit card</span>
-            <span>AI roadmap</span>
-            <span>Progress badges</span>
           </div>
         </div>
 
@@ -246,7 +237,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                   <CheckCircledIcon aria-hidden="true" />
                 </div>
                 <div className="landing-task-list">
-                  {['Watch one short lesson', 'Write 3 functions', 'Test with 5 questions'].map((task, index) => (
+                  {['Watch one short lesson', 'Write 3 functions', 'Test with 5 examples'].map((task, index) => (
                     <div className="landing-task-row" key={task}>
                       <span>{index + 1}</span>
                       <strong>{task}</strong>
@@ -258,7 +249,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
                 <div className="landing-progress-ring">
                   <span>68%</span>
                 </div>
-                <strong>Roadmap progress</strong>
+                <strong>Roadmap momentum</strong>
                 <p>4 tasks completed this week</p>
               </aside>
             </div>
@@ -268,14 +259,12 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
       <section className={getSectionClassName('landing-feature-band', 'features', highlightedSection)} id="features">
         <div className="landing-section-heading landing-reveal">
-          <span>Everything in one flow</span>
-          <h2>From unclear goal to visible progress</h2>
+          <h2>From unclear goal to visible momentum</h2>
         </div>
         <div className="landing-feature-grid">
-          {featureCards.map(({ Icon, eyebrow, title, text }) => (
+          {featureCards.map(({ Icon, title, text }) => (
             <article className="landing-feature-card landing-reveal" key={title}>
               <Icon aria-hidden="true" />
-              <span>{eyebrow}</span>
               <h3>{title}</h3>
               <p>{text}</p>
             </article>
@@ -285,10 +274,9 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
       <section className={getSectionClassName('landing-roadmap-band', 'roadmap', highlightedSection)} id="roadmap">
         <div className="landing-roadmap-copy landing-reveal">
-          <span>Built for starting</span>
           <h2>The roadmap stays practical, not overwhelming</h2>
           <p>
-            GoalPath keeps the learner close to action: small questions, small tasks, clear feedback, and a mentor panel
+            GoalPath keeps the learner close to action: small prompts, small tasks, clear feedback, and a mentor panel
             ready when the plan feels stuck.
           </p>
           <button className="landing-primary-button landing-primary-button-dark" type="button" onClick={onGetStarted}>
@@ -323,7 +311,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
       <section className={getSectionClassName('landing-faq-band', 'faq', highlightedSection)} id="faq">
         <div className="landing-section-heading landing-reveal">
-          <span>Questions</span>
           <h2>Simple answers before you start</h2>
         </div>
         <div className="landing-faq-list">
@@ -340,7 +327,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       </section>
 
       <section className="landing-final-cta landing-reveal">
-        <span>Ready to make the first step obvious?</span>
         <h2>Start with one goal. Let the mentor build the path.</h2>
         <button className="landing-primary-button" type="button" onClick={onGetStarted}>
           Get started free
@@ -350,7 +336,6 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
 
       <footer className="landing-footer">
         <span>GoalPath</span>
-        <span>AI-powered goal planning for teen learners.</span>
       </footer>
     </main>
   );

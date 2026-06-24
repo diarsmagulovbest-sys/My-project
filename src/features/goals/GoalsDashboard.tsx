@@ -1,3 +1,5 @@
+import type { CSSProperties } from 'react';
+import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { EmojiToken } from '../../components/common/EmojiToken';
 import { useLanguage } from '../../lib/language';
@@ -21,6 +23,7 @@ type GoalsDashboardProps = {
   onDeleteGoal: (goalId: string) => void;
   onOpenGoals: () => void;
   onOpenGoal: (goalId: string) => void;
+  onOpenSettings: () => void;
   view: 'goals' | 'today';
 };
 
@@ -77,6 +80,159 @@ function getGoalAccentClass(index: number) {
   return `goal-card-accent-${(index % 3) + 1}`;
 }
 
+type GoalTheme = {
+  accent: string;
+  imageUrl: string;
+};
+
+const defaultGoalTheme: GoalTheme = {
+  accent: '#f16f97',
+  imageUrl: 'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?auto=format&fit=crop&w=900&q=80',
+};
+
+const goalThemes: Array<{ keywords: RegExp; theme: GoalTheme }> = [
+  {
+    keywords: /\b(japan|japanese|tokyo|kyoto|osaka|fuji|sakura|travel|trip|visit|vacation)\b/i,
+    theme: {
+      accent: '#d8718b',
+      imageUrl: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(cook|cooking|bake|baking|recipe|pasta|alfredo|meal|dish|food)\b/i,
+    theme: {
+      accent: '#f0a33a',
+      imageUrl: 'https://images.unsplash.com/photo-1506368249639-73a05d6f6488?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(code|coding|programming|app|website|project|launch|developer|javascript|react)\b/i,
+    theme: {
+      accent: '#f16f97',
+      imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(run|running|5k|marathon|jog|fitness|workout|gym|train|training)\b/i,
+    theme: {
+      accent: '#f16f97',
+      imageUrl: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(meditate|meditation|mindful|mindfulness|calm|focus|breathing)\b/i,
+    theme: {
+      accent: '#f0a33a',
+      imageUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(study|exam|school|math|english|language|learn|reading|ielts|sat)\b/i,
+    theme: {
+      accent: '#8fb8ff',
+      imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+  {
+    keywords: /\b(music|guitar|piano|sing|song|drum|violin)\b/i,
+    theme: {
+      accent: '#b98cff',
+      imageUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80',
+    },
+  },
+];
+
+function getGoalTheme(goal: GoalSummary) {
+  const searchableText = [
+    goal.title,
+    goal.description,
+    goal.aiAnalysis?.goalSummary,
+    goal.aiAnalysis?.firstSmallAction,
+  ].join(' ');
+
+  return goalThemes.find((entry) => entry.keywords.test(searchableText))?.theme ?? defaultGoalTheme;
+}
+
+function getLocalDate(value: string) {
+  const [year, month, day] = value.slice(0, 10).split('-').map(Number);
+
+  return new Date(year, month - 1, day);
+}
+
+function getTodayDate() {
+  const today = new Date();
+
+  return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+}
+
+function getDaysBetween(startDate: Date, endDate: Date) {
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+
+  return Math.ceil((endDate.getTime() - startDate.getTime()) / millisecondsPerDay);
+}
+
+function getGoalTimeStats(goal: GoalSummary) {
+  const createdDate = getLocalDate(goal.createdAt);
+  const targetDate = getLocalDate(goal.targetDate);
+  const today = getTodayDate();
+  const totalDays = Math.max(1, getDaysBetween(createdDate, targetDate));
+  const daysRemaining = Math.max(0, getDaysBetween(today, targetDate));
+  const elapsedRatio = Math.min(1, Math.max(0, (totalDays - daysRemaining) / totalDays));
+
+  return {
+    daysRemaining,
+    progressDegrees: Math.max(18, Math.round(elapsedRatio * 360)),
+  };
+}
+
+function formatShortDate(value: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(`${value}T00:00:00`));
+}
+
+function getGoalSubline(goal: GoalSummary) {
+  if (goal.progress > 0) {
+    return `${goal.progress}% complete`;
+  }
+
+  return goal.description || 'Fresh start';
+}
+
+function getGoalNote(goal: GoalSummary, locale: string, daysRemaining: number) {
+  if (daysRemaining === 0) {
+    return `Due ${formatShortDate(goal.targetDate, locale)}`;
+  }
+
+  return `${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} remaining`;
+}
+
+function getMobileGoalCardStyle(goal: GoalSummary) {
+  const theme = getGoalTheme(goal);
+  const timeStats = getGoalTimeStats(goal);
+
+  return {
+    '--mobile-goal-accent': theme.accent,
+    '--mobile-goal-image': `url("${theme.imageUrl}")`,
+    '--mobile-goal-progress': `${timeStats.progressDegrees}deg`,
+  } as CSSProperties;
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) {
+    return 'Good morning';
+  }
+
+  if (hour < 18) {
+    return 'Good afternoon';
+  }
+
+  return 'Good evening';
+}
+
 export function GoalsDashboard({
   canDeleteGoals,
   deletingGoalId = null,
@@ -89,6 +245,7 @@ export function GoalsDashboard({
   onDeleteGoal,
   onOpenGoals,
   onOpenGoal,
+  onOpenSettings,
   view,
 }: GoalsDashboardProps) {
   const { language, t } = useLanguage();
@@ -112,18 +269,16 @@ export function GoalsDashboard({
   const focusTime = formatFocusTime(getWeeklyFocusMinutes(goals));
   const questCopy = {
     activeGoals: 'Active goals',
-    activeQuest: 'ACTIVE QUEST',
     companionQuote: getMentorCharacterLine(activeMentorCharacterId, 'dashboardToday'),
     createNewGoal: 'Create new goal',
     focusTime: 'Focus time',
     goalWorlds: 'Goal Worlds',
-    nextTask: 'Next task',
+    nextTask: 'Next step',
     pathStatistics: 'Path Statistics',
     startNextStep: 'Start next step',
     streak: 'Streak',
     subtitle: 'The path ahead is ready for one clear step today.',
     title: 'Good morning, Dreamer',
-    todaysQuest: "Today's Quest",
     upcomingMilestone: 'Upcoming milestone',
     viewAll: 'View all realms',
   };
@@ -338,17 +493,74 @@ export function GoalsDashboard({
       ) : null}
 
       {!isLoading && !error && goals.length > 0 ? (
-        <section className="stitch-dashboard" aria-label={t.today}>
+        <>
+          <section className="mobile-goal-feed" aria-label={t.today}>
+            <header className="mobile-goal-feed-header">
+              <h1>{getGreeting()}</h1>
+              <div className="mobile-goal-feed-actions">
+                <button
+                  aria-label={t.createGoal}
+                  className="mobile-feed-icon-button"
+                  disabled={!canCreateGoal}
+                  onClick={onCreateClick}
+                  type="button"
+                >
+                  <PlusIcon />
+                </button>
+                <button
+                  aria-label={t.navSettings}
+                  className="mobile-feed-icon-button"
+                  onClick={onOpenSettings}
+                  type="button"
+                >
+                  <GearIcon />
+                </button>
+              </div>
+            </header>
+
+            <div className="mobile-goal-card-list">
+              {goals.map((goal) => {
+                const timeStats = getGoalTimeStats(goal);
+
+                return (
+                  <button
+                    aria-label={`${goal.title}, ${timeStats.daysRemaining} days remaining`}
+                    className="mobile-goal-card"
+                    key={goal.id}
+                    onClick={() => onOpenGoal(goal.id)}
+                    style={getMobileGoalCardStyle(goal)}
+                    type="button"
+                  >
+                    <span className="mobile-goal-card-shade" aria-hidden="true" />
+                    <span className="mobile-goal-card-copy">
+                      <strong>{goal.title}</strong>
+                      <span>{getGoalSubline(goal)}</span>
+                      <small>{getGoalNote(goal, locale, timeStats.daysRemaining)}</small>
+                    </span>
+                    <span
+                      aria-label={`${timeStats.daysRemaining} days remaining`}
+                      className="mobile-days-ring"
+                      role="img"
+                    >
+                      <strong>{timeStats.daysRemaining}</strong>
+                      <span>days</span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section className="stitch-dashboard stitch-dashboard-desktop" aria-label={t.today}>
           <div className="stitch-main">
             <header className="stitch-welcome">
               <h1>{questCopy.title}</h1>
               <p>{questCopy.subtitle}</p>
             </header>
 
-            <section className="stitch-quest" aria-label={questCopy.todaysQuest}>
-              <span className="stitch-quest-pill">{questCopy.activeQuest}</span>
-              <h2>{questCopy.todaysQuest}</h2>
-              <p>{nextAction}</p>
+            <section className="stitch-quest" aria-label={focusGoal?.title ?? t.noGoal}>
+              <h2>{focusGoal?.title ?? t.noGoal}</h2>
+              <p>{focusGoal?.description || focusGoal?.aiAnalysis?.goalSummary || t.savedGoalDescription}</p>
 
               <div className="stitch-quest-meta">
                 <EmojiToken
@@ -358,7 +570,7 @@ export function GoalsDashboard({
                   tone={focusGoalIcon.tone}
                 />
                 <div>
-                  <strong>{focusGoal?.title ?? t.noGoal}</strong>
+                  <strong>{nextAction}</strong>
                   <span>{questCopy.nextTask}</span>
                 </div>
                 <div className="stitch-quest-progress" aria-hidden="true">
@@ -503,6 +715,7 @@ export function GoalsDashboard({
             </section>
           </aside>
         </section>
+        </>
       ) : null}
     </div>
   );

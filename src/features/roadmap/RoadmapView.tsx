@@ -258,7 +258,7 @@ function buildFallbackRoadmap(goal: GoalSummary, t: TextDictionary) {
       isFallback: true,
       sortOrder: 0,
       status: firstStageStatus,
-      successCriteria: hasProgress ? [t.completed] : [t.unlocked],
+      successCriteria: hasProgress ? [t.completed] : [t.smallestActionToday],
       tasks: [
         createFallbackTask({
           description: goal.aiAnalysis?.goalSummary || goal.description || t.savedGoalDescription,

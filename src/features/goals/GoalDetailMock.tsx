@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Button } from '../../components/common/Button';
-import { useLanguage, type AppLanguage } from '../../lib/language';
+import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
 import { MentorChat } from '../mentor/MentorChat';
@@ -33,14 +33,6 @@ type CollapsibleGoalSectionProps = {
   title: string;
 };
 
-function formatDate(value: string, language: AppLanguage) {
-  return new Intl.DateTimeFormat(language === 'ru' ? 'ru' : 'en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date(value));
-}
-
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback;
 }
@@ -59,7 +51,7 @@ function getStatusLabel(status: GoalStatus, t: ReturnType<typeof useLanguage>['t
 
 type GoalPreviewStep = {
   description?: string;
-  label: string;
+  label?: string;
   status: 'completed' | 'active' | 'locked';
   title: string;
 };
@@ -111,7 +103,7 @@ export function GoalDetailMock({
   onOpenRoadmap,
   questionsPanel,
 }: GoalDetailMockProps) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const mentorRef = useRef<HTMLDivElement | null>(null);
   const progressRef = useRef<HTMLElement | null>(null);
   const tasksRef = useRef<HTMLElement | null>(null);
@@ -126,15 +118,11 @@ export function GoalDetailMock({
   const todayDescription = goal.todayTask
     ? getMentorCharacterLine(activeMentorCharacterId, 'goalNextStep')
     : aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
-  const shortDescription = getShortText(goal.description || t.refineDescription, 128);
   const mentorDescription = getMentorCharacterLine(activeMentorCharacterId, 'goalMentor');
-  const availableTimeLabel = `${goal.availableTime} ${t.min} ${
-    goal.timePeriod === 'day' ? t.perDay : t.perWeek
-  }`;
   const roadmapPreviewSteps: GoalPreviewStep[] = [
     {
       description: goal.progress > 0 ? undefined : getShortText(goal.description || t.savedGoalDescription, 72),
-      label: goal.progress > 0 ? t.completed : t.unlocked,
+      label: goal.progress > 0 ? t.completed : undefined,
       status: goal.progress > 0 ? 'completed' : 'active',
       title: goal.progress > 0 ? t.startedMoving : t.firstDirection,
     },
@@ -184,29 +172,6 @@ export function GoalDetailMock({
     <div className="page-stack goal-detail-stitch">
       <div className="goal-detail-grid">
         <main className="goal-detail-main">
-          <section className="goal-command-card">
-            <div className="goal-command-copy">
-              <span className="eyebrow">{t.goalPage}</span>
-              <h1>{goal.title}</h1>
-              <p>{shortDescription}</p>
-            </div>
-            <div className="goal-command-progress">
-              <div className="progress-ring goal-command-ring" aria-label={`${t.progress} ${goal.progress}%`}>
-                <span>{goal.progress}%</span>
-              </div>
-              <div className="goal-command-metrics">
-                <div>
-                  <span>{t.target}</span>
-                  <strong>{formatDate(goal.targetDate, language)}</strong>
-                </div>
-                <div>
-                  <span>{t.time}</span>
-                  <strong>{availableTimeLabel}</strong>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <div className="goal-work-lane">
             <section className="task-focus task-focus-primary" ref={tasksRef}>
               <div>
@@ -242,10 +207,10 @@ export function GoalDetailMock({
               </div>
               <div className="goal-preview-timeline" aria-label={t.roadmap}>
                 {roadmapPreviewSteps.map((step) => (
-                  <div className={`goal-preview-step goal-preview-step-${step.status}`} key={step.label}>
+                  <div className={`goal-preview-step goal-preview-step-${step.status}`} key={step.title}>
                     <span aria-hidden="true" />
                     <div>
-                      <small>{step.label}</small>
+                      {step.label ? <small>{step.label}</small> : null}
                       <strong>{step.title}</strong>
                       {step.description ? <p>{step.description}</p> : null}
                     </div>

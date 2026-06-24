@@ -402,6 +402,7 @@ export default function App() {
             goToPage('detail', goalId);
           }}
           onOpenGoals={() => goToPage('goals')}
+          onOpenSettings={() => goToPage('settings')}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
         />
       ) : null}

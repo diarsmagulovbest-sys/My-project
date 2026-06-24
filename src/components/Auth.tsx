@@ -15,6 +15,7 @@ export default function Auth({ onBackToLanding }: AuthProps) {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const isSignUp = mode === 'sign-up';
 
@@ -39,6 +40,23 @@ export default function Auth({ onBackToLanding }: AuthProps) {
         ? t.accountCreated
         : t.signedIn,
     );
+  };
+
+  const handleGoogleSignIn = async () => {
+    setMessage('');
+    setIsGoogleLoading(true);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      setMessage(error.message);
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -76,6 +94,20 @@ export default function Auth({ onBackToLanding }: AuthProps) {
           >
             {t.signUp}
           </button>
+        </div>
+
+        <button
+          className="auth-google-button"
+          disabled={isLoading || isGoogleLoading}
+          type="button"
+          onClick={() => void handleGoogleSignIn()}
+        >
+          <span className="auth-google-mark" aria-hidden="true">G</span>
+          {isGoogleLoading ? t.signingInWithGoogle : t.continueWithGoogle}
+        </button>
+
+        <div className="auth-divider" aria-hidden="true">
+          <span />
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>

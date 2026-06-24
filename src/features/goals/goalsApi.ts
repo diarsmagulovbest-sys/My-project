@@ -101,6 +101,43 @@ const goalAiAnalysisColumns = `
   created_at
 `;
 
+function isResearchOnlyAction(value: string) {
+  return /\b(search online|search the web|google|look up|watch videos?|find a tutorial|read about)\b/i.test(value);
+}
+
+function buildUsefulFirstAction(goal: Pick<Goal, 'description' | 'title'>) {
+  const title = goal.title.trim() || 'your goal';
+  const goalText = `${goal.title} ${goal.description}`.toLowerCase();
+
+  if (/\b(cook|cooking|bake|baking|recipe|pasta|alfredo|meal|dish)\b/.test(goalText)) {
+    return `Make one small test version of ${title} and write down one thing to improve next.`;
+  }
+
+  if (/\b(learn|study|exam|test|math|language|english|ielts|sat|school)\b/.test(goalText)) {
+    return `Practice one focused exercise for ${title} for 20 minutes and write down what was hard.`;
+  }
+
+  if (/\b(build|create|make|design|draw|write|project|app|website)\b/.test(goalText)) {
+    return `Create the smallest first version of ${title} in 20 minutes.`;
+  }
+
+  return `Do one concrete 20-minute step for ${title} and write down the result.`;
+}
+
+function normalizeGoalAiAnalysis<T extends Pick<GoalAiAnalysisResponse, 'firstSmallAction'>>(
+  analysis: T,
+  goal: Pick<Goal, 'description' | 'title'>,
+) {
+  if (!isResearchOnlyAction(analysis.firstSmallAction)) {
+    return analysis;
+  }
+
+  return {
+    ...analysis,
+    firstSmallAction: buildUsefulFirstAction(goal),
+  };
+}
+
 function mapGoalRow(row: GoalRow): Goal {
   return {
     availableTime: row.available_time,
@@ -229,7 +266,9 @@ export async function fetchGoals(userId: string): Promise<GoalSummary[]> {
 
   return goals.map<GoalSummary>((goal) => {
     const task = taskByGoalId[goal.id];
-    const aiAnalysis = aiAnalysisByGoalId[goal.id];
+    const aiAnalysis = aiAnalysisByGoalId[goal.id]
+      ? normalizeGoalAiAnalysis(aiAnalysisByGoalId[goal.id], goal)
+      : undefined;
 
     if (!task && !aiAnalysis) {
       return goal;
@@ -278,9 +317,10 @@ export async function createGoal(
   }
 
   const goal = mapGoalRow(data);
+  const normalizedAiAnalysis = normalizeGoalAiAnalysis(aiAnalysis, goal);
 
   try {
-    const savedAiAnalysis = await createGoalAiAnalysis(userId, goal.id, aiAnalysis);
+    const savedAiAnalysis = await createGoalAiAnalysis(userId, goal.id, normalizedAiAnalysis);
 
     return {
       ...goal,
