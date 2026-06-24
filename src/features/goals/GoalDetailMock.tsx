@@ -19,6 +19,7 @@ type GoalDetailMockProps = {
   goal: GoalSummary;
   onBack: () => void;
   onCompleteTask?: (taskId: string) => Promise<void> | void;
+  onOpenCustomize?: () => void;
   onDeleteGoal?: (goalId: string) => void;
   onOpenRoadmap?: () => void;
   questionsPanel?: ReactNode;
@@ -100,6 +101,7 @@ export function GoalDetailMock({
   onBack,
   onCompleteTask,
   onDeleteGoal,
+  onOpenCustomize,
   onOpenRoadmap,
   questionsPanel,
 }: GoalDetailMockProps) {
@@ -181,9 +183,13 @@ export function GoalDetailMock({
               </div>
               {taskError ? <p className="form-error">{taskError}</p> : null}
               <div className="task-focus-actions">
+                <Button onClick={onOpenCustomize}>
+                  {t.customizeMyGoals}
+                </Button>
                 <Button
                   disabled={!currentTaskId || isCompletingTask}
                   onClick={() => void handleCompleteTask()}
+                  variant="secondary"
                 >
                   {isCompletingTask ? t.saving : t.markDone}
                 </Button>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CheckIcon } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
 import { useLanguage } from '../../lib/language';
@@ -21,6 +22,13 @@ function getErrorMessage(error: unknown) {
 function mapAnswers(questions: GoalQuestion[]) {
   return questions.reduce<Record<string, string>>((accumulator, question) => {
     accumulator[question.id] = question.answer;
+    return accumulator;
+  }, {});
+}
+
+function mapSelectedOptionIndexes(questions: GoalQuestion[]) {
+  return questions.reduce<Record<string, number | null>>((accumulator, question) => {
+    accumulator[question.id] = question.selectedOptionIndex;
     return accumulator;
   }, {});
 }
@@ -58,11 +66,18 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [questions, setQuestions] = useState<GoalQuestion[]>([]);
+  const [selectedOptionIndexes, setSelectedOptionIndexes] = useState<Record<string, number | null>>({});
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const allQuestionsAnswered = useMemo(
-    () => questions.length > 0 && questions.every((question) => answers[question.id]?.trim()),
-    [answers, questions],
+    () =>
+      questions.length > 0
+      && questions.every((question) =>
+        question.responseKind === 'single_choice'
+          ? selectedOptionIndexes[question.id] !== null && selectedOptionIndexes[question.id] !== undefined
+          : answers[question.id]?.trim(),
+      ),
+    [answers, questions, selectedOptionIndexes],
   );
 
   useEffect(() => {
@@ -76,6 +91,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
 
         setQuestions(nextQuestions);
         setAnswers(mapAnswers(nextQuestions));
+        setSelectedOptionIndexes(mapSelectedOptionIndexes(nextQuestions));
       })
       .catch((caughtError: unknown) => {
         if (!isActive) {
@@ -105,6 +121,7 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
       const nextQuestions = await getOrCreateQuestions(goal, language);
       setQuestions(nextQuestions);
       setAnswers(mapAnswers(nextQuestions));
+      setSelectedOptionIndexes(mapSelectedOptionIndexes(nextQuestions));
     } catch (caughtError) {
       setError(getErrorMessage(caughtError));
     } finally {
@@ -123,11 +140,13 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
         questions.map((question) => ({
           answer: answers[question.id] ?? '',
           id: question.id,
+          selectedOptionIndex: selectedOptionIndexes[question.id] ?? null,
         })),
       );
 
       setQuestions(nextQuestions);
       setAnswers(mapAnswers(nextQuestions));
+      setSelectedOptionIndexes(mapSelectedOptionIndexes(nextQuestions));
       setSuccessMessage(message);
       onAnswersSaved?.(options);
     } catch (caughtError) {
@@ -173,23 +192,56 @@ export function GoalQuestionsPanel({ goal, onAnswersSaved }: GoalQuestionsPanelP
         <>
           <div className="question-list">
             {questions.map((question, index) => (
-              <label className="question-item" key={question.id}>
+              <div className="question-item" key={question.id}>
                 <span>{t.question} {index + 1}</span>
                 <strong>{question.question}</strong>
-                <textarea
-                  disabled={isSaving}
-                  onChange={(event) => {
-                    setAnswers((currentAnswers) => ({
-                      ...currentAnswers,
-                      [question.id]: event.target.value,
-                    }));
-                    setSuccessMessage(null);
-                  }}
-                  placeholder={t.yourAnswer}
-                  rows={2}
-                  value={answers[question.id] ?? ''}
-                />
-              </label>
+                {question.responseKind === 'single_choice' ? (
+                  <div className="question-choice-list" role="radiogroup" aria-label={question.question}>
+                    {question.answerOptions.map((option, optionIndex) => {
+                      const isSelected = selectedOptionIndexes[question.id] === optionIndex;
+
+                      return (
+                        <button
+                          aria-checked={isSelected}
+                          className={isSelected ? 'question-choice question-choice-selected' : 'question-choice'}
+                          disabled={isSaving}
+                          key={`${question.id}-${option}`}
+                          onClick={() => {
+                            setSelectedOptionIndexes((currentIndexes) => ({
+                              ...currentIndexes,
+                              [question.id]: optionIndex,
+                            }));
+                            setAnswers((currentAnswers) => ({
+                              ...currentAnswers,
+                              [question.id]: option,
+                            }));
+                            setSuccessMessage(null);
+                          }}
+                          role="radio"
+                          type="button"
+                        >
+                          <span>{option}</span>
+                          {isSelected ? <CheckIcon aria-hidden="true" /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <textarea
+                    disabled={isSaving}
+                    onChange={(event) => {
+                      setAnswers((currentAnswers) => ({
+                        ...currentAnswers,
+                        [question.id]: event.target.value,
+                      }));
+                      setSuccessMessage(null);
+                    }}
+                    placeholder={t.yourAnswer}
+                    rows={2}
+                    value={answers[question.id] ?? ''}
+                  />
+                )}
+              </div>
             ))}
           </div>
 

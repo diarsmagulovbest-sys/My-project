@@ -4,6 +4,7 @@ import Auth from './components/Auth';
 import { Button } from './components/common/Button';
 import { AppLayout } from './components/layout/AppLayout';
 import { CreateGoalForm } from './features/goals/CreateGoalForm';
+import { GoalCustomizeFlow } from './features/goals/GoalCustomizeFlow';
 import { GoalDetailMock } from './features/goals/GoalDetailMock';
 import { GoalQuestionsPanel } from './features/goals/GoalQuestionsPanel';
 import { generateGoalAnalysis } from './features/goals/generateGoalAnalysis';
@@ -37,7 +38,12 @@ type RouteState = {
 
 function getRouteState(pathname: string): RouteState {
   const cleanPath = pathname.replace(/\/+$/, '') || '/';
+  const customizeMatch = cleanPath.match(/^\/goals\/([^/]+)\/customize$/);
   const goalMatch = cleanPath.match(/^\/goals\/([^/]+)$/);
+
+  if (customizeMatch) {
+    return { page: 'customize', selectedGoalId: decodeURIComponent(customizeMatch[1]) };
+  }
 
   if (goalMatch && goalMatch[1] !== 'new') {
     return { page: 'detail', selectedGoalId: decodeURIComponent(goalMatch[1]) };
@@ -65,6 +71,7 @@ function getPathForPage(page: AppPage, selectedGoalId = '') {
   const pathByPage: Record<AppPage, string> = {
     achievements: '/achievements',
     create: '/goals/new',
+    customize: selectedGoalId ? `/goals/${encodeURIComponent(selectedGoalId)}/customize` : '/goals',
     detail: selectedGoalId ? `/goals/${encodeURIComponent(selectedGoalId)}` : '/goals',
     goals: '/goals',
     mentor: '/mentor',
@@ -433,6 +440,7 @@ export default function App() {
           }}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
           onOpenRoadmap={() => goToPage('roadmap')}
+          onOpenCustomize={() => goToPage('customize', selectedGoal.id)}
           onCompleteTask={(taskId) => handleCompleteCurrentTask(selectedGoal.id, taskId)}
           questionsPanel={
             <GoalQuestionsPanel
@@ -448,6 +456,29 @@ export default function App() {
             />
           }
         />
+      ) : null}
+
+      {activePage === 'customize' && selectedGoal ? (
+        <GoalCustomizeFlow
+          goal={selectedGoal}
+          key={selectedGoal.id}
+          onBackToGoal={() => goToPage('detail', selectedGoal.id)}
+          onDone={() => goToPage('detail', selectedGoal.id)}
+        />
+      ) : null}
+
+      {activePage === 'customize' && !selectedGoal && isGoalsLoading ? (
+        <section className="state-panel" aria-live="polite">
+          <h2>{t.loadingGoals}</h2>
+          <p>{t.loadingGoalsDescription}</p>
+        </section>
+      ) : null}
+
+      {activePage === 'customize' && !selectedGoal && !isGoalsLoading ? (
+        <section className="state-panel">
+          <h2>{t.noGoalFound}</h2>
+          <p>{t.noGoalFoundDescription}</p>
+        </section>
       ) : null}
 
       {isRoadmapPage && selectedRoadmapGoal ? (

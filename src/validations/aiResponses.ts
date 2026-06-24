@@ -5,12 +5,27 @@ const shortText = z.string().trim().min(1).max(500);
 const longText = z.string().trim().min(1).max(3000);
 
 // These schemas are the boundary between generated AI text and data we allow into the app/database.
-export const clarifyingQuestionSchema = z
+const freeTextClarifyingQuestionSchema = z
   .object({
     question: shortText,
+    responseKind: z.literal('free_text').optional(),
     sortOrder: z.number().int().min(0),
   })
   .strict();
+
+const singleChoiceClarifyingQuestionSchema = z
+  .object({
+    answerOptions: z.array(shortText).length(5),
+    question: shortText,
+    responseKind: z.literal('single_choice'),
+    sortOrder: z.number().int().min(0),
+  })
+  .strict();
+
+export const clarifyingQuestionSchema = z.union([
+  freeTextClarifyingQuestionSchema,
+  singleChoiceClarifyingQuestionSchema,
+]);
 
 export const clarifyingQuestionsResponseSchema = z
   .object({

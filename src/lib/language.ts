@@ -52,6 +52,9 @@ const englishText = {
     `You can track up to ${maxGoals} goals right now. Delete one current goal to create a new one.`,
   createRoadmap: 'Create roadmap',
   createRoadmapToGetTask: 'Create a roadmap to get your first task.',
+  customizeMyGoals: 'Customize my goals',
+  customizeMyGoalsDescription:
+    'Pick quick answers so the mentor can make this goal feel personal.',
   currentLevel: 'Current level',
   currentLevelPlaceholder: 'Beginner, tried a few times, or know the basics',
   dateRequired: 'Choose a date.',
@@ -254,6 +257,9 @@ export type TextDictionary = {
 };
 
 const russianText: TextDictionary = {
+  customizeMyGoals: 'Customize my goals',
+  customizeMyGoalsDescription:
+    'Pick quick answers so the mentor can make this goal feel personal.',
   accountDetails: 'Данные аккаунта',
   brandEyebrow: 'Твой путь к цели',
   displayMode: 'Режим экрана',
