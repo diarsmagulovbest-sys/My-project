@@ -85,9 +85,9 @@ export function SettingsPage({
     <div className="page-stack settings-stitch-page">
       <header className="settings-stitch-header">
         <div>
-          <span className="eyebrow">Sanctuary controls</span>
-          <h1>Settings</h1>
-          <p>Adjust your account, language, palette, and hidden path preferences.</p>
+          <span className="eyebrow">{t.settingsEyebrow}</span>
+          <h1>{t.settings}</h1>
+          <p>{t.settingsDescription}</p>
         </div>
       </header>
 
@@ -96,7 +96,7 @@ export function SettingsPage({
           <div className="settings-stitch-card-heading">
             <span className="settings-stitch-icon" aria-hidden="true">@</span>
             <div>
-              <span>Account Details</span>
+              <span>{t.accountDetails}</span>
               <h2>{userEmail ?? t.account}</h2>
             </div>
           </div>
@@ -116,12 +116,12 @@ export function SettingsPage({
           <div className="settings-stitch-card-heading">
             <span className="settings-stitch-icon" aria-hidden="true">Aa</span>
             <div>
-              <span>Language</span>
-              <h2>Guidance voice</h2>
+              <span>{t.language}</span>
+              <h2>{t.guidanceVoice}</h2>
             </div>
           </div>
           <div className="settings-stitch-toggle-line">
-            <span>Russian / English</span>
+            <span>{t.languagePair}</span>
             <LanguageToggle />
           </div>
         </article>
@@ -130,12 +130,12 @@ export function SettingsPage({
           <div className="settings-stitch-card-heading">
             <span className="settings-stitch-icon" aria-hidden="true">UI</span>
             <div>
-              <span>Global Preferences</span>
-              <h2>Display mode</h2>
+              <span>{t.globalPreferences}</span>
+              <h2>{t.displayMode}</h2>
             </div>
           </div>
           <div className="settings-stitch-toggle-line">
-            <span>Light / dark theme</span>
+            <span>{t.themePair}</span>
             <ThemeToggle />
           </div>
           <article className="settings-code-card">
@@ -168,7 +168,7 @@ export function SettingsPage({
         <article className="settings-stitch-card settings-stitch-mentor-card">
           <div className="settings-stitch-orb" aria-hidden="true">AI</div>
           <div>
-            <span className="eyebrow">Mentor</span>
+            <span className="eyebrow">{t.mentorLabel}</span>
             <h2>{mentorCharacter.name}</h2>
             <p>{getMentorCharacterLine(activeMentorCharacterId, 'settings')}</p>
           </div>

@@ -232,11 +232,11 @@ export function GoalDetailMock({
               <div className="goal-roadmap-preview-heading">
                 <div>
                   <span className="eyebrow">{t.roadmap}</span>
-                  <h2>{language === 'ru' ? 'Предпросмотр пути' : 'Roadmap Preview'}</h2>
+                  <h2>{t.roadmapPreview}</h2>
                 </div>
                 {onOpenRoadmap ? (
                   <Button variant="secondary" onClick={onOpenRoadmap}>
-                    {language === 'ru' ? 'Открыть карту' : 'Open roadmap'}
+                    {t.openRoadmap}
                   </Button>
                 ) : null}
               </div>
@@ -324,7 +324,7 @@ export function GoalDetailMock({
 
           <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>
             <div>
-              <span>{language === 'ru' ? 'Статус' : 'Status'}</span>
+              <span>{t.status}</span>
               <strong>{getStatusLabel(goal.status, t)}</strong>
             </div>
             <div>

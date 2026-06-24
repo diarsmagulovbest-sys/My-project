@@ -10,6 +10,7 @@ import { generateGoalAnalysis } from './features/goals/generateGoalAnalysis';
 import { goalLimitsConfig } from './features/goals/goalLimits';
 import { createGoal, deleteGoal, fetchGoals } from './features/goals/goalsApi';
 import { GoalsDashboard } from './features/goals/GoalsDashboard';
+import { LandingPage } from './features/landing/LandingPage';
 import { classifyGoalMentorProfile } from './features/mentor/classifyGoalMentorProfile';
 import { MentorCharactersPage } from './features/mentor/MentorCharactersPage';
 import { getDefaultMentorProfile } from './features/mentor/mentorProfiles';
@@ -113,6 +114,7 @@ export default function App() {
   const { language, t } = useLanguage();
   const initialRoute = useMemo(() => getRouteState(window.location.pathname), []);
   const [session, setSession] = useState<Session | null>(null);
+  const [isAuthVisible, setIsAuthVisible] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [activePage, setActivePage] = useState<AppPage>(initialRoute.page);
   const [goals, setGoals] = useState<GoalSummary[]>([]);
@@ -367,7 +369,11 @@ export default function App() {
   }
 
   if (!session) {
-    return <Auth />;
+    return isAuthVisible ? (
+      <Auth onBackToLanding={() => setIsAuthVisible(false)} />
+    ) : (
+      <LandingPage onGetStarted={() => setIsAuthVisible(true)} />
+    );
   }
 
   return (

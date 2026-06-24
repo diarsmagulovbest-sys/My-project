@@ -94,11 +94,11 @@ export function AppLayout({
 
   return (
     <main className="app-shell">
-      <aside className="sidebar" aria-label="Main navigation">
+      <aside className="sidebar" aria-label={t.mainNavigation}>
         <div className="brand-block">
           <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
           <div>
-            <span className="eyebrow">Your Magical Journey</span>
+            <span className="eyebrow">{t.brandEyebrow}</span>
             <strong>GoalPath</strong>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function AppLayout({
           </span>
           <div>
             <strong>{userEmail ?? t.account}</strong>
-            <small>Pathfinder</small>
+            <small>{t.userRole}</small>
           </div>
           <Button variant="ghost" onClick={onSignOut}>
             {t.signOut}
@@ -139,7 +139,7 @@ export function AppLayout({
       </aside>
 
       <div className="app-main-frame">
-        <header className="app-topbar" aria-label="Workspace tools">
+        <header className="app-topbar" aria-label={t.workspaceTools}>
           <div className="app-topbar-context">
             <span className="app-topbar-spark" aria-hidden="true">
               ✦
@@ -148,17 +148,17 @@ export function AppLayout({
           </div>
 
           <label className="app-search-pill">
-            <span className="sr-only">Search your path</span>
-            <input type="search" placeholder="Search your path..." />
+            <span className="sr-only">{t.searchYourPath}</span>
+            <input type="search" placeholder={`${t.searchYourPath}...`} />
             <MagnifyingGlassIcon aria-hidden="true" />
           </label>
 
           <div className="app-topbar-actions">
-            <button className="app-icon-button" aria-label="Notifications" type="button">
+            <button className="app-icon-button" aria-label={t.notifications} type="button">
               <BellIcon />
             </button>
             <button className="app-pursue-button" onClick={() => onNavigate({ page: 'goals' })} type="button">
-              Pursue goal
+              {t.pursueGoal}
             </button>
           </div>
         </header>

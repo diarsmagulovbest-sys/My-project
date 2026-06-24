@@ -4,7 +4,11 @@ import { supabase } from '../lib/supabase';
 
 type AuthMode = 'sign-in' | 'sign-up';
 
-export default function Auth() {
+type AuthProps = {
+  onBackToLanding?: () => void;
+};
+
+export default function Auth({ onBackToLanding }: AuthProps) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [email, setEmail] = useState('');
@@ -40,6 +44,11 @@ export default function Auth() {
   return (
     <main className="auth-page">
       <section className="auth-panel" aria-label={t.signInTitle}>
+        {onBackToLanding ? (
+          <button className="auth-back-button" type="button" onClick={onBackToLanding}>
+            Back to overview
+          </button>
+        ) : null}
         <div className="auth-copy">
           <span className="eyebrow">{t.account}</span>
           <h1>{isSignUp ? t.createAccountTitle : t.signInTitle}</h1>

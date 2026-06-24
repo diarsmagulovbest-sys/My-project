@@ -26,7 +26,7 @@ export function CreateGoalForm({
   onCancel,
   onCreate,
 }: CreateGoalFormProps) {
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDate, setTargetDate] = useState('');
@@ -58,7 +58,7 @@ export function CreateGoalForm({
       isTimeValid,
     [canCreateMoreGoals, isTimeValid, targetDate, title],
   );
-  const hoursLabel = language === 'ru' ? 'hr' : 'hours';
+  const hoursLabel = t.hours;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
