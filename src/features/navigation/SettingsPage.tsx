@@ -1,20 +1,15 @@
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { LanguageToggle } from '../../components/settings/LanguageToggle';
-import { PaletteSelector } from '../../components/settings/PaletteSelector';
 import { ThemeToggle } from '../../components/settings/ThemeToggle';
 import { useLanguage } from '../../lib/language';
-import {
-  getMentorCharacter,
-  getMentorCharacterLine,
-} from '../mentor/mentorCharacters';
-import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 
 type SettingsPageProps = {
   canDeleteGoals: boolean;
   isGoalLimitEnabled: boolean;
   maxGoals: number;
   onOpenSecret: () => void;
+  onSignOut: () => void;
   userEmail?: string;
 };
 
@@ -23,11 +18,10 @@ export function SettingsPage({
   isGoalLimitEnabled,
   maxGoals,
   onOpenSecret,
+  onSignOut,
   userEmail,
 }: SettingsPageProps) {
   const { t } = useLanguage();
-  const activeMentorCharacterId = useActiveMentorCharacterId();
-  const mentorCharacter = getMentorCharacter(activeMentorCharacterId);
   const [isDiscoActive, setIsDiscoActive] = useState(false);
   const [promoValue, setPromoValue] = useState('');
   const promoInputRef = useRef<HTMLTextAreaElement>(null);
@@ -97,7 +91,7 @@ export function SettingsPage({
             <span className="settings-stitch-icon" aria-hidden="true">@</span>
             <div>
               <span>{t.accountDetails}</span>
-              <h2>{userEmail ?? t.account}</h2>
+              <h2 className="settings-account-email">{userEmail ?? t.account}</h2>
             </div>
           </div>
           <div className="settings-stitch-list">
@@ -110,6 +104,9 @@ export function SettingsPage({
               <strong>{canDeleteGoals ? t.enabled : t.disabled}</strong>
             </div>
           </div>
+          <button className="settings-signout-button" onClick={onSignOut} type="button">
+            {t.signOut}
+          </button>
         </article>
 
         <article className="settings-stitch-card">
@@ -163,16 +160,6 @@ export function SettingsPage({
           </article>
         </article>
 
-        <PaletteSelector />
-
-        <article className="settings-stitch-card settings-stitch-mentor-card">
-          <div className="settings-stitch-orb" aria-hidden="true">AI</div>
-          <div>
-            <span className="eyebrow">{t.mentorLabel}</span>
-            <h2>{mentorCharacter.name}</h2>
-            <p>{getMentorCharacterLine(activeMentorCharacterId, 'settings')}</p>
-          </div>
-        </article>
       </section>
     </div>
   );

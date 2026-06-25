@@ -12,11 +12,6 @@ import type {
   RoadmapTaskStatus,
 } from '../../types/roadmap';
 import { fetchGoalQuestions } from '../goals/questionsApi';
-import {
-  getMentorCharacter,
-  getMentorCharacterLine,
-} from '../mentor/mentorCharacters';
-import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 import { generateRoadmap } from './generateRoadmap';
 import { createRoadmap, fetchRoadmap, setRoadmapTaskCompletion } from './roadmapApi';
 
@@ -347,9 +342,6 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
   const overallProgress = hasPersistedRoadmap ? getGoalProgress(displayStages) : goal.progress;
   const currentStage = displayStages.find((stage) => stage.status === 'active') ?? displayStages[0];
   const remainingTasks = Math.max(totalTasks - completedTasks, 0);
-  const activeMentorCharacterId = useActiveMentorCharacterId();
-  const companion = getMentorCharacter(activeMentorCharacterId);
-  const companionFallback = companion.shortName.slice(0, 2);
 
   useEffect(() => {
     let isActive = true;
@@ -513,11 +505,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                 <div>
                   <span className="eyebrow">{t.overallProgress}</span>
                   <h2>{hasPersistedRoadmap ? t.planReady : t.noRoadmapYet}</h2>
-                  <p>
-                    {hasPersistedRoadmap
-                      ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapInsight')
-                      : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
-                  </p>
+                  <p>{hasPersistedRoadmap ? `${completedTasks}/${totalTasks} tasks completed.` : t.createRoadmapToGetTask}</p>
                 </div>
                 <AnimatedCircularProgressBar
                   className="progress-ring"
@@ -534,7 +522,7 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
               {!hasPersistedRoadmap ? (
                 <div className="roadmap-fallback-note">
                   <strong>{t.plan}</strong>
-                  <p>{getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}</p>
+                  <p>{t.roadmapReadyDescription}</p>
                 </div>
               ) : null}
             </section>
@@ -671,29 +659,10 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
           </main>
 
           <aside className="roadmap-side">
-            <section className="roadmap-mentor-card">
-              <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
-                {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
-              </div>
-              <strong>{companion.name}</strong>
-              <span>{t.aiMentor}</span>
-              <p>
-                {currentStage
-                  ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapMentor')
-                  : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
-              </p>
-            </section>
-
             <section className="roadmap-insight-card">
               <span>{t.thisWeek}</span>
               <strong>{currentStage?.title ?? t.createRoadmap}</strong>
-              <p>
-                {hasPersistedRoadmap
-                  ? remainingTasks > 0
-                    ? getMentorCharacterLine(activeMentorCharacterId, 'roadmapInsight')
-                    : t.completed
-                  : getMentorCharacterLine(activeMentorCharacterId, 'roadmapPlan')}
-              </p>
+              <p>{hasPersistedRoadmap ? (remainingTasks > 0 ? t.planReady : t.completed) : t.createRoadmapToGetTask}</p>
             </section>
           </aside>
         </section>

@@ -45,26 +45,6 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
-:root[data-app-palette="sky_blue"] {
-  --app-bg-glow: rgba(207, 238, 253, 0.78);
-  --app-brand-rgb: 45, 108, 132;
-}
-
-:root[data-app-palette="soft_pink"] {
-  --app-bg-glow: rgba(253, 229, 238, 0.72);
-  --app-brand-rgb: 200, 111, 145;
-}
-
-:root[data-app-palette="lavender"] {
-  --app-bg-glow: rgba(239, 227, 251, 0.72);
-  --app-brand-rgb: 141, 104, 191;
-}
-
-:root[data-app-palette="warm_peach"] {
-  --app-bg-glow: rgba(253, 232, 223, 0.72);
-  --app-brand-rgb: 201, 121, 98;
-}
-
 :root.dark {
   --app-bg: #111925;
   --app-bg-end: #141f2d;
@@ -785,6 +765,44 @@ textarea {
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
+}
+
+.task-complete-button {
+  display: inline-grid;
+  width: 50px;
+  min-width: 50px;
+  height: 50px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #07111f;
+  background: linear-gradient(135deg, #a9ff68, #63d7ff);
+  box-shadow:
+    0 16px 30px rgba(99, 215, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.task-complete-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.task-complete-button:hover:not(:disabled),
+.task-complete-button:focus-visible {
+  outline: none;
+  transform: translateY(-1px);
+  box-shadow:
+    0 20px 38px rgba(99, 215, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+.task-complete-button:disabled {
+  opacity: 0.5;
+  transform: none;
 }
 
 .progressive-flux-loader {
@@ -2661,68 +2679,6 @@ textarea {
   line-height: 1.55;
 }
 
-.palette-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.palette-option {
-  position: relative;
-  display: grid;
-  gap: 7px;
-  width: 96px;
-  min-height: 104px;
-  justify-items: center;
-  border: 1px solid var(--palette-swatch-border, var(--app-border));
-  border-radius: var(--radius-inner);
-  color: var(--app-text-muted);
-  background: rgba(255, 255, 255, 0.66);
-  font-size: 12px;
-  font-weight: 800;
-  padding: 12px 10px;
-  text-align: center;
-}
-
-.palette-option:hover,
-.palette-option:focus-visible {
-  border-color: var(--palette-swatch, var(--accent));
-  outline: none;
-}
-
-.palette-option-selected {
-  border-color: var(--palette-swatch, var(--accent));
-  color: var(--app-brand-strong);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.9), var(--palette-swatch-soft, var(--accent-soft)));
-  box-shadow:
-    0 0 0 3px rgba(255, 255, 255, 0.95),
-    0 0 0 6px var(--palette-swatch-soft, var(--accent-soft)),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.82);
-}
-
-.palette-swatch {
-  width: 52px;
-  height: 52px;
-  border: 4px solid #ffffff;
-  border-radius: 999px;
-  background: var(--palette-swatch);
-  box-shadow: 0 0 0 2px var(--palette-swatch-soft);
-}
-
-.palette-check {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border-radius: 999px;
-  color: #ffffff;
-  background: var(--palette-swatch, var(--accent));
-}
-
 .theme-toggle,
 .language-toggle {
   position: relative;
@@ -2826,7 +2782,6 @@ textarea {
 
 :root.dark .nav-item-active,
 :root.dark .task-check,
-:root.dark .palette-option,
 :root.dark .question-item textarea,
 :root.dark .plan-adaptation-result li,
 :root.dark .task-row,
@@ -2858,13 +2813,8 @@ textarea {
 
 :root.dark .stage-node,
 :root.dark .goal-preview-step > span,
-:root.dark .palette-swatch,
 :root.dark .settings-stitch-orb {
   border-color: var(--app-surface);
-}
-
-:root.dark .palette-option-selected {
-  background: rgba(var(--app-brand-rgb), 0.2);
 }
 
 :root.dark .calendar-picker,
@@ -4546,29 +4496,6 @@ textarea {
   background: rgba(255, 255, 255, 0.64);
 }
 
-.settings-palette-card {
-  align-content: center;
-}
-
-.palette-option {
-  width: 88px;
-  min-height: 94px;
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-}
-
-.palette-option-selected {
-  color: var(--app-brand-strong);
-  background: transparent;
-  box-shadow: none;
-}
-
-.palette-swatch {
-  width: 58px;
-  height: 58px;
-}
-
 .mentors-stitch-header {
   max-width: 820px;
 }
@@ -5351,6 +5278,10 @@ textarea {
     display: flex;
     gap: 10px;
     align-items: center;
+    position: fixed;
+    top: max(18px, env(safe-area-inset-top));
+    right: 18px;
+    z-index: 30;
   }
 
   .mobile-feed-icon-button {
@@ -5362,12 +5293,23 @@ textarea {
     border-radius: 999px;
     color: #ffffff;
     background: #111c34;
+    cursor: pointer;
+    touch-action: manipulation;
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.06),
       0 10px 24px rgba(0, 0, 0, 0.28);
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .mobile-feed-icon-button:active {
+    transform: scale(0.94);
   }
 
   .mobile-feed-icon-button:disabled {
+    cursor: not-allowed;
     opacity: 0.42;
   }
 
@@ -5721,5 +5663,1655 @@ textarea {
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+body:has(.app-shell--phone) {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(255, 79, 157, 0.26), transparent 28vw),
+    radial-gradient(circle at 86% 24%, rgba(128, 87, 255, 0.24), transparent 30vw),
+    linear-gradient(135deg, #070711 0%, #13051f 44%, #08070f 100%);
+}
+
+.app-shell--phone {
+  --app-bg: #080711;
+  --app-bg-end: #13051f;
+  --app-sidebar-bg: transparent;
+  --app-surface: rgba(18, 14, 34, 0.94);
+  --app-surface-glass: rgba(24, 18, 42, 0.82);
+  --app-surface-soft: rgba(255, 255, 255, 0.08);
+  --app-surface-muted: rgba(255, 255, 255, 0.1);
+  --app-control-bg: rgba(255, 255, 255, 0.08);
+  --app-border: rgba(255, 255, 255, 0.14);
+  --app-border-soft: rgba(255, 255, 255, 0.11);
+  --app-border-accent: rgba(255, 113, 178, 0.28);
+  --app-text: rgba(255, 255, 255, 0.82);
+  --app-text-strong: #ffffff;
+  --app-text-muted: rgba(255, 255, 255, 0.58);
+  --app-brand: #ff5ca8;
+  --app-brand-strong: #ffffff;
+  --app-brand-soft: rgba(255, 92, 168, 0.16);
+  --app-brand-faint: rgba(255, 92, 168, 0.11);
+  --app-brand-rgb: 255, 92, 168;
+  --accent: #ff5ca8;
+  --accent-soft: rgba(255, 92, 168, 0.14);
+  --accent-muted: rgba(128, 87, 255, 0.18);
+  --accent-border: rgba(255, 255, 255, 0.14);
+  --app-danger-bg: rgba(255, 76, 103, 0.14);
+  --app-danger-text: #ff9bab;
+  --app-ready-bg: rgba(79, 220, 194, 0.16);
+  --app-ready-text: #9af3df;
+  --radius-card: 24px;
+  --radius-inner: 18px;
+  --radius-control: 16px;
+  --shadow-card: 0 20px 54px rgba(0, 0, 0, 0.28);
+  --shadow-soft: 0 12px 28px rgba(0, 0, 0, 0.22);
+  display: grid;
+  min-height: 100dvh;
+  grid-template-columns: 1fr;
+  place-items: center;
+  overflow: hidden;
+  background: transparent;
+  padding: 16px;
+}
+
+.app-phone-stage {
+  display: grid;
+  width: 100%;
+  min-height: calc(100dvh - 32px);
+  place-items: center;
+}
+
+.app-phone-device {
+  position: relative;
+  width: min(100%, 402px);
+  height: min(872px, calc(100dvh - 32px));
+  border-radius: 48px;
+  background: #ffffff;
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.38),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  padding: 18px 12px 14px;
+}
+
+.app-phone-notch {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 8;
+  width: 144px;
+  height: 34px;
+  border-radius: 0 0 24px 24px;
+  background: #ffffff;
+  transform: translateX(-50%);
+}
+
+.app-phone-notch::before {
+  position: absolute;
+  top: 12px;
+  left: 44px;
+  width: 54px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(9, 6, 23, 0.12);
+  content: "";
+}
+
+.app-phone-notch::after {
+  position: absolute;
+  top: 9px;
+  right: 26px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(9, 6, 23, 0.08);
+  content: "";
+}
+
+.app-phone-screen {
+  display: grid;
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+  border-radius: 34px;
+  color: var(--app-text);
+  background:
+    radial-gradient(circle at 22% 12%, rgba(255, 92, 168, 0.16), transparent 24%),
+    radial-gradient(circle at 86% 48%, rgba(128, 87, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #050607 0%, #0d0a1b 52%, #080711 100%);
+}
+
+.app-phone-content {
+  width: 100%;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 72px 16px 96px;
+  scrollbar-width: none;
+}
+
+.app-phone-content::-webkit-scrollbar {
+  display: none;
+}
+
+.app-phone-content:has(.mobile-goal-feed) {
+  padding: 0;
+}
+
+.app-phone-tabbar {
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 7, 17, 0.9);
+  padding: 10px 10px max(12px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(22px);
+}
+
+.app-phone-tab {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 58px;
+  place-items: center;
+  gap: 4px;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 1;
+  padding: 7px 4px;
+  touch-action: manipulation;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.app-phone-tab svg {
+  width: 21px;
+  height: 21px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.18));
+}
+
+.app-phone-tab span {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-phone-tab:active {
+  transform: scale(0.94);
+}
+
+.app-phone-tab:focus-visible {
+  outline: 3px solid rgba(214, 169, 255, 0.34);
+  outline-offset: -3px;
+}
+
+.app-phone-tab-active {
+  color: #f7e8ff;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(92, 84, 118, 0.78), rgba(38, 34, 52, 0.92));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 28px rgba(0, 0, 0, 0.26);
+}
+
+.app-shell--phone .sidebar,
+.app-shell--phone .app-topbar,
+.app-shell--phone .stitch-dashboard-desktop {
+  display: none;
+}
+
+.app-shell--phone .app-main-frame,
+.app-shell--phone .dashboard-page,
+.app-shell--phone .goals-stitch-page,
+.app-shell--phone .settings-stitch-page,
+.app-shell--phone .mentors-stitch-page,
+.app-shell--phone .achievements-stitch-page,
+.app-shell--phone .create-goal-stitch-page,
+.app-shell--phone .goal-detail-stitch,
+.app-shell--phone .roadmap-page {
+  width: 100%;
+  min-width: 0;
+}
+
+.app-shell--phone .mobile-goal-feed {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  min-height: 100%;
+  align-content: start;
+  color: #ffffff;
+  background: #050607;
+  padding: 22px 18px 104px;
+}
+
+.app-shell--phone .mobile-goal-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 78px;
+}
+
+.app-shell--phone .mobile-goal-feed-header h1 {
+  margin: 0;
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 31px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.app-shell--phone .mobile-goal-feed-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  z-index: 30;
+}
+
+.app-shell--phone .mobile-feed-icon-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: #111c34;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.28);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease;
+}
+
+.app-shell--phone .mobile-feed-icon-button:active {
+  transform: scale(0.94);
+}
+
+.app-shell--phone .mobile-feed-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.app-shell--phone .mobile-feed-icon-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.app-shell--phone .mobile-goal-card-list {
+  display: grid;
+  gap: 13px;
+}
+
+.app-shell--phone .mobile-goal-card {
+  position: relative;
+  display: grid;
+  min-height: 154px;
+  grid-template-columns: minmax(0, 1fr) 82px;
+  gap: 14px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #ffffff;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.58), rgba(0, 0, 0, 0.2) 58%, rgba(0, 0, 0, 0.48)),
+    var(--mobile-goal-image);
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.38);
+  padding: 20px 19px;
+  text-align: left;
+}
+
+.app-shell--phone .mobile-goal-card::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.22));
+  content: "";
+  pointer-events: none;
+}
+
+.app-shell--phone .mobile-goal-card:active {
+  transform: scale(0.99);
+}
+
+.app-shell--phone .mobile-goal-card-shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.app-shell--phone .mobile-goal-card-copy,
+.app-shell--phone .mobile-days-ring {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell--phone .mobile-goal-card-copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  align-content: center;
+}
+
+.app-shell--phone .mobile-goal-card-copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.08;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.48);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.app-shell--phone .mobile-goal-card-copy > span {
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 18px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.48);
+  white-space: nowrap;
+}
+
+.app-shell--phone .mobile-goal-card-copy small {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 230px;
+  color: #ffc540;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.56);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.app-shell--phone .mobile-days-ring {
+  display: grid;
+  justify-self: end;
+  width: 74px;
+  height: 74px;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    conic-gradient(
+      var(--mobile-goal-accent) 0 var(--mobile-goal-progress),
+      rgba(255, 255, 255, 0.22) var(--mobile-goal-progress) 360deg
+    );
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16),
+    0 10px 20px rgba(0, 0, 0, 0.26);
+}
+
+.app-shell--phone .mobile-days-ring::before {
+  position: absolute;
+  inset: 7px;
+  border-radius: inherit;
+  background: rgba(36, 36, 38, 0.74);
+  content: "";
+}
+
+.app-shell--phone .mobile-days-ring strong,
+.app-shell--phone .mobile-days-ring span {
+  position: relative;
+  z-index: 1;
+  display: block;
+  line-height: 1;
+  text-align: center;
+}
+
+.app-shell--phone .mobile-days-ring strong {
+  align-self: end;
+  color: #ffffff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.app-shell--phone .mobile-days-ring span {
+  align-self: start;
+  margin-top: -2px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 13px;
+}
+
+.app-shell--phone .stitch-dashboard,
+.app-shell--phone .goals-stitch-layout,
+.app-shell--phone .roadmap-page-layout,
+.app-shell--phone .goal-detail-grid,
+.app-shell--phone .goal-work-lane,
+.app-shell--phone .settings-stitch-grid,
+.app-shell--phone .mentor-character-grid,
+.app-shell--phone .achievement-grid,
+.app-shell--phone .form-grid,
+.app-shell--phone .metric-grid,
+.app-shell--phone .ai-analysis-grid,
+.app-shell--phone .goals-stitch-stats {
+  grid-template-columns: 1fr;
+}
+
+.app-shell--phone .stitch-side,
+.app-shell--phone .goals-stitch-side,
+.app-shell--phone .goal-detail-side,
+.app-shell--phone .roadmap-side {
+  position: static;
+  top: auto;
+}
+
+.app-shell--phone .page-stack {
+  gap: 16px;
+}
+
+.app-shell--phone .content-shell > * {
+  min-width: 0;
+}
+
+.app-shell--phone .page-header,
+.app-shell--phone .settings-stitch-header,
+.app-shell--phone .mentors-stitch-header,
+.app-shell--phone .roadmap-topbar,
+.app-shell--phone .goals-stitch-header,
+.app-shell--phone .goal-detail-hero,
+.app-shell--phone .achievements-stitch-hero {
+  gap: 12px;
+  padding: 0;
+}
+
+.app-shell--phone .page-header h1,
+.app-shell--phone .settings-stitch-header h1,
+.app-shell--phone .mentors-stitch-header h1,
+.app-shell--phone .roadmap-topbar h1,
+.app-shell--phone .goals-stitch-header h1,
+.app-shell--phone .goal-detail-hero h1,
+.app-shell--phone .achievements-stitch-hero h1 {
+  font-size: 31px;
+}
+
+.app-shell--phone .page-header p,
+.app-shell--phone .settings-stitch-header p,
+.app-shell--phone .mentors-stitch-header p,
+.app-shell--phone .roadmap-topbar p,
+.app-shell--phone .goals-stitch-header p,
+.app-shell--phone .goal-detail-hero p,
+.app-shell--phone .achievements-stitch-hero p {
+  font-size: 15px;
+}
+
+.app-shell--phone .detail-actions,
+.app-shell--phone .task-focus-actions,
+.app-shell--phone .question-actions,
+.app-shell--phone .form-actions,
+.app-shell--phone .stitch-actions,
+.app-shell--phone .stitch-card-actions,
+.app-shell--phone .roadmap-topbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.app-shell--phone .button,
+.app-shell--phone .auth-submit,
+.app-shell--phone .settings-code-enter,
+.app-shell--phone .settings-signout-button {
+  width: 100%;
+  min-height: 50px;
+}
+
+.app-shell--phone .segmented-field > div,
+.app-shell--phone .auth-tabs {
+  gap: 8px;
+  border-radius: 18px;
+}
+
+.app-shell--phone .segment,
+.app-shell--phone .auth-tab {
+  min-height: 46px;
+}
+
+.app-shell--phone .auth-panel,
+.app-shell--phone .form-panel,
+.app-shell--phone .state-panel,
+.app-shell--phone .feature-panel,
+.app-shell--phone .metric-card,
+.app-shell--phone .achievement-card,
+.app-shell--phone .settings-stitch-card,
+.app-shell--phone .settings-card,
+.app-shell--phone .mentor-character-card,
+.app-shell--phone .roadmap-panel,
+.app-shell--phone .task-focus,
+.app-shell--phone .goal-roadmap-preview,
+.app-shell--phone .goal-next-card,
+.app-shell--phone .mentor-profile-card,
+.app-shell--phone .detail-summary,
+.app-shell--phone .goal-collapsible,
+.app-shell--phone .ai-analysis-panel,
+.app-shell--phone .questions-panel,
+.app-shell--phone .mentor-chat-panel,
+.app-shell--phone .plan-adaptation-panel,
+.app-shell--phone .history-panel,
+.app-shell--phone .goals-world-card,
+.app-shell--phone .goals-create-card,
+.app-shell--phone .goals-mentor-panel,
+.app-shell--phone .goals-tip-card,
+.app-shell--phone .stitch-quest,
+.app-shell--phone .stitch-goal-card,
+.app-shell--phone .stitch-create-card,
+.app-shell--phone .stitch-mentor-card,
+.app-shell--phone .stitch-stat-card,
+.app-shell--phone .stitch-milestone-card,
+.app-shell--phone .roadmap-mentor-card,
+.app-shell--phone .roadmap-insight-card,
+.app-shell--phone .roadmap-generate-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.app-shell--phone .form-panel,
+.app-shell--phone .settings-stitch-card,
+.app-shell--phone .mentor-character-card,
+.app-shell--phone .achievement-card,
+.app-shell--phone .task-focus,
+.app-shell--phone .goal-roadmap-preview,
+.app-shell--phone .goal-collapsible,
+.app-shell--phone .questions-panel,
+.app-shell--phone .roadmap-panel,
+.app-shell--phone .roadmap-generate-card,
+.app-shell--phone .roadmap-mentor-card,
+.app-shell--phone .roadmap-insight-card {
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.app-shell--phone .form-field {
+  gap: 8px;
+}
+
+.app-shell--phone input,
+.app-shell--phone select,
+.app-shell--phone textarea {
+  color: var(--app-text-strong);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-shell--phone input::placeholder,
+.app-shell--phone textarea::placeholder {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.app-shell--phone .button-secondary,
+.app-shell--phone .button-ghost {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.app-shell--phone .goal-detail-side {
+  display: grid;
+  gap: 14px;
+  order: -1;
+}
+
+.app-shell--phone .goal-side-actions {
+  order: -1;
+}
+
+.app-shell--phone .goal-preview-timeline,
+.app-shell--phone .goal-roadmap-preview-heading,
+.app-shell--phone .stage-heading,
+.app-shell--phone .stage-card-toolbar,
+.app-shell--phone .stage-progress-row,
+.app-shell--phone .settings-stitch-card-heading,
+.app-shell--phone .settings-stitch-card-heading > div,
+.app-shell--phone .settings-stitch-list div,
+.app-shell--phone .question-item {
+  min-width: 0;
+}
+
+.app-shell--phone .settings-stitch-card-heading > div {
+  max-width: 100%;
+}
+
+.app-shell--phone .settings-stitch-card-heading h2,
+.app-shell--phone .settings-stitch-list strong,
+.app-shell--phone .settings-card strong {
+  min-width: 0;
+}
+
+.app-shell--phone .settings-account-email {
+  display: block;
+  overflow: hidden;
+  font-size: clamp(15px, 4.4vw, 19px);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell--phone .goal-roadmap-preview-heading,
+.app-shell--phone .panel-heading,
+.app-shell--phone .settings-stitch-card-heading {
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.app-shell--phone .panel-heading .progress-ring {
+  justify-self: start;
+}
+
+.app-shell--phone .roadmap-grid {
+  display: grid;
+  gap: 14px;
+  padding-left: 0;
+}
+
+.app-shell--phone .roadmap-grid::before {
+  display: none;
+}
+
+.app-shell--phone .stage-panel,
+.app-shell--phone .stage-panel-active,
+.app-shell--phone .stage-panel-revealed {
+  position: relative;
+  margin: 0;
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.app-shell--phone .stage-node,
+.app-shell--phone .stage-panel-active .stage-node {
+  position: static;
+  width: 38px;
+  height: 38px;
+  border-width: 0;
+  box-shadow: none;
+}
+
+.app-shell--phone .stage-node span,
+.app-shell--phone .stage-panel-active .stage-node span {
+  width: 38px;
+  height: 38px;
+}
+
+.app-shell--phone .stage-card-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.app-shell--phone .stage-details summary {
+  min-height: 46px;
+}
+
+.app-shell--phone .task-row {
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+.app-shell--phone .task-check {
+  width: 42px;
+  height: 42px;
+}
+
+.app-shell--phone .settings-stitch-list,
+.app-shell--phone .question-list,
+.app-shell--phone .task-list,
+.app-shell--phone .criteria-list {
+  gap: 10px;
+}
+
+.app-shell--phone .settings-stitch-list div {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  border-radius: 18px;
+}
+
+.app-shell--phone .settings-stitch-toggle-line,
+.app-shell--phone .settings-code-control {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.app-shell--phone .mentor-character-grid,
+.app-shell--phone .achievement-grid {
+  gap: 14px;
+}
+
+.app-shell--phone .mentor-character-card,
+.app-shell--phone .achievement-card {
+  min-height: auto;
+}
+
+.app-shell--phone .mobile-feed-icon-button,
+.app-shell--phone .app-phone-tab,
+.app-shell--phone .question-choice,
+.app-shell--phone .goal-customize-option,
+.app-shell--phone .task-complete-button,
+.app-shell--phone .task-check {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-signout-button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(255, 92, 168, 0.92), rgba(128, 87, 255, 0.82));
+  font-weight: 900;
+  padding: 0 18px;
+  box-shadow: 0 16px 30px rgba(128, 87, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  body:has(.app-shell--phone) {
+    background: #050607;
+  }
+
+  .app-shell--phone {
+    min-height: 100dvh;
+    padding: 0;
+  }
+
+  .app-phone-stage {
+    min-height: 100dvh;
+  }
+
+  .app-phone-device {
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .app-phone-notch {
+    display: none;
+  }
+
+  .app-phone-screen {
+    border-radius: 0;
+  }
+
+  .app-phone-content {
+    padding: max(22px, env(safe-area-inset-top)) 14px 96px;
+  }
+
+  .app-shell--phone .mobile-goal-feed {
+    min-height: 100%;
+    padding: max(18px, env(safe-area-inset-top)) 18px 104px;
+  }
+
+  .app-shell--phone .mobile-goal-feed-actions {
+    position: fixed;
+    top: max(18px, env(safe-area-inset-top));
+    right: 18px;
+  }
+
+  .app-phone-tabbar {
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
+}
+
+body:has(.app-shell--phone) {
+  background:
+    radial-gradient(circle at 16% 10%, rgba(var(--app-brand-rgb), 0.22), transparent 28vw),
+    radial-gradient(circle at 86% 24%, rgba(var(--app-brand-rgb), 0.16), transparent 30vw),
+    linear-gradient(135deg, #eef6fb 0%, #ffffff 48%, var(--app-bg) 100%);
+}
+
+:root.dark body:has(.app-shell--phone) {
+  background:
+    radial-gradient(circle at 16% 10%, rgba(var(--app-brand-rgb), 0.26), transparent 28vw),
+    radial-gradient(circle at 86% 24%, rgba(var(--app-brand-rgb), 0.18), transparent 30vw),
+    linear-gradient(135deg, #070711 0%, #13051f 44%, #08070f 100%);
+}
+
+.app-shell--phone {
+  --app-bg: #f8fbff;
+  --app-bg-end: #ffffff;
+  --app-surface: rgba(255, 255, 255, 0.92);
+  --app-surface-glass: rgba(255, 255, 255, 0.76);
+  --app-surface-soft: rgba(var(--app-brand-rgb), 0.08);
+  --app-surface-muted: rgba(var(--app-brand-rgb), 0.1);
+  --app-control-bg: rgba(255, 255, 255, 0.82);
+  --app-border: rgba(39, 55, 77, 0.12);
+  --app-border-soft: rgba(39, 55, 77, 0.1);
+  --app-border-accent: var(--accent-border);
+  --app-text: #334155;
+  --app-text-strong: #111827;
+  --app-text-muted: #667085;
+  --app-brand: #835d6b;
+  --app-brand-soft: #f7dbe7;
+  --app-brand-strong: #694451;
+  --app-brand-rgb: 131, 93, 107;
+  --accent: #835d6b;
+  --accent-soft: #f7dbe7;
+  --accent-muted: #f7dbe7;
+  --accent-border: #e6d7df;
+  --app-danger-bg: rgba(255, 76, 103, 0.12);
+  --app-danger-text: #a63f56;
+  --app-ready-bg: rgba(45, 108, 132, 0.12);
+  --app-ready-text: #245a70;
+  color-scheme: light;
+}
+
+:root.dark .app-shell--phone {
+  --app-bg: #080711;
+  --app-bg-end: #13051f;
+  --app-surface: rgba(18, 14, 34, 0.94);
+  --app-surface-glass: rgba(24, 18, 42, 0.82);
+  --app-surface-soft: rgba(255, 255, 255, 0.08);
+  --app-surface-muted: rgba(255, 255, 255, 0.1);
+  --app-control-bg: rgba(255, 255, 255, 0.08);
+  --app-border: rgba(255, 255, 255, 0.14);
+  --app-border-soft: rgba(255, 255, 255, 0.11);
+  --app-border-accent: rgba(var(--app-brand-rgb), 0.48);
+  --app-text: rgba(255, 255, 255, 0.82);
+  --app-text-strong: #ffffff;
+  --app-text-muted: rgba(255, 255, 255, 0.58);
+  --app-brand: #835d6b;
+  --app-brand-soft: rgba(var(--app-brand-rgb), 0.24);
+  --app-brand-strong: #f7dbe7;
+  --accent: #835d6b;
+  --accent-soft: rgba(var(--app-brand-rgb), 0.24);
+  --accent-muted: rgba(var(--app-brand-rgb), 0.16);
+  --accent-border: rgba(var(--app-brand-rgb), 0.48);
+  --app-danger-bg: rgba(255, 76, 103, 0.14);
+  --app-danger-text: #ff9bab;
+  --app-ready-bg: rgba(79, 220, 194, 0.16);
+  --app-ready-text: #9af3df;
+  color-scheme: dark;
+}
+
+.app-phone-screen {
+  background:
+    radial-gradient(circle at 22% 12%, rgba(var(--app-brand-rgb), 0.12), transparent 24%),
+    radial-gradient(circle at 86% 48%, rgba(var(--app-brand-rgb), 0.1), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #eef5fb 52%, #ffffff 100%);
+}
+
+:root.dark .app-phone-screen {
+  background:
+    radial-gradient(circle at 22% 12%, rgba(var(--app-brand-rgb), 0.16), transparent 24%),
+    radial-gradient(circle at 86% 48%, rgba(var(--app-brand-rgb), 0.12), transparent 28%),
+    linear-gradient(180deg, #050607 0%, #0d0a1b 52%, #080711 100%);
+}
+
+.settings-signout-button {
+  background: var(--accent);
+  box-shadow: 0 16px 30px rgba(var(--app-brand-rgb), 0.24);
+}
+
+.app-shell--phone .auth-panel,
+.app-shell--phone .form-panel,
+.app-shell--phone .state-panel,
+.app-shell--phone .feature-panel,
+.app-shell--phone .metric-card,
+.app-shell--phone .achievement-card,
+.app-shell--phone .settings-stitch-card,
+.app-shell--phone .settings-card,
+.app-shell--phone .mentor-character-card,
+.app-shell--phone .roadmap-panel,
+.app-shell--phone .task-focus,
+.app-shell--phone .goal-roadmap-preview,
+.app-shell--phone .goal-next-card,
+.app-shell--phone .mentor-profile-card,
+.app-shell--phone .detail-summary,
+.app-shell--phone .goal-collapsible,
+.app-shell--phone .ai-analysis-panel,
+.app-shell--phone .questions-panel,
+.app-shell--phone .mentor-chat-panel,
+.app-shell--phone .plan-adaptation-panel,
+.app-shell--phone .history-panel,
+.app-shell--phone .goals-world-card,
+.app-shell--phone .goals-create-card,
+.app-shell--phone .goals-mentor-panel,
+.app-shell--phone .goals-tip-card,
+.app-shell--phone .stitch-quest,
+.app-shell--phone .stitch-goal-card,
+.app-shell--phone .stitch-create-card,
+.app-shell--phone .stitch-mentor-card,
+.app-shell--phone .stitch-stat-card,
+.app-shell--phone .stitch-milestone-card,
+.app-shell--phone .roadmap-mentor-card,
+.app-shell--phone .roadmap-insight-card,
+.app-shell--phone .roadmap-generate-card {
+  border-color: var(--app-border);
+  background: var(--app-surface-glass);
+}
+
+.app-shell--phone .task-focus,
+.app-shell--phone .goal-next-card,
+.app-shell--phone .stitch-next-task,
+.app-shell--phone .goals-world-task,
+.app-shell--phone .task-row {
+  border-color: rgba(169, 255, 104, 0.18);
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(169, 255, 104, 0.16), rgba(99, 215, 255, 0.1)),
+    rgba(7, 17, 31, 0.9);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.app-shell--phone .task-focus h2,
+.app-shell--phone .task-focus p,
+.app-shell--phone .goal-next-card strong,
+.app-shell--phone .goal-next-card p,
+.app-shell--phone .stitch-next-task strong,
+.app-shell--phone .goals-world-task strong,
+.app-shell--phone .task-row strong,
+.app-shell--phone .task-row p,
+.app-shell--phone .task-row small {
+  color: inherit;
+}
+
+.app-shell--phone .task-focus .eyebrow,
+.app-shell--phone .goal-next-card span,
+.app-shell--phone .stitch-next-task span,
+.app-shell--phone .goals-world-task span {
+  color: #a9ff68;
+}
+
+:root.dark .app-shell--phone .auth-panel,
+:root.dark .app-shell--phone .form-panel,
+:root.dark .app-shell--phone .state-panel,
+:root.dark .app-shell--phone .feature-panel,
+:root.dark .app-shell--phone .metric-card,
+:root.dark .app-shell--phone .achievement-card,
+:root.dark .app-shell--phone .settings-stitch-card,
+:root.dark .app-shell--phone .settings-card,
+:root.dark .app-shell--phone .mentor-character-card,
+:root.dark .app-shell--phone .roadmap-panel,
+:root.dark .app-shell--phone .task-focus,
+:root.dark .app-shell--phone .goal-roadmap-preview,
+:root.dark .app-shell--phone .goal-next-card,
+:root.dark .app-shell--phone .mentor-profile-card,
+:root.dark .app-shell--phone .detail-summary,
+:root.dark .app-shell--phone .goal-collapsible,
+:root.dark .app-shell--phone .ai-analysis-panel,
+:root.dark .app-shell--phone .questions-panel,
+:root.dark .app-shell--phone .mentor-chat-panel,
+:root.dark .app-shell--phone .plan-adaptation-panel,
+:root.dark .app-shell--phone .history-panel,
+:root.dark .app-shell--phone .goals-world-card,
+:root.dark .app-shell--phone .goals-create-card,
+:root.dark .app-shell--phone .goals-mentor-panel,
+:root.dark .app-shell--phone .goals-tip-card,
+:root.dark .app-shell--phone .stitch-quest,
+:root.dark .app-shell--phone .stitch-goal-card,
+:root.dark .app-shell--phone .stitch-create-card,
+:root.dark .app-shell--phone .stitch-mentor-card,
+:root.dark .app-shell--phone .stitch-stat-card,
+:root.dark .app-shell--phone .stitch-milestone-card,
+:root.dark .app-shell--phone .roadmap-mentor-card,
+:root.dark .app-shell--phone .roadmap-insight-card,
+:root.dark .app-shell--phone .roadmap-generate-card {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-shell--phone input,
+.app-shell--phone select,
+.app-shell--phone textarea,
+.app-shell--phone .calendar-picker,
+.app-shell--phone .question-choice,
+.app-shell--phone .plan-adaptation-result li,
+.app-shell--phone .task-row,
+.app-shell--phone .inline-state {
+  color: var(--app-text-strong);
+  background: var(--app-control-bg);
+}
+
+:root.dark .app-shell--phone input,
+:root.dark .app-shell--phone select,
+:root.dark .app-shell--phone textarea,
+:root.dark .app-shell--phone .calendar-picker,
+:root.dark .app-shell--phone .question-choice,
+:root.dark .app-shell--phone .plan-adaptation-result li,
+:root.dark .app-shell--phone .task-row,
+:root.dark .app-shell--phone .inline-state {
+  color: var(--app-text-strong);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-shell--phone .task-row {
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, rgba(169, 255, 104, 0.13), rgba(99, 215, 255, 0.08)),
+    rgba(7, 17, 31, 0.88);
+}
+
+body:has(.app-shell--page-today) {
+  background:
+    radial-gradient(circle at 20% 8%, rgba(var(--app-brand-rgb), 0.18), transparent 30vw),
+    linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+}
+
+:root.dark body:has(.app-shell--page-today) {
+  background: #050607;
+}
+
+.app-shell--page-today .app-phone-screen {
+  background:
+    radial-gradient(circle at 20% 8%, rgba(var(--app-brand-rgb), 0.12), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+}
+
+:root.dark .app-shell--page-today .app-phone-screen {
+  background: #050607;
+}
+
+.app-shell--page-today .app-phone-content {
+  background: transparent;
+}
+
+.app-shell--page-today .mobile-goal-feed {
+  color: var(--app-text-strong);
+  background: transparent;
+}
+
+:root.dark .app-shell--page-today .mobile-goal-feed {
+  color: #ffffff;
+  background: #050607;
+}
+
+.app-shell--page-today .mobile-goal-feed-header h1 {
+  color: var(--app-text-strong);
+}
+
+:root.dark .app-shell--page-today .mobile-goal-feed-header h1 {
+  color: #ffffff;
+}
+
+.app-shell--page-today .mobile-feed-icon-button {
+  color: var(--app-text-strong);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow:
+    inset 0 0 0 1px rgba(39, 55, 77, 0.1),
+    0 10px 24px rgba(39, 55, 77, 0.12);
+}
+
+:root.dark .app-shell--page-today .mobile-feed-icon-button {
+  color: #ffffff;
+  background: #111c34;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+body:has(.app-shell--landing-auth) {
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(145deg, #07111f 0%, #13230f 44%, #2b1525 100%);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+.app-shell--landing-auth {
+  --app-bg: #07111f;
+  --app-bg-end: #13230f;
+  --app-surface: rgba(16, 24, 39, 0.92);
+  --app-surface-glass: rgba(255, 255, 255, 0.075);
+  --app-surface-soft: rgba(255, 255, 255, 0.06);
+  --app-surface-muted: rgba(255, 255, 255, 0.09);
+  --app-control-bg: rgba(255, 255, 255, 0.075);
+  --app-border: rgba(255, 255, 255, 0.13);
+  --app-border-soft: rgba(255, 255, 255, 0.1);
+  --app-border-accent: rgba(169, 255, 104, 0.34);
+  --app-text: rgba(247, 251, 255, 0.74);
+  --app-text-strong: #ffffff;
+  --app-text-muted: rgba(247, 251, 255, 0.58);
+  --app-brand: #a9ff68;
+  --app-brand-soft: rgba(169, 255, 104, 0.16);
+  --app-brand-strong: #a9ff68;
+  --app-brand-faint: rgba(169, 255, 104, 0.08);
+  --app-brand-rgb: 169, 255, 104;
+  --app-sky: rgba(99, 215, 255, 0.16);
+  --app-sky-strong: #63d7ff;
+  --app-lavender: rgba(255, 209, 102, 0.16);
+  --accent: #a9ff68;
+  --accent-soft: rgba(169, 255, 104, 0.16);
+  --accent-muted: rgba(99, 215, 255, 0.14);
+  --accent-border: rgba(169, 255, 104, 0.34);
+  --app-danger-bg: rgba(255, 107, 107, 0.14);
+  --app-danger-text: #ffd1d1;
+  --app-ready-bg: rgba(169, 255, 104, 0.14);
+  --app-ready-text: #d8ffbd;
+  --radius-card: 28px;
+  --radius-inner: 22px;
+  --radius-control: 999px;
+  --shadow-card: 0 24px 70px rgba(0, 0, 0, 0.24);
+  --shadow-soft: 0 18px 44px rgba(7, 17, 31, 0.28);
+  color: var(--app-text);
+  color-scheme: dark;
+}
+
+.app-shell--landing-auth.app-shell--phone {
+  background: transparent;
+}
+
+.app-shell--landing-auth .app-phone-device {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05)),
+    rgba(16, 24, 39, 0.78);
+  box-shadow:
+    0 40px 120px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.app-shell--landing-auth .app-phone-notch {
+  background: rgba(247, 251, 255, 0.92);
+}
+
+.app-shell--landing-auth .app-phone-screen {
+  color: var(--app-text);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(145deg, #07111f 0%, #13230f 48%, #2b1525 100%);
+  background-size: 36px 36px, 36px 36px, auto;
+}
+
+.app-shell--landing-auth .app-phone-content {
+  padding: 38px 16px 100px;
+}
+
+.app-shell--landing-auth .app-phone-tabbar {
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(7, 17, 31, 0.86);
+  padding: 10px 10px max(12px, env(safe-area-inset-bottom));
+  backdrop-filter: blur(18px);
+}
+
+.app-shell--landing-auth .app-phone-tab {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(247, 251, 255, 0.58);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-shell--landing-auth .app-phone-tab-active {
+  color: #07111f;
+  border-color: transparent;
+  background: #a9ff68;
+  box-shadow: 0 10px 26px rgba(169, 255, 104, 0.22);
+}
+
+.app-shell--landing-auth .app-phone-tab:focus-visible {
+  outline: 3px solid rgba(169, 255, 104, 0.34);
+  outline-offset: -3px;
+}
+
+.app-shell--landing-auth .page-stack {
+  gap: 18px;
+}
+
+.app-shell--landing-auth :where(
+  .goals-stitch-page,
+  .settings-stitch-page,
+  .achievements-stitch-page,
+  .create-goal-stitch-page,
+  .goal-detail-stitch,
+  .roadmap-page
+) {
+  color: var(--app-text);
+}
+
+.app-shell--landing-auth :where(
+  .goals-stitch-header,
+  .settings-stitch-header,
+  .roadmap-topbar,
+  .goal-detail-hero,
+  .achievements-stitch-hero,
+  .page-header
+) {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+}
+
+.app-shell--landing-auth :where(
+  .goals-stitch-header h1,
+  .settings-stitch-header h1,
+  .roadmap-topbar h1,
+  .goal-detail-hero h1,
+  .achievements-stitch-hero h1,
+  .page-header h1
+) {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(34px, 11vw, 54px);
+  font-weight: 900;
+  letter-spacing: 0;
+  line-height: 0.96;
+}
+
+.app-shell--landing-auth :where(
+  .goals-stitch-header p,
+  .settings-stitch-header p,
+  .roadmap-topbar p,
+  .goal-detail-hero p,
+  .achievements-stitch-hero p,
+  .page-header p
+) {
+  max-width: 650px;
+  margin: 0;
+  color: rgba(247, 251, 255, 0.72);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.app-shell--landing-auth .eyebrow,
+.app-shell--landing-auth :where(.settings-stitch-card-heading span:not(.settings-stitch-icon), .settings-stitch-list span, .settings-card span) {
+  color: rgba(247, 251, 255, 0.58);
+  letter-spacing: 0.08em;
+}
+
+.app-shell--landing-auth :where(
+  .form-panel,
+  .state-panel,
+  .feature-panel,
+  .metric-card,
+  .achievement-card,
+  .settings-stitch-card,
+  .settings-card,
+  .roadmap-panel,
+  .task-focus,
+  .goal-roadmap-preview,
+  .goal-next-card,
+  .detail-summary,
+  .goal-collapsible,
+  .ai-analysis-panel,
+  .questions-panel,
+  .history-panel,
+  .goals-world-card,
+  .goals-create-card,
+  .goals-tip-card,
+  .stitch-goal-card,
+  .stitch-create-card,
+  .stitch-stat-card,
+  .stitch-milestone-card,
+  .roadmap-insight-card,
+  .roadmap-generate-card,
+  .settings-code-card,
+  .calendar-picker
+) {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  color: var(--app-text);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.app-shell--landing-auth :where(
+  .stitch-goal-card,
+  .stitch-create-card,
+  .stitch-stat-card,
+  .stitch-milestone-card,
+  .roadmap-insight-card,
+  .achievement-card,
+  .settings-stitch-card,
+  .settings-card,
+  .goals-world-card,
+  .goals-create-card
+):hover {
+  border-color: rgba(169, 255, 104, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.26);
+  transform: translateY(-4px);
+}
+
+.app-shell--landing-auth :where(
+  .form-panel,
+  .state-panel,
+  .settings-stitch-card,
+  .settings-card,
+  .roadmap-panel,
+  .task-focus,
+  .goal-roadmap-preview,
+  .goal-collapsible,
+  .questions-panel,
+  .roadmap-generate-card,
+  .roadmap-insight-card,
+  .achievement-card,
+  .ai-analysis-panel,
+  .detail-summary,
+  .goals-world-card,
+  .goals-create-card
+) {
+  padding: 22px;
+}
+
+.app-shell--landing-auth :where(h2, h3, strong) {
+  color: #ffffff;
+}
+
+.app-shell--landing-auth :where(p, small, li) {
+  color: rgba(247, 251, 255, 0.7);
+}
+
+.app-shell--landing-auth .button,
+.app-shell--landing-auth .auth-submit,
+.app-shell--landing-auth .settings-code-enter,
+.app-shell--landing-auth .settings-signout-button,
+.app-shell--landing-auth .goal-customize-next {
+  min-height: 50px;
+  border: 0;
+  border-radius: 999px;
+  color: #07111f;
+  background: #a9ff68;
+  font-weight: 900;
+  box-shadow: 0 18px 44px rgba(169, 255, 104, 0.22);
+  transition:
+    transform 170ms ease,
+    background-color 170ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease;
+}
+
+.app-shell--landing-auth .button:hover:not(:disabled),
+.app-shell--landing-auth .button:focus-visible,
+.app-shell--landing-auth .auth-submit:hover:not(:disabled),
+.app-shell--landing-auth .auth-submit:focus-visible,
+.app-shell--landing-auth .settings-code-enter:hover:not(:disabled),
+.app-shell--landing-auth .settings-code-enter:focus-visible,
+.app-shell--landing-auth .settings-signout-button:hover,
+.app-shell--landing-auth .settings-signout-button:focus-visible,
+.app-shell--landing-auth .goal-customize-next:hover:not(:disabled),
+.app-shell--landing-auth .goal-customize-next:focus-visible {
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.app-shell--landing-auth .button:active:not(:disabled),
+.app-shell--landing-auth .auth-submit:active:not(:disabled),
+.app-shell--landing-auth .settings-code-enter:active:not(:disabled),
+.app-shell--landing-auth .settings-signout-button:active,
+.app-shell--landing-auth .goal-customize-next:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.app-shell--landing-auth :where(.button-secondary, .button-ghost, .auth-tab, .segment) {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(247, 251, 255, 0.82);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
+}
+
+.app-shell--landing-auth :where(.button-danger) {
+  color: #ffffff;
+  background: #202a3a;
+  box-shadow: 0 18px 44px rgba(7, 17, 31, 0.18);
+}
+
+.app-shell--landing-auth :where(input, select, textarea, .settings-code-input) {
+  min-height: 52px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.app-shell--landing-auth :where(input, select, textarea, .settings-code-input):focus {
+  border-color: rgba(169, 255, 104, 0.48);
+  box-shadow:
+    0 0 0 4px rgba(169, 255, 104, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.app-shell--landing-auth :where(input::placeholder, textarea::placeholder) {
+  color: rgba(247, 251, 255, 0.42);
+}
+
+.app-shell--landing-auth .stitch-goal-card,
+.app-shell--landing-auth .goals-world-card,
+.app-shell--landing-auth .goals-create-card,
+.app-shell--landing-auth .stitch-create-card {
+  min-height: 210px;
+}
+
+.app-shell--landing-auth .stitch-goal-icon,
+.app-shell--landing-auth .goals-world-icon,
+.app-shell--landing-auth .stitch-stat-icon,
+.app-shell--landing-auth .settings-stitch-icon,
+.app-shell--landing-auth .stage-node span,
+.app-shell--landing-auth .task-check,
+.app-shell--landing-auth .question-choice svg {
+  color: #07111f;
+  background: #a9ff68;
+  box-shadow: none;
+}
+
+.app-shell--landing-auth .goal-card-accent-2 .stitch-goal-icon,
+.app-shell--landing-auth .goals-world-card.goal-card-accent-2 .goals-world-icon,
+.app-shell--landing-auth .stage-panel-active .stage-node span {
+  background: #63d7ff;
+}
+
+.app-shell--landing-auth .goal-card-accent-3 .stitch-goal-icon,
+.app-shell--landing-auth .goals-world-card.goal-card-accent-3 .goals-world-icon,
+.app-shell--landing-auth .task-row .task-check {
+  background: #ffd166;
+}
+
+.app-shell--landing-auth .progress-bar,
+.app-shell--landing-auth .stitch-card-progress,
+.app-shell--landing-auth .stitch-quest-progress,
+.app-shell--landing-auth .stage-progress-track {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.app-shell--landing-auth .progress-bar span,
+.app-shell--landing-auth .stitch-card-progress span,
+.app-shell--landing-auth .stitch-quest-progress span,
+.app-shell--landing-auth .stage-progress-fill {
+  background: linear-gradient(90deg, #a9ff68, #63d7ff);
+}
+
+.app-shell--landing-auth .task-focus-primary,
+.app-shell--landing-auth .roadmap-summary-card,
+.app-shell--landing-auth .ai-analysis-panel {
+  background:
+    linear-gradient(135deg, rgba(169, 255, 104, 0.18), rgba(99, 215, 255, 0.11)),
+    rgba(255, 255, 255, 0.075);
+}
+
+.app-shell--landing-auth .task-focus-primary h2,
+.app-shell--landing-auth .roadmap-summary-card h2,
+.app-shell--landing-auth .ai-analysis-panel h2 {
+  color: #ffffff;
+}
+
+.app-shell--landing-auth .goal-preview-step > span,
+.app-shell--landing-auth .stage-node {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.app-shell--landing-auth .stage-panel {
+  border-radius: 26px;
+}
+
+.app-shell--landing-auth .stage-panel-active {
+  border-color: rgba(169, 255, 104, 0.42);
+  background:
+    linear-gradient(135deg, rgba(169, 255, 104, 0.12), rgba(99, 215, 255, 0.08)),
+    rgba(255, 255, 255, 0.085);
+}
+
+.app-shell--landing-auth .task-row,
+.app-shell--landing-auth .question-choice,
+.app-shell--landing-auth .goals-world-task,
+.app-shell--landing-auth .status-pill,
+.app-shell--landing-auth .form-error,
+.app-shell--landing-auth .settings-stitch-list div,
+.app-shell--landing-auth .settings-stitch-toggle-line,
+.app-shell--landing-auth .roadmap-fallback-note,
+.app-shell--landing-auth .stage-details summary,
+.app-shell--landing-auth .calendar-picker-cell {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--app-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.app-shell--landing-auth .status-active,
+.app-shell--landing-auth .status-completed,
+.app-shell--landing-auth .calendar-picker-cell[data-selected] {
+  color: #07111f;
+  background: #a9ff68;
+}
+
+.app-shell--landing-auth .form-error {
+  color: #ffd1d1;
+  background: rgba(255, 107, 107, 0.14);
+}
+
+.app-shell--landing-auth .question-choice-selected {
+  border-color: rgba(169, 255, 104, 0.42);
+  color: #07111f;
+  background: linear-gradient(135deg, #a9ff68, #63d7ff);
+}
+
+.app-shell--landing-auth .settings-account-email {
+  color: #ffffff;
+}
+
+.app-shell--landing-auth .goal-customize-page {
+  --goal-customize-bg: #07111f;
+  --goal-customize-panel: #101827;
+  --goal-customize-muted: rgba(247, 251, 255, 0.62);
+  --goal-customize-gradient: linear-gradient(135deg, #a9ff68 0%, #63d7ff 100%);
+  color: #ffffff;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(145deg, #07111f 0%, #13230f 44%, #2b1525 100%);
+  background-size: 44px 44px, 44px 44px, auto;
+}
+
+.app-shell--landing-auth .goal-customize-title {
+  color: #ffffff;
+}
+
+.app-shell--landing-auth .goal-customize-title span:first-child {
+  background: linear-gradient(135deg, #a9ff68, #63d7ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.app-shell--landing-auth .goal-customize-device {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05)),
+    rgba(16, 24, 39, 0.78);
+}
+
+.app-shell--landing-auth .goal-customize-phone {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(145deg, #07111f 0%, #13230f 48%, #2b1525 100%);
+  background-size: 36px 36px, 36px 36px, auto;
+}
+
+.app-shell--landing-auth .goal-customize-art::before {
+  background: linear-gradient(135deg, rgba(169, 255, 104, 0.34), rgba(99, 215, 255, 0.26));
+}
+
+.app-shell--landing-auth .goal-customize-option {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.app-shell--landing-auth .goal-customize-option-selected {
+  color: #07111f;
+  background: var(--goal-customize-gradient);
+}
+
+@media (max-width: 640px) {
+  body:has(.app-shell--landing-auth) {
+    background:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(145deg, #07111f 0%, #13230f 44%, #2b1525 100%);
+    background-size: 36px 36px, 36px 36px, auto;
+  }
+
+  .app-shell--landing-auth .app-phone-content {
+    padding: max(22px, env(safe-area-inset-top)) 14px 100px;
+  }
+
+  .app-shell--landing-auth :where(
+    .goals-stitch-header h1,
+    .settings-stitch-header h1,
+    .roadmap-topbar h1,
+    .goal-detail-hero h1,
+    .achievements-stitch-hero h1,
+    .page-header h1
+  ) {
+    font-size: 34px;
+  }
+
+  .app-shell--landing-auth :where(
+    .form-panel,
+    .state-panel,
+    .settings-stitch-card,
+    .settings-card,
+    .roadmap-panel,
+    .task-focus,
+    .goal-roadmap-preview,
+    .goal-collapsible,
+    .questions-panel,
+    .roadmap-generate-card,
+    .roadmap-insight-card,
+    .achievement-card,
+    .ai-analysis-panel,
+    .detail-summary
+  ) {
+    padding: 18px;
   }
 }

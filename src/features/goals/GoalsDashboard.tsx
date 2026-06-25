@@ -4,11 +4,6 @@ import { Button } from '../../components/common/Button';
 import { EmojiToken } from '../../components/common/EmojiToken';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
-import {
-  getMentorCharacter,
-  getMentorCharacterLine,
-} from '../mentor/mentorCharacters';
-import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 import { getGoalIcon } from './goalEmoji';
 
 type GoalsDashboardProps = {
@@ -259,9 +254,6 @@ export function GoalsDashboard({
   const focusGoal = goals.find((goal) => goal.status === 'active') ?? goals[0];
   const focusGoalIcon = getGoalIcon(focusGoal);
   const nextAction = getNextAction(focusGoal, t);
-  const activeMentorCharacterId = useActiveMentorCharacterId();
-  const companion = getMentorCharacter(activeMentorCharacterId);
-  const companionFallback = companion.shortName.slice(0, 2);
   const streakDays =
     goals.length > 0
       ? Math.max(1, goals.filter((goal) => goal.status === 'active' || goal.progress > 0).length)
@@ -269,7 +261,6 @@ export function GoalsDashboard({
   const focusTime = formatFocusTime(getWeeklyFocusMinutes(goals));
   const questCopy = {
     activeGoals: 'Active goals',
-    companionQuote: getMentorCharacterLine(activeMentorCharacterId, 'dashboardToday'),
     createNewGoal: 'Create new goal',
     focusTime: 'Focus time',
     goalWorlds: 'Goal Worlds',
@@ -288,7 +279,6 @@ export function GoalsDashboard({
     createNewGoal: 'Create new goal',
     focusTime: 'Focus time',
     goalWorlds: 'Goal Worlds',
-    mentorNote: getMentorCharacterLine(activeMentorCharacterId, 'dashboardGoals'),
     nextTask: 'Next task',
     open: 'Open',
     pageSubtitle: 'Track every learning world, review progress, and jump back into the next useful step.',
@@ -435,18 +425,7 @@ export function GoalsDashboard({
               )}
             </div>
 
-            <aside className="goals-stitch-side" aria-label="Goal mentor panel">
-              <section className="goals-mentor-panel">
-                <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
-                  {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
-                </div>
-                <div>
-                  <strong>{companion.name}</strong>
-                  <span>AI Mentor</span>
-                </div>
-                <p>{goalsCopy.mentorNote}</p>
-              </section>
-
+            <aside className="goals-stitch-side" aria-label={goalsCopy.nextTask}>
               <section className="goals-tip-card">
                 <span>{goalsCopy.nextTask}</span>
                 <strong>{focusGoal?.todayTask?.title ?? focusGoal?.title ?? t.noGoal}</strong>
@@ -663,16 +642,7 @@ export function GoalsDashboard({
             </section>
           </div>
 
-          <aside className="stitch-side" aria-label={t.aiMentor}>
-            <section className="stitch-mentor-card">
-              <div className={`stitch-mentor-avatar stitch-mentor-avatar-${companion.id}`} aria-hidden="true">
-                {companion.avatarPath ? <img src={companion.avatarPath} alt="" /> : <span>{companionFallback}</span>}
-              </div>
-              <strong>{companion.name}</strong>
-              <span>AI Mentor</span>
-              <p>{questCopy.companionQuote}</p>
-            </section>
-
+          <aside className="stitch-side" aria-label={t.weeklyStats}>
             <section className="stitch-stat-stack" aria-label={t.weeklyStats}>
               <h2>{questCopy.pathStatistics}</h2>
               <article className="stitch-stat-card">

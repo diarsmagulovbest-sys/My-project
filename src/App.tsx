@@ -13,7 +13,6 @@ import { createGoal, deleteGoal, fetchGoals } from './features/goals/goalsApi';
 import { GoalsDashboard } from './features/goals/GoalsDashboard';
 import { LandingPage } from './features/landing/LandingPage';
 import { classifyGoalMentorProfile } from './features/mentor/classifyGoalMentorProfile';
-import { MentorCharactersPage } from './features/mentor/MentorCharactersPage';
 import { getDefaultMentorProfile } from './features/mentor/mentorProfiles';
 import { AchievementsPage } from './features/navigation/AchievementsPage';
 import { SecretPage } from './features/navigation/SecretPage';
@@ -26,7 +25,6 @@ import type { CreateGoalInput, GoalSummary } from './types/goal';
 import type { AppNavTarget, AppPage, DetailSectionId } from './types/navigation';
 
 const detailSectionByPage: Partial<Record<AppPage, DetailSectionId>> = {
-  mentor: 'mentor',
   progress: 'progress',
   tasks: 'tasks',
 };
@@ -54,8 +52,6 @@ function getRouteState(pathname: string): RouteState {
     '/achievements': 'achievements',
     '/goals': 'goals',
     '/goals/new': 'create',
-    '/mentor': 'mentor',
-    '/mentors': 'mentorCharacters',
     '/progress': 'progress',
     '/roadmap': 'roadmap',
     '/secret': 'secret',
@@ -74,8 +70,6 @@ function getPathForPage(page: AppPage, selectedGoalId = '') {
     customize: selectedGoalId ? `/goals/${encodeURIComponent(selectedGoalId)}/customize` : '/goals',
     detail: selectedGoalId ? `/goals/${encodeURIComponent(selectedGoalId)}` : '/goals',
     goals: '/goals',
-    mentor: '/mentor',
-    mentorCharacters: '/mentors',
     progress: '/progress',
     roadmap: '/roadmap',
     secret: '/secret',
@@ -130,6 +124,7 @@ export default function App() {
   const [goalsError, setGoalsError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
+  const [completingTodayTaskId, setCompletingTodayTaskId] = useState<string | null>(null);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
   const [roadmapRefreshKey, setRoadmapRefreshKey] = useState(0);
   const latestGoalsLoadIdRef = useRef(0);
@@ -321,29 +316,6 @@ export default function App() {
     }
   };
 
-  const handleCompleteCurrentTask = async (goalId: string, taskId: string) => {
-    if (!session) {
-      throw new Error(t.signInRequired);
-    }
-
-    const result = await setRoadmapTaskCompletion(goalId, taskId, true);
-
-    setGoals((currentGoals) =>
-      currentGoals.map((goal) =>
-        goal.id === goalId
-          ? {
-              ...goal,
-              progress: result.goalProgress,
-              status: result.goalStatus,
-              todayTask: goal.todayTask?.id === taskId ? undefined : goal.todayTask,
-            }
-          : goal,
-      ),
-    );
-    setRoadmapRefreshKey((currentKey) => currentKey + 1);
-    void loadGoals(session.user.id);
-  };
-
   const handleDeleteGoal = async (goalId: string) => {
     if (!session || !canDeleteGoals || deletingGoalId) {
       return;
@@ -367,6 +339,33 @@ export default function App() {
     }
   };
 
+  const handleCompleteTodayTask = async (goalId: string, taskId: string) => {
+    if (!session || completingTodayTaskId) {
+      return;
+    }
+
+    setCompletingTodayTaskId(taskId);
+    setGoalsError(null);
+
+    try {
+      const result = await setRoadmapTaskCompletion(goalId, taskId, true);
+
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? { ...goal, progress: result.goalProgress, status: result.goalStatus }
+            : goal,
+        ),
+      );
+      setRoadmapRefreshKey((currentKey) => currentKey + 1);
+      await loadGoals(session.user.id);
+    } catch (error) {
+      setGoalsError(getErrorMessage(error));
+    } finally {
+      setCompletingTodayTaskId(null);
+    }
+  };
+
   if (isAuthLoading) {
     return (
       <main className="center-page">
@@ -387,8 +386,6 @@ export default function App() {
     <AppLayout
       activePage={activePage}
       onNavigate={handleNavigate}
-      onSignOut={() => void supabase.auth.signOut()}
-      userEmail={session.user.email}
     >
       {isGoalsOverviewPage ? (
         <GoalsDashboard
@@ -438,10 +435,11 @@ export default function App() {
           onBack={() => {
             goToPage('goals');
           }}
+          isTodayTaskCompleting={completingTodayTaskId === selectedGoal.todayTask?.id}
+          onCompleteTodayTask={(taskId) => void handleCompleteTodayTask(selectedGoal.id, taskId)}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
           onOpenRoadmap={() => goToPage('roadmap')}
           onOpenCustomize={() => goToPage('customize', selectedGoal.id)}
-          onCompleteTask={(taskId) => handleCompleteCurrentTask(selectedGoal.id, taskId)}
           questionsPanel={
             <GoalQuestionsPanel
               goal={selectedGoal}
@@ -530,14 +528,13 @@ export default function App() {
         />
       ) : null}
 
-      {activePage === 'mentorCharacters' ? <MentorCharactersPage /> : null}
-
       {activePage === 'settings' ? (
         <SettingsPage
           canDeleteGoals={canDeleteGoals}
           isGoalLimitEnabled={isGoalLimitEnabled}
           maxGoals={maxGoalsPerUser}
           onOpenSecret={() => goToPage('secret')}
+          onSignOut={() => void supabase.auth.signOut()}
           userEmail={session.user.email}
         />
       ) : null}

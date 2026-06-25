@@ -124,7 +124,7 @@ function buildFallbackAnswerOptions(goal: Goal, language: AppLanguage) {
     'Try one quick practice step first',
     'Break the goal into tiny pieces',
     'Practice with a clear example',
-    'Let the mentor guide me step by step',
+    'Guide me step by step',
   ];
 }
 

@@ -1,23 +1,16 @@
 import type { ElementType, ReactNode } from 'react';
 import {
-  BellIcon,
-  CheckCircledIcon,
-  FaceIcon,
+  CalendarIcon,
   GearIcon,
-  HomeIcon,
-  MagnifyingGlassIcon,
+  TargetIcon,
 } from '@radix-ui/react-icons';
-import { Button } from '../common/Button';
 import type { AppNavTarget, AppPage } from '../../types/navigation';
-import goalpathLogo from '../../assets/ui/goalpath-logo.svg';
 import { useLanguage } from '../../lib/language';
 
 type AppLayoutProps = {
   activePage: AppPage;
   children: ReactNode;
   onNavigate: (target: AppNavTarget) => void;
-  onSignOut: () => void;
-  userEmail?: string;
 };
 
 function RoadmapPathIcon() {
@@ -43,127 +36,66 @@ const navItems: Array<{
     | 'navToday'
     | 'navGoals'
     | 'navRoadmap'
-    | 'navMentorCharacters'
     | 'navSettings';
   Icon: ElementType;
   target: AppNavTarget;
 }> = [
-  { id: 'today', labelKey: 'navToday', Icon: HomeIcon, target: { page: 'today' } },
-  { id: 'goals', labelKey: 'navGoals', Icon: CheckCircledIcon, target: { page: 'goals' } },
-  {
-    id: 'mentorCharacters',
-    labelKey: 'navMentorCharacters',
-    Icon: FaceIcon,
-    target: { page: 'mentorCharacters' },
-  },
+  { id: 'today', labelKey: 'navToday', Icon: CalendarIcon, target: { page: 'today' } },
+  { id: 'goals', labelKey: 'navGoals', Icon: TargetIcon, target: { page: 'goals' } },
   { id: 'roadmap', labelKey: 'navRoadmap', Icon: RoadmapPathIcon, target: { page: 'roadmap' } },
   { id: 'settings', labelKey: 'navSettings', Icon: GearIcon, target: { page: 'settings' } },
 ];
 
 function isActiveNavItem(item: (typeof navItems)[number], activePage: AppPage) {
-  if (item.id === 'goals' && activePage === 'detail') {
+  if (item.id === 'goals' && ['create', 'customize', 'detail'].includes(activePage)) {
+    return true;
+  }
+
+  if (item.id === 'settings' && activePage === 'secret') {
     return true;
   }
 
   return item.target.page === activePage;
 }
 
-function getTopbarTitle(activePage: AppPage, t: ReturnType<typeof useLanguage>['t']) {
-  if (activePage === 'detail') {
-    return t.goalPage;
-  }
-
-  if (activePage === 'mentorCharacters') {
-    return t.navMentorCharacters;
-  }
-
-  const navItem = navItems.find((item) => item.target.page === activePage);
-
-  return navItem ? t[navItem.labelKey] : 'GoalPath';
-}
-
-export function AppLayout({
-  activePage,
-  children,
-  onNavigate,
-  onSignOut,
-  userEmail,
-}: AppLayoutProps) {
+export function AppLayout({ activePage, children, onNavigate }: AppLayoutProps) {
   const { t } = useLanguage();
-  const topbarTitle = getTopbarTitle(activePage, t);
+  const shellClassName = `app-shell app-shell--phone app-shell--page-${activePage}${
+    activePage === 'today' ? '' : ' app-shell--landing-auth'
+  }`;
+
+  if (activePage === 'customize') {
+    return <main className="app-shell app-shell--customize-standalone app-shell--landing-auth">{children}</main>;
+  }
 
   return (
-    <main className="app-shell">
-      <aside className="sidebar" aria-label={t.mainNavigation}>
-        <div className="brand-block">
-          <img className="brand-logo" src={goalpathLogo} alt="" aria-hidden="true" />
-          <div>
-            <span className="eyebrow">{t.brandEyebrow}</span>
-            <strong>GoalPath</strong>
+    <main className={shellClassName}>
+      <div className="app-phone-stage">
+        <div className="app-phone-device">
+          <div className="app-phone-notch" aria-hidden="true" />
+          <div className="app-phone-screen">
+            <section className="content-shell app-phone-content">{children}</section>
+            <nav className="app-phone-tabbar" aria-label={t.mainNavigation}>
+              {navItems.map((item) => {
+                const Icon = item.Icon;
+                const isActive = isActiveNavItem(item, activePage);
+
+                return (
+                  <button
+                    aria-current={isActive ? 'page' : undefined}
+                    className={isActive ? 'app-phone-tab app-phone-tab-active' : 'app-phone-tab'}
+                    key={item.id}
+                    onClick={() => onNavigate(item.target)}
+                    type="button"
+                  >
+                    <Icon aria-hidden="true" />
+                    <span>{t[item.labelKey]}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
-
-        <nav className="nav-list">
-          {navItems.map((item) => {
-            const target = item.target;
-            const Icon = item.Icon;
-
-            return (
-              <button
-                className={isActiveNavItem(item, activePage) ? 'nav-item nav-item-active' : 'nav-item'}
-                key={item.id}
-                onClick={() => onNavigate(target)}
-                type="button"
-              >
-                <span className="nav-icon" aria-hidden="true">
-                  <Icon />
-                </span>
-                <span>{t[item.labelKey]}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="account-box">
-          <span className="account-avatar" aria-hidden="true">
-            {(userEmail ?? 'GP').slice(0, 2).toUpperCase()}
-          </span>
-          <div>
-            <strong>{userEmail ?? t.account}</strong>
-            <small>{t.userRole}</small>
-          </div>
-          <Button variant="ghost" onClick={onSignOut}>
-            {t.signOut}
-          </Button>
-        </div>
-      </aside>
-
-      <div className="app-main-frame">
-        <header className="app-topbar" aria-label={t.workspaceTools}>
-          <div className="app-topbar-context">
-            <span className="app-topbar-spark" aria-hidden="true">
-              ✦
-            </span>
-            <span>{topbarTitle}</span>
-          </div>
-
-          <label className="app-search-pill">
-            <span className="sr-only">{t.searchYourPath}</span>
-            <input type="search" placeholder={`${t.searchYourPath}...`} />
-            <MagnifyingGlassIcon aria-hidden="true" />
-          </label>
-
-          <div className="app-topbar-actions">
-            <button className="app-icon-button" aria-label={t.notifications} type="button">
-              <BellIcon />
-            </button>
-            <button className="app-pursue-button" onClick={() => onNavigate({ page: 'goals' })} type="button">
-              {t.pursueGoal}
-            </button>
-          </div>
-        </header>
-
-        <section className="content-shell">{children}</section>
       </div>
     </main>
   );

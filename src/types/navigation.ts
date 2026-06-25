@@ -4,14 +4,12 @@ export type SidebarPage =
   | 'roadmap'
   | 'tasks'
   | 'progress'
-  | 'mentor'
-  | 'mentorCharacters'
   | 'achievements'
   | 'settings';
 
 export type AppPage = SidebarPage | 'create' | 'customize' | 'detail' | 'secret';
 
-export type DetailSectionId = 'summary' | 'mentor' | 'roadmap' | 'tasks' | 'progress';
+export type DetailSectionId = 'summary' | 'roadmap' | 'tasks' | 'progress';
 
 export type AppNavTarget = {
   page: SidebarPage | 'create';

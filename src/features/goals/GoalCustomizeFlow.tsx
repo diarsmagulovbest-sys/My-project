@@ -9,7 +9,6 @@ import {
   StarIcon,
 } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
-import { ProgressiveFluxLoader } from '../../components/common/ProgressiveFluxLoader';
 import { useLanguage } from '../../lib/language';
 import type { Goal } from '../../types/goal';
 import type { GoalQuestion } from '../../types/goalQuestion';
@@ -249,19 +248,10 @@ export function GoalCustomizeFlow({ goal, onBackToGoal, onDone }: GoalCustomizeF
                   : t.question}
               </span>
               <h2>{currentQuestion?.question ?? t.customizeMyGoals}</h2>
-              <p>{t.customizeMyGoalsDescription}</p>
             </div>
 
             {isLoading ? (
               <div className="goal-customize-loading" aria-live="polite">
-                <ProgressiveFluxLoader
-                  className="progressive-flux-loader-compact"
-                  phases={[
-                    { at: 0, label: t.loadingGoal },
-                    { at: 45, label: t.loadingQuestions },
-                    { at: 100, label: t.loadingReady },
-                  ]}
-                />
                 <div className="goal-customize-skeleton-list" aria-hidden="true">
                   {[0, 1, 2, 3, 4].map((item) => (
                     <span key={item} />
@@ -309,7 +299,6 @@ export function GoalCustomizeFlow({ goal, onBackToGoal, onDone }: GoalCustomizeF
             {!isLoading && !error && !currentQuestion ? (
               <div className="goal-customize-empty">
                 <strong>{t.customizeMyGoals}</strong>
-                <p>{t.customizeMyGoalsDescription}</p>
                 <div>
                   <Button onClick={onDone}>{t.openGoal}</Button>
                   <Button variant="secondary" onClick={() => void handleRetry()}>

@@ -1,24 +1,18 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { CheckIcon } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
-import { MentorChat } from '../mentor/MentorChat';
-import { PlanAdaptationPanel } from '../mentor/PlanAdaptationPanel';
-import {
-  getMentorCharacter,
-  getMentorCharacterLine,
-} from '../mentor/mentorCharacters';
-import { getMentorProfile } from '../mentor/mentorProfiles';
-import { useActiveMentorCharacterId } from '../mentor/useActiveMentorCharacterId';
 
 type GoalDetailMockProps = {
   activeSection?: DetailSectionId | null;
   canDeleteGoal?: boolean;
   deletingGoalId?: string | null;
   goal: GoalSummary;
+  isTodayTaskCompleting?: boolean;
   onBack: () => void;
-  onCompleteTask?: (taskId: string) => Promise<void> | void;
+  onCompleteTodayTask?: (taskId: string) => void;
   onOpenCustomize?: () => void;
   onDeleteGoal?: (goalId: string) => void;
   onOpenRoadmap?: () => void;
@@ -33,10 +27,6 @@ type CollapsibleGoalSectionProps = {
   summary?: string;
   title: string;
 };
-
-function getErrorMessage(error: unknown, fallback: string) {
-  return error instanceof Error ? error.message : fallback;
-}
 
 function getStatusLabel(status: GoalStatus, t: ReturnType<typeof useLanguage>['t']) {
   const labels: Record<GoalStatus, string> = {
@@ -98,29 +88,21 @@ export function GoalDetailMock({
   canDeleteGoal = false,
   deletingGoalId = null,
   goal,
+  isTodayTaskCompleting = false,
   onBack,
-  onCompleteTask,
+  onCompleteTodayTask,
   onDeleteGoal,
   onOpenCustomize,
   onOpenRoadmap,
   questionsPanel,
 }: GoalDetailMockProps) {
   const { t } = useLanguage();
-  const mentorRef = useRef<HTMLDivElement | null>(null);
   const progressRef = useRef<HTMLElement | null>(null);
   const tasksRef = useRef<HTMLElement | null>(null);
-  const [isCompletingTask, setIsCompletingTask] = useState(false);
-  const [taskError, setTaskError] = useState<string | null>(null);
-  const mentorProfile = getMentorProfile(goal.mentorProfileId);
-  const activeMentorCharacterId = useActiveMentorCharacterId();
-  const mentorCharacter = getMentorCharacter(activeMentorCharacterId);
   const aiAnalysis = goal.aiAnalysis;
-  const currentTaskId = goal.todayTask?.id ?? null;
   const todayTitle = goal.todayTask?.title ?? aiAnalysis?.firstSmallAction ?? t.createRoadmap;
-  const todayDescription = goal.todayTask
-    ? getMentorCharacterLine(activeMentorCharacterId, 'goalNextStep')
-    : aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
-  const mentorDescription = getMentorCharacterLine(activeMentorCharacterId, 'goalMentor');
+  const todayDescription = aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
+  const canCompleteTodayTask = Boolean(goal.todayTask?.id && onCompleteTodayTask && goal.status !== 'completed');
   const roadmapPreviewSteps: GoalPreviewStep[] = [
     {
       description: goal.progress > 0 ? undefined : getShortText(goal.description || t.savedGoalDescription, 72),
@@ -144,7 +126,6 @@ export function GoalDetailMock({
 
   useEffect(() => {
     const sectionRefs: Partial<Record<DetailSectionId, HTMLElement | HTMLDivElement | null>> = {
-      mentor: mentorRef.current,
       progress: progressRef.current,
       tasks: tasksRef.current,
     };
@@ -152,23 +133,6 @@ export function GoalDetailMock({
 
     element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [activeSection, goal.id]);
-
-  const handleCompleteTask = async () => {
-    if (!currentTaskId || isCompletingTask) {
-      return;
-    }
-
-    setTaskError(null);
-    setIsCompletingTask(true);
-
-    try {
-      await onCompleteTask?.(currentTaskId);
-    } catch (error) {
-      setTaskError(getErrorMessage(error, t.unknownError));
-    } finally {
-      setIsCompletingTask(false);
-    }
-  };
 
   return (
     <div className="page-stack goal-detail-stitch">
@@ -181,17 +145,21 @@ export function GoalDetailMock({
                 <h2>{todayTitle}</h2>
                 <p>{todayDescription}</p>
               </div>
-              {taskError ? <p className="form-error">{taskError}</p> : null}
               <div className="task-focus-actions">
+                {canCompleteTodayTask && goal.todayTask ? (
+                  <button
+                    aria-label={`${t.markDone}: ${goal.todayTask.title}`}
+                    className="task-complete-button"
+                    disabled={isTodayTaskCompleting}
+                    onClick={() => onCompleteTodayTask?.(goal.todayTask?.id ?? '')}
+                    title={t.markDone}
+                    type="button"
+                  >
+                    <CheckIcon aria-hidden="true" />
+                  </button>
+                ) : null}
                 <Button onClick={onOpenCustomize}>
                   {t.customizeMyGoals}
-                </Button>
-                <Button
-                  disabled={!currentTaskId || isCompletingTask}
-                  onClick={() => void handleCompleteTask()}
-                  variant="secondary"
-                >
-                  {isCompletingTask ? t.saving : t.markDone}
                 </Button>
                 <Button variant="secondary" onClick={onOpenRoadmap}>
                   {t.roadmap}
@@ -234,38 +202,25 @@ export function GoalDetailMock({
             {questionsPanel}
           </CollapsibleGoalSection>
 
-          <div className="detail-section-anchor" ref={mentorRef}>
-            <CollapsibleGoalSection
-              defaultOpen={activeSection === 'mentor'}
-              eyebrow={t.aiMentor}
-              forceOpen={activeSection === 'mentor'}
-              summary={t.questionsStuckHelpChat}
-              title={t.mentor}
-            >
-              {aiAnalysis ? (
-                <section className="ai-analysis-panel" aria-label={t.starterPlan}>
-                  <div>
-                    <span className="eyebrow">{t.starterPlan}</span>
-                    <h2>{t.firstDirection}</h2>
-                    <p>{aiAnalysis.goalSummary}</p>
-                  </div>
-                  <div className="ai-analysis-grid">
-                    <div>
-                      <span>{t.level}</span>
-                      <strong>{aiAnalysis.estimatedUserLevel}</strong>
-                    </div>
-                    <div>
-                      <span>{t.today}</span>
-                      <strong>{aiAnalysis.firstSmallAction}</strong>
-                    </div>
-                  </div>
-                </section>
-              ) : null}
-
-              <MentorChat goal={goal} key={goal.id} />
-              <PlanAdaptationPanel goal={goal} key={`adapt-${goal.id}`} />
-            </CollapsibleGoalSection>
-          </div>
+          {aiAnalysis ? (
+            <section className="ai-analysis-panel" aria-label={t.starterPlan}>
+              <div>
+                <span className="eyebrow">{t.starterPlan}</span>
+                <h2>{t.firstDirection}</h2>
+                <p>{aiAnalysis.goalSummary}</p>
+              </div>
+              <div className="ai-analysis-grid">
+                <div>
+                  <span>{t.level}</span>
+                  <strong>{aiAnalysis.estimatedUserLevel}</strong>
+                </div>
+                <div>
+                  <span>{t.today}</span>
+                  <strong>{aiAnalysis.firstSmallAction}</strong>
+                </div>
+              </div>
+            </section>
+          ) : null}
         </main>
 
         <aside className="goal-detail-side">
@@ -283,15 +238,6 @@ export function GoalDetailMock({
               </Button>
             ) : null}
           </div>
-
-          <section className="mentor-profile-card" aria-label={t.selectedMentor}>
-            <div>
-              <span className="eyebrow">{t.selectedMentor}</span>
-              <strong>{mentorCharacter.name}</strong>
-              <p>{mentorDescription}</p>
-            </div>
-            <small>{mentorProfile.label}</small>
-          </section>
 
           <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>
             <div>

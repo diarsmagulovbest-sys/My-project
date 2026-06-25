@@ -42,7 +42,7 @@ const featureCards = [
 
 const steps = [
   'Describe what you want to learn or finish',
-  'Answer quick mentor prompts',
+  'Answer quick setup prompts',
   'Follow the roadmap one task at a time',
 ];
 
@@ -50,12 +50,12 @@ const faqs = [
   {
     question: 'Is this just another to-do app?',
     answer:
-      'No. GoalPath connects the full flow: goal setup, quick mentor prompts, roadmap generation, daily tasks, and activity tracking in one place.',
+      'No. GoalPath connects the full flow: goal setup, quick prompts, roadmap generation, daily tasks, and activity tracking in one place.',
   },
   {
     question: 'Does it help with procrastination?',
     answer:
-      'Yes. Big goals become smaller actions, so the first step feels easier to start. The mentor also helps simplify the plan when a task feels unclear.',
+      'Yes. Big goals become smaller actions, so the first step feels easier to start. The app also helps simplify the plan when a task feels unclear.',
   },
   {
     question: 'Is my data private?',
@@ -195,8 +195,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="landing-hero-copy landing-reveal landing-reveal-hero">
           <h1>A goal system students can actually finish</h1>
           <p>
-            Build goals, generate a roadmap, break tasks into small steps, and track momentum with an AI mentor that
-            keeps the next move clear.
+            Build goals, generate a roadmap, break tasks into small steps, and track momentum with clear next moves.
           </p>
           <div className="landing-hero-actions">
             <button className="landing-primary-button" type="button" onClick={onGetStarted}>
@@ -276,8 +275,8 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
         <div className="landing-roadmap-copy landing-reveal">
           <h2>The roadmap stays practical, not overwhelming</h2>
           <p>
-            GoalPath keeps the learner close to action: small prompts, small tasks, clear feedback, and a mentor panel
-            ready when the plan feels stuck.
+            GoalPath keeps the learner close to action: small prompts, small tasks, clear feedback, and a lighter plan
+            when the work feels stuck.
           </p>
           <button className="landing-primary-button landing-primary-button-dark" type="button" onClick={onGetStarted}>
             Create your first goal
@@ -297,7 +296,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       <section className="landing-metrics-band landing-reveal" aria-label="GoalPath product stats">
         <div className="landing-reveal">
           <strong>3</strong>
-          <span>core screens: goals, roadmap, mentor</span>
+          <span>core screens: today, goals, roadmap</span>
         </div>
         <div className="landing-reveal">
           <strong>AI</strong>
@@ -327,7 +326,7 @@ export function LandingPage({ onGetStarted }: LandingPageProps) {
       </section>
 
       <section className="landing-final-cta landing-reveal">
-        <h2>Start with one goal. Let the mentor build the path.</h2>
+        <h2>Start with one goal. Build the path step by step.</h2>
         <button className="landing-primary-button" type="button" onClick={onGetStarted}>
           Get started free
           <ArrowRightIcon aria-hidden="true" />
