@@ -170,14 +170,14 @@
 
       .screens {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 32px;
         margin-top: 38px;
       }
 
       .phone {
         display: grid;
-        min-height: 400px;
+        min-height: 440px;
         align-content: start;
         border: 7px solid #35434f;
         border-radius: 52px;
@@ -227,10 +227,179 @@
         place-items: center;
         margin-top: 36px;
         border-color: rgba(99, 215, 255, 0.7);
+        overflow: hidden;
       }
 
-      .video-frame strong {
-        font-size: 42px;
+      .video-frame video {
+        display: block;
+        width: 100%;
+        height: min(58dvh, 430px);
+        background: #03080f;
+        object-fit: contain;
+      }
+
+      .demo-layout {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        align-items: stretch;
+        margin-top: 26px;
+      }
+
+      .demo-layout .video-frame {
+        margin-top: 0;
+      }
+
+      .slide-screenshots {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .mini-shot {
+        display: grid;
+        min-height: 390px;
+        overflow: hidden;
+        border: 5px solid #35434f;
+        border-radius: 34px;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+          linear-gradient(145deg, #081216, #102511 58%, #21101d);
+        background-size: 32px 32px, 32px 32px, auto;
+        padding: 22px;
+      }
+
+      .mini-shot-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .mini-shot-kicker {
+        color: var(--lime);
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .mini-shot-plus {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 999px;
+        color: #07111f;
+        background: var(--lime);
+        font-size: 30px;
+      }
+
+      .mini-shot h3 {
+        margin: 12px 0 18px;
+        color: #ffffff;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 34px;
+        line-height: 0.98;
+      }
+
+      .mini-goal-card {
+        display: grid;
+        min-height: 116px;
+        align-content: center;
+        margin-top: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(7, 17, 31, 0.28)),
+          rgba(255, 255, 255, 0.08);
+        padding: 18px;
+      }
+
+      .mini-goal-card strong {
+        display: block;
+        color: #ffffff;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 25px;
+        line-height: 1.02;
+      }
+
+      .mini-goal-card span {
+        display: block;
+        margin-top: 8px;
+        color: var(--yellow);
+        font-size: 16px;
+        font-weight: 900;
+      }
+
+      .mini-roadmap-card {
+        display: grid;
+        align-content: start;
+        min-height: 330px;
+        border: 1px dashed rgba(169, 255, 104, 0.48);
+        border-radius: 28px;
+        background:
+          linear-gradient(135deg, rgba(169, 255, 104, 0.12), rgba(99, 215, 255, 0.07)),
+          rgba(255, 255, 255, 0.08);
+        padding: 22px;
+      }
+
+      .mini-node {
+        display: grid;
+        width: 46px;
+        height: 46px;
+        place-items: center;
+        border-radius: 999px;
+        color: #07111f;
+        background: var(--cyan);
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .mini-pills {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 22px;
+      }
+
+      .mini-pills span {
+        display: inline-flex;
+        min-height: 34px;
+        align-items: center;
+        border-radius: 999px;
+        color: #07111f;
+        background: var(--lime);
+        font-size: 13px;
+        font-weight: 900;
+        padding: 0 14px;
+      }
+
+      .mini-pills span:last-child {
+        background: var(--cyan);
+      }
+
+      .mini-roadmap-card h3 {
+        margin-top: 22px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 32px;
+        font-weight: 900;
+        line-height: 1.08;
+      }
+
+      .mini-roadmap-card p {
+        margin-top: 12px;
+        font-size: 18px;
+      }
+
+      .mini-progress {
+        display: block;
+        height: 13px;
+        margin-top: 22px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.14);
       }
 
       .center {
@@ -376,6 +545,7 @@
 
         .features,
         .screens,
+        .demo-layout,
         .final-layout {
           grid-template-columns: 1fr;
         }
@@ -396,6 +566,14 @@
         .qr-card img {
           width: 160px;
           height: 160px;
+        }
+
+        .slide-screenshots {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-shot {
+          min-height: 300px;
         }
 
         .deck-controls {
@@ -493,23 +671,34 @@
 
       <section class="slide">
         <div class="stack">
-          <h2>Скриншоты приложения</h2>
           <p>Главные экраны Goal path: сегодня, создание цели и дорожная карта.</p>
           <div class="screens">
-            <div class="phone">
-              <div class="num">1</div>
-              <strong>Сегодня</strong>
-              <span>Фокус на задачах и целях пользователя.</span>
+            <div class="mini-shot">
+              <div class="mini-shot-top">
+                <span class="mini-shot-kicker">Today focus</span>
+                <span class="mini-shot-plus">+</span>
+              </div>
+              <h3>Good afternoon</h3>
+              <div class="mini-goal-card">
+                <strong>learn java script</strong>
+                <span>97 days remaining</span>
+              </div>
+              <div class="mini-goal-card">
+                <strong>cook pasta</strong>
+                <span>67 days remaining</span>
+              </div>
             </div>
-            <div class="phone">
-              <div class="num">2</div>
-              <strong>Создать цель</strong>
-              <span>Пользователь вводит цель, срок и описание.</span>
-            </div>
-            <div class="phone">
-              <div class="num">3</div>
-              <strong>Дорожная карта</strong>
-              <span>План разбивается на этапы и задачи.</span>
+            <div class="mini-shot">
+              <div class="mini-roadmap-card">
+                <span class="mini-node">1</span>
+                <div class="mini-pills">
+                  <span>АКТИВНА</span>
+                  <span>0/1 ЗАДАЧИ</span>
+                </div>
+                <h3>Первое направление</h3>
+                <p>Это самый маленький полезный шаг на сегодня.</p>
+                <span class="mini-progress"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -519,10 +708,15 @@
         <div class="stack">
           <h2>Video-demo</h2>
           <p>Здесь будет короткое видео с демонстрацией работы приложения.</p>
-          <div class="video-frame">
-            <strong>Вставить видео сюда</strong>
+          <div class="demo-layout">
+            <div class="video-frame">
+              <video controls preload="metadata">
+                <source src="presentation-assets/goalpath-demo.mp4" type="video/mp4" />
+                Ваш браузер не может открыть видео. Файл лежит в presentation-assets/goalpath-demo.mp4.
+              </video>
+            </div>
           </div>
-          <p>20-40 секунд: создать цель -> показать roadmap -> показать задачи/progress.</p>
+          <p>Демо показывает, как пользователь проходит путь от цели к roadmap и задачам.</p>
         </div>
       </section>
 
