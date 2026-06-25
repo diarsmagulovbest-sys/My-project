@@ -6,6 +6,7 @@ import {
 } from '@radix-ui/react-icons';
 import type { AppNavTarget, AppPage } from '../../types/navigation';
 import { useLanguage } from '../../lib/language';
+import { playNavigationClickSound } from '../../lib/navClickSound';
 
 type AppLayoutProps = {
   activePage: AppPage;
@@ -31,7 +32,7 @@ function RoadmapPathIcon() {
 }
 
 const navItems: Array<{
-  id: string;
+  id: 'today' | 'goals' | 'roadmap' | 'settings';
   labelKey:
     | 'navToday'
     | 'navGoals'
@@ -60,9 +61,7 @@ function isActiveNavItem(item: (typeof navItems)[number], activePage: AppPage) {
 
 export function AppLayout({ activePage, children, onNavigate }: AppLayoutProps) {
   const { t } = useLanguage();
-  const shellClassName = `app-shell app-shell--phone app-shell--page-${activePage}${
-    activePage === 'today' ? '' : ' app-shell--landing-auth'
-  }`;
+  const shellClassName = `app-shell app-shell--phone app-shell--page-${activePage} app-shell--landing-auth`;
 
   if (activePage === 'customize') {
     return <main className="app-shell app-shell--customize-standalone app-shell--landing-auth">{children}</main>;
@@ -75,7 +74,7 @@ export function AppLayout({ activePage, children, onNavigate }: AppLayoutProps) 
           <div className="app-phone-notch" aria-hidden="true" />
           <div className="app-phone-screen">
             <section className="content-shell app-phone-content">{children}</section>
-            <nav className="app-phone-tabbar" aria-label={t.mainNavigation}>
+            <nav className="app-phone-tabbar" aria-label={t.mainNavigation} data-tour="main-nav">
               {navItems.map((item) => {
                 const Icon = item.Icon;
                 const isActive = isActiveNavItem(item, activePage);
@@ -84,8 +83,12 @@ export function AppLayout({ activePage, children, onNavigate }: AppLayoutProps) 
                   <button
                     aria-current={isActive ? 'page' : undefined}
                     className={isActive ? 'app-phone-tab app-phone-tab-active' : 'app-phone-tab'}
+                    data-tour={`nav-${item.id}`}
                     key={item.id}
-                    onClick={() => onNavigate(item.target)}
+                    onClick={() => {
+                      playNavigationClickSound(item.id);
+                      onNavigate(item.target);
+                    }}
                     type="button"
                   >
                     <Icon aria-hidden="true" />

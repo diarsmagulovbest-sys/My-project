@@ -3,10 +3,10 @@ import type { Session } from '@supabase/supabase-js';
 import Auth from './components/Auth';
 import { Button } from './components/common/Button';
 import { AppLayout } from './components/layout/AppLayout';
+import { TeachingOverlay } from './components/onboarding/TeachingOverlay';
 import { CreateGoalForm } from './features/goals/CreateGoalForm';
 import { GoalCustomizeFlow } from './features/goals/GoalCustomizeFlow';
 import { GoalDetailMock } from './features/goals/GoalDetailMock';
-import { GoalQuestionsPanel } from './features/goals/GoalQuestionsPanel';
 import { generateGoalAnalysis } from './features/goals/generateGoalAnalysis';
 import { goalLimitsConfig } from './features/goals/goalLimits';
 import { createGoal, deleteGoal, fetchGoals } from './features/goals/goalsApi';
@@ -17,6 +17,7 @@ import { getDefaultMentorProfile } from './features/mentor/mentorProfiles';
 import { AchievementsPage } from './features/navigation/AchievementsPage';
 import { SecretPage } from './features/navigation/SecretPage';
 import { SettingsPage } from './features/navigation/SettingsPage';
+import { fetchOnboardingStatus, updateOnboardingStatus, type OnboardingStatus } from './features/onboarding/onboardingApi';
 import { RoadmapView } from './features/roadmap/RoadmapView';
 import { setRoadmapTaskCompletion } from './features/roadmap/roadmapApi';
 import { useLanguage } from './lib/language';
@@ -126,6 +127,9 @@ export default function App() {
   const [deletingGoalId, setDeletingGoalId] = useState<string | null>(null);
   const [completingTodayTaskId, setCompletingTodayTaskId] = useState<string | null>(null);
   const [isCreatingGoal, setIsCreatingGoal] = useState(false);
+  const [isTeachingOpen, setIsTeachingOpen] = useState(false);
+  const [isOnboardingStatusLoading, setIsOnboardingStatusLoading] = useState(false);
+  const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus>('completed');
   const [roadmapRefreshKey, setRoadmapRefreshKey] = useState(0);
   const latestGoalsLoadIdRef = useRef(0);
 
@@ -205,6 +209,39 @@ export default function App() {
   }, [loadGoals]);
 
   useEffect(() => {
+    let isActive = true;
+
+    if (!session) {
+      setOnboardingStatus('completed');
+      setIsOnboardingStatusLoading(false);
+      return;
+    }
+
+    setIsOnboardingStatusLoading(true);
+
+    fetchOnboardingStatus(session.user.id)
+      .then((status) => {
+        if (isActive) {
+          setOnboardingStatus(status);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setOnboardingStatus('completed');
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsOnboardingStatusLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [session]);
+
+  useEffect(() => {
     const handlePopState = (event: PopStateEvent) => {
       const nextRoute = getRouteState(window.location.pathname);
       const nextState = event.state as Partial<RouteState> | null;
@@ -254,6 +291,25 @@ export default function App() {
   const isRoadmapPage = activePage === 'roadmap';
   const selectedRoadmapGoal = isRoadmapPage ? selectedGoal ?? goals[0] ?? null : null;
 
+  useEffect(() => {
+    const shouldOpenTeaching =
+      Boolean(session) &&
+      onboardingStatus === 'new' &&
+      goals.length === 0 &&
+      !isGoalsLoading &&
+      !isGoalLimitReached &&
+      !isOnboardingStatusLoading;
+
+    setIsTeachingOpen(shouldOpenTeaching);
+  }, [
+    goals.length,
+    isGoalLimitReached,
+    isGoalsLoading,
+    isOnboardingStatusLoading,
+    onboardingStatus,
+    session,
+  ]);
+
   const handleNavigate = (target: AppNavTarget) => {
     setCreateError(null);
 
@@ -281,6 +337,27 @@ export default function App() {
 
     goToPage(target.page);
   };
+
+  const saveOnboardingStatus = useCallback((status: OnboardingStatus) => {
+    if (!session) {
+      return;
+    }
+
+    setOnboardingStatus(status);
+    void updateOnboardingStatus(session.user.id, status).catch(() => undefined);
+  }, [session]);
+
+  const closeTeaching = useCallback(() => {
+    saveOnboardingStatus('dismissed');
+    setIsTeachingOpen(false);
+  }, [saveOnboardingStatus]);
+
+  const handleTeachingStartGoal = useCallback(() => {
+    saveOnboardingStatus('completed');
+    setIsTeachingOpen(false);
+    setCreateError(null);
+    goToPage('create');
+  }, [goToPage, saveOnboardingStatus]);
 
   const handleCreateGoal = async (input: CreateGoalInput) => {
     if (!session) {
@@ -340,8 +417,12 @@ export default function App() {
   };
 
   const handleCompleteTodayTask = async (goalId: string, taskId: string) => {
-    if (!session || completingTodayTaskId) {
-      return;
+    if (!session) {
+      throw new Error(t.signInRequired);
+    }
+
+    if (completingTodayTaskId) {
+      throw new Error('Another task is already saving. Try again in a second.');
     }
 
     setCompletingTodayTaskId(taskId);
@@ -358,9 +439,13 @@ export default function App() {
         ),
       );
       setRoadmapRefreshKey((currentKey) => currentKey + 1);
-      await loadGoals(session.user.id);
+      void loadGoals(session.user.id).catch((error) => {
+        setGoalsError(getErrorMessage(error));
+      });
     } catch (error) {
-      setGoalsError(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setGoalsError(message);
+      throw new Error(message);
     } finally {
       setCompletingTodayTaskId(null);
     }
@@ -396,11 +481,13 @@ export default function App() {
           isGoalLimitEnabled={isGoalLimitEnabled}
           isLoading={isGoalsLoading}
           maxGoals={maxGoalsPerUser}
+          completingTaskId={completingTodayTaskId}
           view={activePage === 'goals' ? 'goals' : 'today'}
           onCreateClick={() => {
             setCreateError(null);
             goToPage('create');
           }}
+          onCompleteTask={handleCompleteTodayTask}
           onOpenGoal={(goalId) => {
             setSelectedGoalId(goalId);
             goToPage('detail', goalId);
@@ -436,23 +523,12 @@ export default function App() {
             goToPage('goals');
           }}
           isTodayTaskCompleting={completingTodayTaskId === selectedGoal.todayTask?.id}
-          onCompleteTodayTask={(taskId) => void handleCompleteTodayTask(selectedGoal.id, taskId)}
+          onCompleteTodayTask={(taskId) => {
+            void handleCompleteTodayTask(selectedGoal.id, taskId).catch(() => undefined);
+          }}
           onDeleteGoal={(goalId) => void handleDeleteGoal(goalId)}
           onOpenRoadmap={() => goToPage('roadmap')}
           onOpenCustomize={() => goToPage('customize', selectedGoal.id)}
-          questionsPanel={
-            <GoalQuestionsPanel
-              goal={selectedGoal}
-              key={selectedGoal.id}
-              onAnswersSaved={(options) => {
-                setRoadmapRefreshKey((currentKey) => currentKey + 1);
-
-                if (options?.openRoadmap) {
-                  goToPage('roadmap');
-                }
-              }}
-            />
-          }
         />
       ) : null}
 
@@ -533,7 +609,6 @@ export default function App() {
           canDeleteGoals={canDeleteGoals}
           isGoalLimitEnabled={isGoalLimitEnabled}
           maxGoals={maxGoalsPerUser}
-          onOpenSecret={() => goToPage('secret')}
           onSignOut={() => void supabase.auth.signOut()}
           userEmail={session.user.email}
         />
@@ -547,6 +622,14 @@ export default function App() {
           <p>{t.noGoalFoundDescription}</p>
         </section>
       ) : null}
+
+      <TeachingOverlay
+        activePage={activePage}
+        isOpen={isTeachingOpen}
+        onClose={closeTeaching}
+        onNavigate={(page) => goToPage(page)}
+        onStartGoal={handleTeachingStartGoal}
+      />
     </AppLayout>
   );
 }

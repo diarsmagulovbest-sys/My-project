@@ -6,7 +6,6 @@ import {
   MagicWandIcon,
   ReaderIcon,
   RocketIcon,
-  StarIcon,
 } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { useLanguage } from '../../lib/language';
@@ -22,7 +21,7 @@ type GoalCustomizeFlowProps = {
 };
 
 const pendingCustomizeQuestionRequests = new Map<string, Promise<GoalQuestion[]>>();
-const optionIcons = [HeartIcon, MagicWandIcon, RocketIcon, ReaderIcon, StarIcon];
+const optionIcons = [HeartIcon, MagicWandIcon, RocketIcon, ReaderIcon];
 
 function getErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : 'Unknown error';
@@ -226,13 +225,8 @@ export function GoalCustomizeFlow({ goal, onBackToGoal, onDone }: GoalCustomizeF
   };
 
   return (
-    <section className="goal-customize-page" aria-label={t.customizeMyGoals}>
+    <section className="goal-customize-page" aria-label={goal.title}>
       <div className="goal-customize-shell">
-        <h1 className="goal-customize-title">
-          <span>Customize</span>
-          <span>my goals</span>
-        </h1>
-
         <div className="goal-customize-device">
           <div className="goal-customize-notch" aria-hidden="true" />
           <div className="goal-customize-phone">
@@ -247,7 +241,7 @@ export function GoalCustomizeFlow({ goal, onBackToGoal, onDone }: GoalCustomizeF
                   ? `${t.question} ${Math.min(currentQuestionIndex + 1, choiceQuestions.length)} / ${choiceQuestions.length}`
                   : t.question}
               </span>
-              <h2>{currentQuestion?.question ?? t.customizeMyGoals}</h2>
+              <h2>{currentQuestion?.question ?? goal.title}</h2>
             </div>
 
             {isLoading ? (
@@ -298,7 +292,7 @@ export function GoalCustomizeFlow({ goal, onBackToGoal, onDone }: GoalCustomizeF
 
             {!isLoading && !error && !currentQuestion ? (
               <div className="goal-customize-empty">
-                <strong>{t.customizeMyGoals}</strong>
+                <strong>{t.planReady}</strong>
                 <div>
                   <Button onClick={onDone}>{t.openGoal}</Button>
                   <Button variant="secondary" onClick={() => void handleRetry()}>

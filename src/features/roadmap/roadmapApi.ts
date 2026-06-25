@@ -1,12 +1,15 @@
 import { supabase } from '../../lib/supabase';
 import type { Goal, GoalStatus } from '../../types/goal';
 import type {
+  DailyGoalTask,
   RoadmapStage,
   RoadmapStageStatus,
   RoadmapTask,
   RoadmapTaskStatus,
+  TaskDifficulty,
 } from '../../types/roadmap';
 import type { RoadmapResponse } from '../../validations/aiResponses';
+import { calculateTaskXp, inferTaskXpInput } from './xp';
 
 type RoadmapStageRow = {
   created_at: string;
@@ -23,15 +26,22 @@ type RoadmapTaskRow = {
   completed_at: string | null;
   created_at: string;
   description: string;
+  difficulty: TaskDifficulty;
   due_date: string | null;
   estimated_minutes: number;
   goal_id: string;
   id: string;
+  is_active_practice: boolean;
+  is_important: boolean;
+  is_passive: boolean;
+  produces_result: boolean;
   sort_order: number;
   stage_id: string;
   status: RoadmapTaskStatus;
   title: string;
   updated_at: string;
+  xp_awarded: number;
+  xp_value: number;
 };
 
 type CreateRoadmapStageRow = {
@@ -45,13 +55,20 @@ type CreateRoadmapStageRow = {
 
 type CreateRoadmapTaskRow = {
   description: string;
+  difficulty: TaskDifficulty;
   due_date: string | null;
   estimated_minutes: number;
   goal_id: string;
+  is_active_practice: boolean;
+  is_important: boolean;
+  is_passive: boolean;
+  produces_result: boolean;
   sort_order: number;
   stage_id: string;
   status: RoadmapTaskStatus;
   title: string;
+  xp_awarded: number;
+  xp_value: number;
 };
 
 type CompleteTaskResult = {
@@ -78,12 +95,27 @@ const roadmapTaskColumns = `
   title,
   description,
   estimated_minutes,
+  difficulty,
+  is_active_practice,
+  produces_result,
+  is_important,
+  is_passive,
+  xp_value,
+  xp_awarded,
   due_date,
   sort_order,
   status,
   completed_at,
   created_at,
   updated_at
+`;
+
+const todayTaskColumns = `
+  ${roadmapTaskColumns},
+  goals!inner (
+    title,
+    progress
+  )
 `;
 
 function mapSuccessCriteria(value: unknown) {
@@ -99,15 +131,22 @@ function mapTaskRow(row: RoadmapTaskRow): RoadmapTask {
     completedAt: row.completed_at,
     createdAt: row.created_at,
     description: row.description,
+    difficulty: row.difficulty,
     dueDate: row.due_date,
     estimatedMinutes: row.estimated_minutes,
     goalId: row.goal_id,
     id: row.id,
+    isActivePractice: row.is_active_practice,
+    isImportant: row.is_important,
+    isPassive: row.is_passive,
+    producesResult: row.produces_result,
     sortOrder: row.sort_order,
     stageId: row.stage_id,
     status: row.status,
     title: row.title,
     updatedAt: row.updated_at,
+    xpAwarded: row.xp_awarded,
+    xpValue: row.xp_value,
   };
 }
 
@@ -268,16 +307,31 @@ export async function createRoadmap(goal: Goal, roadmap: RoadmapResponse): Promi
   }
 
   const taskPayload: CreateRoadmapTaskRow[] = roadmap.stages.flatMap((stage, stageIndex) =>
-    stage.tasks.map((task, taskIndex) => ({
-      description: task.description,
-      due_date: getDueDate(goal.targetDate, task.suggestedDayOffset),
-      estimated_minutes: task.estimatedMinutes,
-      goal_id: goal.id,
-      sort_order: taskIndex,
-      stage_id: insertedStages[stageIndex].id,
-      status: 'todo',
-      title: task.title,
-    })),
+    stage.tasks.map((task, taskIndex) => {
+      const xpInput = inferTaskXpInput({
+        description: task.description,
+        estimatedMinutes: task.estimatedMinutes,
+        title: task.title,
+      });
+
+      return {
+        description: task.description,
+        difficulty: xpInput.difficulty,
+        due_date: getDueDate(goal.targetDate, task.suggestedDayOffset),
+        estimated_minutes: task.estimatedMinutes,
+        goal_id: goal.id,
+        is_active_practice: xpInput.isActivePractice,
+        is_important: xpInput.isImportant,
+        is_passive: xpInput.isPassive,
+        produces_result: xpInput.producesResult,
+        sort_order: taskIndex,
+        stage_id: insertedStages[stageIndex].id,
+        status: 'todo',
+        title: task.title,
+        xp_awarded: 0,
+        xp_value: calculateTaskXp(xpInput),
+      };
+    }),
   );
 
   const { error: tasksError } = await supabase.from('tasks').insert(taskPayload);
@@ -303,11 +357,24 @@ export async function setRoadmapTaskCompletion(
   taskId: string,
   isCompleted: boolean,
 ): Promise<CompleteTaskResult> {
+  const { data: currentTask, error: currentTaskError } = await supabase
+    .from('tasks')
+    .select('id, xp_value')
+    .eq('id', taskId)
+    .eq('goal_id', goalId)
+    .single()
+    .returns<{ id: string; xp_value: number }>();
+
+  if (currentTaskError) {
+    throw new Error(currentTaskError.message);
+  }
+
   const { error } = await supabase
     .from('tasks')
     .update({
       completed_at: isCompleted ? new Date().toISOString() : null,
       status: isCompleted ? 'completed' : 'todo',
+      xp_awarded: isCompleted ? currentTask.xp_value : 0,
     })
     .eq('id', taskId)
     .eq('goal_id', goalId)
@@ -316,6 +383,15 @@ export async function setRoadmapTaskCompletion(
 
   if (error) {
     throw new Error(error.message);
+  }
+
+  if (isCompleted) {
+    await supabase.from('progress_logs').insert({
+      action: 'task_completed',
+      goal_id: goalId,
+      note: `${currentTask.xp_value} XP earned`,
+      task_id: taskId,
+    });
   }
 
   const stagesAfterTaskUpdate = await fetchRoadmap(goalId);
@@ -331,4 +407,111 @@ export async function setRoadmapTaskCompletion(
     goalStatus,
     stages,
   };
+}
+
+type DailyGoalTaskRow = RoadmapTaskRow & {
+  goals: {
+    progress: number;
+    title: string;
+  };
+};
+
+function getTodayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function isCompletedToday(task: RoadmapTask) {
+  return Boolean(task.completedAt?.startsWith(getTodayIsoDate()));
+}
+
+function isDailyTask(task: RoadmapTask) {
+  if (isCompletedToday(task)) {
+    return true;
+  }
+
+  return task.status !== 'completed' && (!task.dueDate || task.dueDate <= getTodayIsoDate());
+}
+
+export async function fetchDailyGoalTasks(goalIds: string[]): Promise<DailyGoalTask[]> {
+  if (goalIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select(todayTaskColumns)
+    .in('goal_id', goalIds)
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .order('sort_order', { ascending: true })
+    .limit(120)
+    .returns<DailyGoalTaskRow[]>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data
+    .map((row) => ({
+      ...mapTaskRow(row),
+      goalProgress: row.goals.progress,
+      goalTitle: row.goals.title,
+    }))
+    .filter(isDailyTask)
+    .sort((first, second) => {
+      if (first.status === 'completed' && second.status !== 'completed') {
+        return 1;
+      }
+
+      if (first.status !== 'completed' && second.status === 'completed') {
+        return -1;
+      }
+
+      return (first.dueDate ?? '9999-12-31').localeCompare(second.dueDate ?? '9999-12-31');
+    })
+    .slice(0, 6);
+}
+
+export async function setTaskImportance(
+  goalId: string,
+  taskId: string,
+  isImportant: boolean,
+): Promise<RoadmapTask> {
+  const { data: task, error: taskError } = await supabase
+    .from('tasks')
+    .select(roadmapTaskColumns)
+    .eq('id', taskId)
+    .eq('goal_id', goalId)
+    .single()
+    .returns<RoadmapTaskRow>();
+
+  if (taskError) {
+    throw new Error(taskError.message);
+  }
+
+  const xpValue = calculateTaskXp({
+    difficulty: task.difficulty,
+    isActivePractice: task.is_active_practice,
+    isImportant,
+    isPassive: task.is_passive,
+    producesResult: task.produces_result,
+  });
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .update({
+      is_important: isImportant,
+      xp_awarded: task.status === 'completed' ? xpValue : 0,
+      xp_value: xpValue,
+    })
+    .eq('id', taskId)
+    .eq('goal_id', goalId)
+    .select(roadmapTaskColumns)
+    .single()
+    .returns<RoadmapTaskRow>();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapTaskRow(data);
 }

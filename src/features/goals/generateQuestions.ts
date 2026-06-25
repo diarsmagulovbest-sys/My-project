@@ -12,6 +12,7 @@ import {
 const baseClarifyingQuestionsSystemPrompt = [
   'You are a practical AI mentor for a 14-16 year old learner.',
   'Create short multiple-choice customization questions so the app can build a useful plan later.',
+  'Each question can have no more than 4 answer options.',
   'Do not repeat information that is already clear from the goal.',
   'Do not create a roadmap, stages, or tasks.',
   'Return only valid JSON without markdown or explanations.',
@@ -94,14 +95,14 @@ function buildQuestionsPrompt(goal: Goal, language: AppLanguage) {
   return [
     'Create 3 to 4 personalized customization questions for this goal.',
     `Questions and answerOptions must be short, clear, specific to the goal, and written in ${languageName}.`,
-    'Every question must have responseKind "single_choice" and exactly 5 answerOptions.',
+    'Every question must have responseKind "single_choice" and exactly 4 answerOptions.',
     'Options must be practical choices a teen can quickly pick. Avoid generic labels like Option A.',
     'For a cooking goal like pasta, ask about style, current comfort, ingredients/tools, taste preference, or serving goal.',
     'For each other goal type, make the questions and options directly associated with that exact goal.',
     'Focus on the missing details that would most improve the roadmap.',
     'Do not ask for the target date, available time, goal title, or current level if already provided.',
     'The response JSON must match this shape:',
-    '{"questions":[{"question":"question text","responseKind":"single_choice","answerOptions":["answer 1","answer 2","answer 3","answer 4","answer 5"],"sortOrder":0}]}',
+    '{"questions":[{"question":"question text","responseKind":"single_choice","answerOptions":["answer 1","answer 2","answer 3","answer 4"],"sortOrder":0}]}',
     'sortOrder must start at 0 and increase by 1.',
     '',
     `Goal data: ${JSON.stringify(goalContext, null, 2)}`,
@@ -115,7 +116,6 @@ function buildFallbackAnswerOptions(goal: Goal, language: AppLanguage) {
       'Сделать быстрый пробный шаг',
       'Разобрать цель на маленькие части',
       'Потренироваться с понятным примером',
-      'Попросить наставника вести меня шаг за шагом',
     ];
   }
 
@@ -124,7 +124,6 @@ function buildFallbackAnswerOptions(goal: Goal, language: AppLanguage) {
     'Try one quick practice step first',
     'Break the goal into tiny pieces',
     'Practice with a clear example',
-    'Guide me step by step',
   ];
 }
 
@@ -141,7 +140,7 @@ export async function generateClarifyingQuestions(
 
   return validatedResponse.questions.map((question, index) => ({
     answerOptions: question.responseKind === 'single_choice'
-      ? question.answerOptions
+      ? question.answerOptions.slice(0, 4)
       : buildFallbackAnswerOptions(goal, language),
     question: question.question,
     responseKind: 'single_choice',

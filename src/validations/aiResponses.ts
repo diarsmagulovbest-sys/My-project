@@ -3,6 +3,7 @@ import { mentorProfileIds } from '../features/mentor/mentorProfiles';
 
 const shortText = z.string().trim().min(1).max(500);
 const longText = z.string().trim().min(1).max(3000);
+const answerOptions = z.array(shortText).min(2).max(8).transform((options) => options.slice(0, 4));
 
 // These schemas are the boundary between generated AI text and data we allow into the app/database.
 const freeTextClarifyingQuestionSchema = z
@@ -15,7 +16,7 @@ const freeTextClarifyingQuestionSchema = z
 
 const singleChoiceClarifyingQuestionSchema = z
   .object({
-    answerOptions: z.array(shortText).length(5),
+    answerOptions,
     question: shortText,
     responseKind: z.literal('single_choice'),
     sortOrder: z.number().int().min(0),
@@ -29,7 +30,7 @@ export const clarifyingQuestionSchema = z.union([
 
 export const clarifyingQuestionsResponseSchema = z
   .object({
-    questions: z.array(clarifyingQuestionSchema).min(3).max(4),
+    questions: z.array(clarifyingQuestionSchema).min(1).max(8).transform((questions) => questions.slice(0, 4)),
   })
   .strict();
 

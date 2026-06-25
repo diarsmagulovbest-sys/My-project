@@ -38,16 +38,25 @@ const goalQuestionColumns = `
   created_at
 `;
 
+function normalizeAnswerOptions(answerOptions: string[] | null) {
+  return (answerOptions ?? []).slice(0, 4);
+}
+
 function mapGoalQuestionRow(row: GoalQuestionRow): GoalQuestion {
+  const answerOptions = normalizeAnswerOptions(row.answer_options);
+
   return {
     answer: row.answer ?? '',
-    answerOptions: row.answer_options ?? [],
+    answerOptions,
     createdAt: row.created_at,
     goalId: row.goal_id,
     id: row.id,
     question: row.question,
     responseKind: row.response_kind,
-    selectedOptionIndex: row.selected_option_index,
+    selectedOptionIndex:
+      row.selected_option_index !== null && row.selected_option_index < answerOptions.length
+        ? row.selected_option_index
+        : null,
     sortOrder: row.sort_order,
   };
 }
@@ -84,7 +93,9 @@ export async function createGoalQuestions(
   const payload: CreateGoalQuestionRow[] = [...questions]
     .sort((first, second) => first.sortOrder - second.sortOrder)
     .map((question, index) => ({
-      answer_options: question.responseKind === 'single_choice' ? question.answerOptions : null,
+      answer_options: question.responseKind === 'single_choice'
+        ? question.answerOptions.slice(0, 4)
+        : null,
       goal_id: goalId,
       question: question.question,
       response_kind: question.responseKind ?? 'free_text',

@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { useLanguage } from '../../lib/language';
-import type { GoalStatus, GoalSummary } from '../../types/goal';
+import type { GoalSummary } from '../../types/goal';
 import type { DetailSectionId } from '../../types/navigation';
+import { fetchGoalQuestions } from './questionsApi';
 
 type GoalDetailMockProps = {
   activeSection?: DetailSectionId | null;
@@ -16,29 +17,7 @@ type GoalDetailMockProps = {
   onOpenCustomize?: () => void;
   onDeleteGoal?: (goalId: string) => void;
   onOpenRoadmap?: () => void;
-  questionsPanel?: ReactNode;
 };
-
-type CollapsibleGoalSectionProps = {
-  children: ReactNode;
-  defaultOpen?: boolean;
-  eyebrow?: string;
-  forceOpen?: boolean;
-  summary?: string;
-  title: string;
-};
-
-function getStatusLabel(status: GoalStatus, t: ReturnType<typeof useLanguage>['t']) {
-  const labels: Record<GoalStatus, string> = {
-    active: t.active,
-    archived: t.archived,
-    completed: t.completed,
-    draft: t.draft,
-    paused: t.paused,
-  };
-
-  return labels[status];
-}
 
 type GoalPreviewStep = {
   description?: string;
@@ -57,32 +36,6 @@ function getShortText(value: string, maxLength = 96) {
   return `${normalizedValue.slice(0, maxLength).trimEnd()}...`;
 }
 
-function CollapsibleGoalSection({
-  children,
-  defaultOpen = false,
-  eyebrow,
-  forceOpen = false,
-  summary,
-  title,
-}: CollapsibleGoalSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-  const visibleOpen = forceOpen || isOpen;
-
-  return (
-    <details className="goal-collapsible" open={visibleOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
-      <summary className="goal-collapsible-summary">
-        <span className="goal-collapsible-copy">
-          {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
-          <strong>{title}</strong>
-          {summary ? <small>{summary}</small> : null}
-        </span>
-        <span className="goal-collapsible-indicator" aria-hidden="true" />
-      </summary>
-      <div className="goal-collapsible-body">{children}</div>
-    </details>
-  );
-}
-
 export function GoalDetailMock({
   activeSection = null,
   canDeleteGoal = false,
@@ -94,11 +47,10 @@ export function GoalDetailMock({
   onDeleteGoal,
   onOpenCustomize,
   onOpenRoadmap,
-  questionsPanel,
 }: GoalDetailMockProps) {
   const { t } = useLanguage();
-  const progressRef = useRef<HTMLElement | null>(null);
   const tasksRef = useRef<HTMLElement | null>(null);
+  const [hasCustomizedGoal, setHasCustomizedGoal] = useState(false);
   const aiAnalysis = goal.aiAnalysis;
   const todayTitle = goal.todayTask?.title ?? aiAnalysis?.firstSmallAction ?? t.createRoadmap;
   const todayDescription = aiAnalysis?.goalSummary ?? t.unlockingTasksDescription;
@@ -126,7 +78,6 @@ export function GoalDetailMock({
 
   useEffect(() => {
     const sectionRefs: Partial<Record<DetailSectionId, HTMLElement | HTMLDivElement | null>> = {
-      progress: progressRef.current,
       tasks: tasksRef.current,
     };
     const element = activeSection ? sectionRefs[activeSection] : null;
@@ -134,38 +85,64 @@ export function GoalDetailMock({
     element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [activeSection, goal.id]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    setHasCustomizedGoal(false);
+
+    fetchGoalQuestions(goal.id)
+      .then((questions) => {
+        if (!isActive) {
+          return;
+        }
+
+        setHasCustomizedGoal(questions.some((question) => question.answer.trim()));
+      })
+      .catch(() => {
+        if (isActive) {
+          setHasCustomizedGoal(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [goal.id]);
+
   return (
     <div className="page-stack goal-detail-stitch">
       <div className="goal-detail-grid">
         <main className="goal-detail-main">
           <div className="goal-work-lane">
-            <section className="task-focus task-focus-primary" ref={tasksRef}>
-              <div>
-                <span className="eyebrow">{t.doThisNext}</span>
-                <h2>{todayTitle}</h2>
-                <p>{todayDescription}</p>
-              </div>
-              <div className="task-focus-actions">
-                {canCompleteTodayTask && goal.todayTask ? (
-                  <button
-                    aria-label={`${t.markDone}: ${goal.todayTask.title}`}
-                    className="task-complete-button"
-                    disabled={isTodayTaskCompleting}
-                    onClick={() => onCompleteTodayTask?.(goal.todayTask?.id ?? '')}
-                    title={t.markDone}
-                    type="button"
-                  >
-                    <CheckIcon aria-hidden="true" />
-                  </button>
-                ) : null}
-                <Button onClick={onOpenCustomize}>
-                  {t.customizeMyGoals}
-                </Button>
-                <Button variant="secondary" onClick={onOpenRoadmap}>
-                  {t.roadmap}
-                </Button>
-              </div>
-            </section>
+            {!hasCustomizedGoal ? (
+              <section className="task-focus task-focus-primary" ref={tasksRef}>
+                <div>
+                  <span className="eyebrow">{t.doThisNext}</span>
+                  <h2>{todayTitle}</h2>
+                  <p>{todayDescription}</p>
+                </div>
+                <div className="task-focus-actions">
+                  {canCompleteTodayTask && goal.todayTask ? (
+                    <button
+                      aria-label={`${t.markDone}: ${goal.todayTask.title}`}
+                      className="task-complete-button"
+                      disabled={isTodayTaskCompleting}
+                      onClick={() => onCompleteTodayTask?.(goal.todayTask?.id ?? '')}
+                      title={t.markDone}
+                      type="button"
+                    >
+                      <CheckIcon aria-hidden="true" />
+                    </button>
+                  ) : null}
+                  <Button onClick={onOpenCustomize}>
+                    {t.customizeMyGoals}
+                  </Button>
+                  <Button variant="secondary" onClick={onOpenRoadmap}>
+                    {t.roadmap}
+                  </Button>
+                </div>
+              </section>
+            ) : null}
 
             <section className="goal-roadmap-preview goal-roadmap-preview-command">
               <div className="goal-roadmap-preview-heading">
@@ -193,14 +170,6 @@ export function GoalDetailMock({
               </div>
             </section>
           </div>
-
-          <CollapsibleGoalSection
-            eyebrow={t.goalDetails}
-            summary={t.answersEnough}
-            title={t.answerFewQuestions}
-          >
-            {questionsPanel}
-          </CollapsibleGoalSection>
 
           {aiAnalysis ? (
             <section className="ai-analysis-panel" aria-label={t.starterPlan}>
@@ -238,17 +207,6 @@ export function GoalDetailMock({
               </Button>
             ) : null}
           </div>
-
-          <section className="detail-summary" aria-label={t.goalInfo} ref={progressRef}>
-            <div>
-              <span>{t.status}</span>
-              <strong>{getStatusLabel(goal.status, t)}</strong>
-            </div>
-            <div>
-              <span>{t.level}</span>
-              <strong>{goal.currentLevel || t.notProvided}</strong>
-            </div>
-          </section>
         </aside>
       </div>
     </div>

@@ -1,9 +1,11 @@
-import type { CSSProperties } from 'react';
-import { GearIcon, PlusIcon } from '@radix-ui/react-icons';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { CheckIcon, GearIcon, PlusIcon } from '@radix-ui/react-icons';
 import { Button } from '../../components/common/Button';
 import { EmojiToken } from '../../components/common/EmojiToken';
 import { useLanguage } from '../../lib/language';
 import type { GoalStatus, GoalSummary } from '../../types/goal';
+import type { DailyGoalTask } from '../../types/roadmap';
+import { fetchDailyGoalTasks, setTaskImportance } from '../roadmap/roadmapApi';
 import { getGoalIcon } from './goalEmoji';
 
 type GoalsDashboardProps = {
@@ -16,9 +18,11 @@ type GoalsDashboardProps = {
   maxGoals: number;
   onCreateClick: () => void;
   onDeleteGoal: (goalId: string) => void;
+  onCompleteTask: (goalId: string, taskId: string) => Promise<void> | void;
   onOpenGoals: () => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  completingTaskId?: string | null;
   view: 'goals' | 'today';
 };
 
@@ -228,6 +232,182 @@ function getGreeting() {
   return 'Good evening';
 }
 
+function formatTaskDueDate(value: string | null, locale: string) {
+  if (!value) {
+    return 'Anytime';
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (value <= today) {
+    return 'Today';
+  }
+
+  return formatShortDate(value, locale);
+}
+
+function getXpModifierLabels(task: DailyGoalTask) {
+  return [
+    task.isActivePractice ? 'practice +5' : '',
+    task.producesResult ? 'result +5' : '',
+    task.isImportant ? 'important +10' : '',
+    task.isPassive ? 'passive -5' : '',
+  ].filter(Boolean);
+}
+
+type DailyQuestBoardProps = {
+  completingTaskId?: string | null;
+  error: string | null;
+  isLoading: boolean;
+  locale: string;
+  onCompleteTask: (task: DailyGoalTask) => void;
+  onToggleImportant: (task: DailyGoalTask) => void;
+  tasks: DailyGoalTask[];
+  updatingImportantTaskId: string | null;
+};
+
+function DailyQuestBoard({
+  completingTaskId = null,
+  error,
+  isLoading,
+  locale,
+  onCompleteTask,
+  onToggleImportant,
+  tasks,
+  updatingImportantTaskId,
+}: DailyQuestBoardProps) {
+  const earnedXp = tasks.reduce((total, task) => total + task.xpAwarded, 0);
+  const availableXp = tasks
+    .filter((task) => task.status !== 'completed')
+    .reduce((total, task) => total + task.xpValue, 0);
+  const completedCount = tasks.filter((task) => task.status === 'completed').length;
+  const totalXp = earnedXp + availableXp;
+  const progressPercent = totalXp > 0 ? Math.round((earnedXp / totalXp) * 100) : 0;
+
+  return (
+    <section className="daily-quest-board" aria-label="Daily quests">
+      <div className="daily-quest-hero">
+        <div>
+          <span className="daily-quest-kicker">Today board</span>
+          <h2>Daily quests</h2>
+          <p>Check off today's goal boxes. Every completed task pays XP instantly.</p>
+        </div>
+        <div className="daily-xp-orbit" aria-label={`${earnedXp} XP earned today`}>
+          <strong>{earnedXp}</strong>
+          <span>XP won</span>
+        </div>
+      </div>
+
+      <div className="daily-board-stats" aria-label="Daily board progress">
+        <span>{completedCount}/{tasks.length} checked</span>
+        <span>{totalXp} XP pool</span>
+        <span>{progressPercent}% cleared</span>
+      </div>
+
+      <div
+        className="daily-xp-meter"
+        style={{ '--daily-xp-progress': `${progressPercent}%` } as CSSProperties}
+        aria-label={`${earnedXp} XP earned, ${availableXp} XP available`}
+      >
+        <div>
+          <span>Earned</span>
+          <strong>{earnedXp}/{totalXp} XP</strong>
+        </div>
+        <span aria-hidden="true" />
+      </div>
+
+      {isLoading ? (
+        <div className="daily-quest-empty" aria-live="polite">
+          <strong>Loading quests...</strong>
+          <p>Checking today's goal tasks.</p>
+        </div>
+      ) : null}
+
+      {error ? (
+        <div className="daily-quest-empty daily-quest-error" role="alert">
+          <strong>Daily quests need attention</strong>
+          <p>{error}</p>
+        </div>
+      ) : null}
+
+      {!isLoading && !error && tasks.length === 0 ? (
+        <div className="daily-quest-empty">
+          <strong>No daily quests yet</strong>
+          <p>Create a roadmap for a goal to unlock XP tasks here.</p>
+        </div>
+      ) : null}
+
+      {!isLoading && !error && tasks.length > 0 ? (
+        <div className="daily-quest-grid">
+          {tasks.map((task) => {
+            const modifierLabels = getXpModifierLabels(task);
+            const isCompleted = task.status === 'completed';
+            const isBoardSaving = Boolean(completingTaskId);
+            const isCompleting = completingTaskId === task.id;
+            const isUpdatingImportance = updatingImportantTaskId === task.id;
+            const tileClassName = [
+              'daily-quest-tile',
+              isCompleted ? 'daily-quest-tile-done' : '',
+              isCompleting ? 'daily-quest-tile-busy' : '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+
+            return (
+              <article className={tileClassName} key={task.id}>
+                <div className="daily-quest-tile-top">
+                  <button
+                    aria-label={isCompleted ? `${task.title} completed` : `Complete ${task.title}`}
+                    className="daily-quest-check"
+                    disabled={isCompleted || isBoardSaving}
+                    onClick={() => onCompleteTask(task)}
+                    type="button"
+                  >
+                    {isCompleted ? <CheckIcon aria-hidden="true" /> : null}
+                  </button>
+                  <strong className="daily-quest-xp">{isCompleted ? `+${task.xpAwarded}` : task.xpValue} XP</strong>
+                </div>
+
+                <div className="daily-quest-tile-copy">
+                  <span className="daily-quest-goal">{task.goalTitle}</span>
+                  <h3>{task.title}</h3>
+                  <p>{task.description}</p>
+                </div>
+
+                <div className="daily-quest-meta">
+                  <span>{formatTaskDueDate(task.dueDate, locale)}</span>
+                  <span>{task.estimatedMinutes}m</span>
+                  <span>{task.difficulty}</span>
+                </div>
+
+                {modifierLabels.length > 0 ? (
+                  <div className="daily-quest-modifiers" aria-label="XP modifiers">
+                    {modifierLabels.slice(0, 3).map((label) => (
+                      <span key={label}>{label}</span>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="daily-quest-actions">
+                  <button
+                    className={task.isImportant ? 'daily-important-button daily-important-button-on' : 'daily-important-button'}
+                    disabled={isUpdatingImportance || isCompleted || isBoardSaving}
+                    onClick={() => onToggleImportant(task)}
+                    type="button"
+                  >
+                    Important
+                  </button>
+                  <span className="daily-quest-state">{isCompleted ? 'Checked' : isCompleting ? 'Checking' : 'Open'}</span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 export function GoalsDashboard({
   canDeleteGoals,
   deletingGoalId = null,
@@ -236,6 +416,8 @@ export function GoalsDashboard({
   isGoalLimitEnabled,
   isLoading = false,
   maxGoals,
+  completingTaskId = null,
+  onCompleteTask,
   onCreateClick,
   onDeleteGoal,
   onOpenGoals,
@@ -259,6 +441,10 @@ export function GoalsDashboard({
       ? Math.max(1, goals.filter((goal) => goal.status === 'active' || goal.progress > 0).length)
       : 0;
   const focusTime = formatFocusTime(getWeeklyFocusMinutes(goals));
+  const [dailyTasks, setDailyTasks] = useState<DailyGoalTask[]>([]);
+  const [dailyTasksError, setDailyTasksError] = useState<string | null>(null);
+  const [isDailyTasksLoading, setIsDailyTasksLoading] = useState(false);
+  const [updatingImportantTaskId, setUpdatingImportantTaskId] = useState<string | null>(null);
   const questCopy = {
     activeGoals: 'Active goals',
     createNewGoal: 'Create new goal',
@@ -268,8 +454,7 @@ export function GoalsDashboard({
     pathStatistics: 'Path Statistics',
     startNextStep: 'Start next step',
     streak: 'Streak',
-    subtitle: 'The path ahead is ready for one clear step today.',
-    title: 'Good morning, Dreamer',
+    todayFocus: 'Today focus',
     upcomingMilestone: 'Upcoming milestone',
     viewAll: 'View all realms',
   };
@@ -284,6 +469,89 @@ export function GoalsDashboard({
     pageSubtitle: 'Track every learning world, review progress, and jump back into the next useful step.',
     pageTitle: 'Goal Worlds',
     totalGoals: 'Total goals',
+  };
+
+  useEffect(() => {
+    let isActive = true;
+
+    if (view !== 'today' || goals.length === 0) {
+      setDailyTasks([]);
+      setDailyTasksError(null);
+      setIsDailyTasksLoading(false);
+      return () => {
+        isActive = false;
+      };
+    }
+
+    setIsDailyTasksLoading(true);
+    setDailyTasksError(null);
+
+    fetchDailyGoalTasks(goals.map((goal) => goal.id))
+      .then((tasks) => {
+        if (isActive) {
+          setDailyTasks(tasks);
+        }
+      })
+      .catch((error: unknown) => {
+        if (isActive) {
+          setDailyTasksError(error instanceof Error ? error.message : 'Unknown error');
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsDailyTasksLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [goals, view]);
+
+  const handleCompleteDailyTask = async (task: DailyGoalTask) => {
+    setDailyTasksError(null);
+
+    try {
+      await onCompleteTask(task.goalId, task.id);
+      setDailyTasks((currentTasks) =>
+        currentTasks.map((currentTask) =>
+          currentTask.id === task.id
+            ? {
+                ...currentTask,
+                completedAt: new Date().toISOString(),
+                status: 'completed',
+                xpAwarded: currentTask.xpValue,
+              }
+            : currentTask,
+        ),
+      );
+    } catch (error) {
+      setDailyTasksError(error instanceof Error ? error.message : 'Task completion failed');
+    }
+  };
+
+  const handleToggleImportant = async (task: DailyGoalTask) => {
+    setUpdatingImportantTaskId(task.id);
+    setDailyTasksError(null);
+
+    try {
+      const updatedTask = await setTaskImportance(task.goalId, task.id, !task.isImportant);
+
+      setDailyTasks((currentTasks) =>
+        currentTasks.map((currentTask) =>
+          currentTask.id === updatedTask.id
+            ? {
+                ...currentTask,
+                ...updatedTask,
+              }
+            : currentTask,
+        ),
+      );
+    } catch (error) {
+      setDailyTasksError(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setUpdatingImportantTaskId(null);
+    }
   };
 
   if (view === 'goals') {
@@ -319,110 +587,18 @@ export function GoalsDashboard({
                   <h1>{goalsCopy.pageTitle}</h1>
                   <p>{goalsCopy.pageSubtitle}</p>
                 </div>
-                <Button disabled={!canCreateGoal} onClick={onCreateClick}>
+                <Button data-tour="create-goal" disabled={!canCreateGoal} onClick={onCreateClick}>
                   {goalsCopy.createNewGoal}
                 </Button>
               </header>
-
-              <section className="goals-stitch-stats" aria-label="Goal stats">
-                <article>
-                  <span>{goalsCopy.totalGoals}</span>
-                  <strong>{isGoalLimitEnabled ? `${goals.length}/${maxGoals}` : goals.length}</strong>
-                </article>
-                <article>
-                  <span>{goalsCopy.activeQuests}</span>
-                  <strong>{activeGoals}</strong>
-                </article>
-                <article>
-                  <span>{goalsCopy.focusTime}</span>
-                  <strong>{focusTime}</strong>
-                </article>
-                <article>
-                  <span>{goalsCopy.averageProgress}</span>
-                  <strong>{averageProgress}%</strong>
-                </article>
-              </section>
 
               {goals.length === 0 ? (
                 <section className="goals-stitch-empty">
                   <h2>{t.noGoals}</h2>
                   <p>{t.noGoalsDescription}</p>
-                  <Button onClick={onCreateClick}>{goalsCopy.createNewGoal}</Button>
+                  <Button data-tour="create-goal" onClick={onCreateClick}>{goalsCopy.createNewGoal}</Button>
                 </section>
-              ) : (
-                <section className="goals-world-board" aria-label={goalsCopy.activeQuests}>
-                  <div className="goals-board-heading">
-                    <h2>{goalsCopy.activeQuests}</h2>
-                    <span>{goals.length} realms</span>
-                  </div>
-
-                  <div className="goals-world-grid">
-                    {goals.map((goal, index) => {
-                      const goalIcon = getGoalIcon(goal);
-
-                      return (
-                        <article className={`goals-world-card ${getGoalAccentClass(index)}`} key={goal.id}>
-                          <div className="goals-world-top">
-                            <EmojiToken
-                              className="goals-world-icon"
-                              label={goalIcon.label}
-                              symbol={goalIcon.symbol}
-                              tone={goalIcon.tone}
-                            />
-                            <div>
-                              <span className={`status-pill status-${goal.status}`}>
-                                {getStatusLabel(goal.status, t)}
-                              </span>
-                              <h3>{goal.title}</h3>
-                            </div>
-                          </div>
-
-                          <p>{goal.description || t.savedGoalDescription}</p>
-
-                          <div className="goals-world-progress" aria-label={`${t.progress} ${goal.progress}%`}>
-                            <div>
-                              <span>{t.progress}</span>
-                              <strong>{goal.progress}%</strong>
-                            </div>
-                            <div className="progress-bar" aria-hidden="true">
-                              <span style={{ width: `${goal.progress}%` }} />
-                            </div>
-                          </div>
-
-                          <div className="goals-world-task">
-                            <span>{goalsCopy.nextTask}</span>
-                            <strong>
-                              {goal.todayTask?.title ?? goal.aiAnalysis?.firstSmallAction ?? t.todayTaskFallback}
-                            </strong>
-                          </div>
-
-                          <div className="goals-world-actions">
-                            <Button variant="secondary" onClick={() => onOpenGoal(goal.id)}>
-                              {goalsCopy.open}
-                            </Button>
-                            {canDeleteGoals ? (
-                              <Button
-                                disabled={deletingGoalId === goal.id}
-                                onClick={() => onDeleteGoal(goal.id)}
-                                variant="danger"
-                              >
-                                {deletingGoalId === goal.id ? t.deleting : t.delete}
-                              </Button>
-                            ) : null}
-                          </div>
-                        </article>
-                      );
-                    })}
-
-                    {canCreateGoal ? (
-                      <button className="goals-create-card" onClick={onCreateClick} type="button">
-                        <span aria-hidden="true">+</span>
-                        <strong>{goalsCopy.createNewGoal}</strong>
-                      </button>
-                    ) : null}
-                  </div>
-                </section>
-              )}
+              ) : null}
             </div>
 
             <aside className="goals-stitch-side" aria-label={goalsCopy.nextTask}>
@@ -441,7 +617,7 @@ export function GoalsDashboard({
   }
 
   return (
-    <div className="page-stack dashboard-page">
+    <div className="page-stack dashboard-page today-stitch-page">
       {isGoalLimitEnabled && !canCreateGoal ? (
         <section className="state-panel limit-panel">
           <h2>{t.createGoalLimitReached}</h2>
@@ -467,7 +643,7 @@ export function GoalsDashboard({
         <section className="state-panel empty-goals-panel">
           <h2>{t.noGoals}</h2>
           <p>{t.noGoalsDescription}</p>
-          <Button onClick={onCreateClick}>{t.createGoal}</Button>
+          <Button data-tour="create-goal" onClick={onCreateClick}>{t.createGoal}</Button>
         </section>
       ) : null}
 
@@ -475,11 +651,15 @@ export function GoalsDashboard({
         <>
           <section className="mobile-goal-feed" aria-label={t.today}>
             <header className="mobile-goal-feed-header">
-              <h1>{getGreeting()}</h1>
+              <div>
+                <span className="mobile-goal-feed-kicker">{questCopy.todayFocus}</span>
+                <h1>{getGreeting()}</h1>
+              </div>
               <div className="mobile-goal-feed-actions">
                 <button
                   aria-label={t.createGoal}
-                  className="mobile-feed-icon-button"
+                  className="mobile-feed-icon-button mobile-feed-icon-button-primary"
+                  data-tour="create-goal"
                   disabled={!canCreateGoal}
                   onClick={onCreateClick}
                   type="button"
@@ -488,7 +668,7 @@ export function GoalsDashboard({
                 </button>
                 <button
                   aria-label={t.navSettings}
-                  className="mobile-feed-icon-button"
+                  className="mobile-feed-icon-button mobile-feed-icon-button-secondary"
                   onClick={onOpenSettings}
                   type="button"
                 >
@@ -496,6 +676,19 @@ export function GoalsDashboard({
                 </button>
               </div>
             </header>
+
+            <div data-tour="today-board">
+            <DailyQuestBoard
+              completingTaskId={completingTaskId}
+              error={dailyTasksError}
+              isLoading={isDailyTasksLoading}
+              locale={locale}
+              onCompleteTask={(task) => void handleCompleteDailyTask(task)}
+              onToggleImportant={(task) => void handleToggleImportant(task)}
+              tasks={dailyTasks}
+              updatingImportantTaskId={updatingImportantTaskId}
+            />
+            </div>
 
             <div className="mobile-goal-card-list">
               {goals.map((goal) => {
@@ -533,9 +726,22 @@ export function GoalsDashboard({
           <section className="stitch-dashboard stitch-dashboard-desktop" aria-label={t.today}>
           <div className="stitch-main">
             <header className="stitch-welcome">
-              <h1>{questCopy.title}</h1>
-              <p>{questCopy.subtitle}</p>
+              <span className="eyebrow">{questCopy.todayFocus}</span>
+              <h1>{getGreeting()}, Dreamer</h1>
             </header>
+
+            <div data-tour="today-board">
+            <DailyQuestBoard
+              completingTaskId={completingTaskId}
+              error={dailyTasksError}
+              isLoading={isDailyTasksLoading}
+              locale={locale}
+              onCompleteTask={(task) => void handleCompleteDailyTask(task)}
+              onToggleImportant={(task) => void handleToggleImportant(task)}
+              tasks={dailyTasks}
+              updatingImportantTaskId={updatingImportantTaskId}
+            />
+            </div>
 
             <section className="stitch-quest" aria-label={focusGoal?.title ?? t.noGoal}>
               <h2>{focusGoal?.title ?? t.noGoal}</h2>
@@ -563,9 +769,9 @@ export function GoalsDashboard({
                   {questCopy.startNextStep}
                   </Button>
                 ) : (
-                  <Button onClick={onCreateClick}>{t.createGoal}</Button>
+                  <Button data-tour="create-goal" onClick={onCreateClick}>{t.createGoal}</Button>
                 )}
-                <Button disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
+                <Button data-tour="create-goal" disabled={!canCreateGoal} variant="secondary" onClick={onCreateClick}>
                   New goal
                 </Button>
               </div>
@@ -633,7 +839,7 @@ export function GoalsDashboard({
                 })}
 
                 {canCreateGoal ? (
-                  <button className="stitch-create-card" onClick={onCreateClick} type="button">
+                  <button className="stitch-create-card" data-tour="create-goal" onClick={onCreateClick} type="button">
                     <span aria-hidden="true">+</span>
                     <strong>{questCopy.createNewGoal}</strong>
                   </button>

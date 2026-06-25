@@ -14,6 +14,7 @@ import type {
 import { fetchGoalQuestions } from '../goals/questionsApi';
 import { generateRoadmap } from './generateRoadmap';
 import { createRoadmap, fetchRoadmap, setRoadmapTaskCompletion } from './roadmapApi';
+import { calculateTaskXp, inferTaskXpInput } from './xp';
 
 type RoadmapViewProps = {
   goal: GoalSummary;
@@ -214,21 +215,33 @@ function createFallbackTask({
   title: string;
 }): DisplayRoadmapTask {
   const timestamp = goal.updatedAt || goal.createdAt;
+  const xpInput = inferTaskXpInput({
+    description,
+    estimatedMinutes: Math.max(goal.availableTime, 15),
+    title,
+  });
 
   return {
     completedAt: status === 'completed' ? timestamp : null,
     createdAt: timestamp,
     description,
+    difficulty: xpInput.difficulty,
     dueDate: null,
     estimatedMinutes: Math.max(goal.availableTime, 15),
     goalId: goal.id,
     id: id ?? `${stageId}-task-${sortOrder}`,
+    isActivePractice: xpInput.isActivePractice,
+    isImportant: xpInput.isImportant,
+    isPassive: xpInput.isPassive,
     isFallback,
+    producesResult: xpInput.producesResult,
     sortOrder,
     stageId,
     status,
     title,
     updatedAt: timestamp,
+    xpAwarded: status === 'completed' ? calculateTaskXp(xpInput) : 0,
+    xpValue: calculateTaskXp(xpInput),
   };
 }
 
@@ -596,6 +609,10 @@ export function RoadmapView({ goal, onBackToGoal, onGoalProgressChange }: Roadma
                                 <small>
                                   {task.estimatedMinutes} {t.min} | {formatDate(task.dueDate, language)}
                                 </small>
+                                <div className="task-xp-row" aria-label={`${task.xpValue} XP`}>
+                                  <span>{task.difficulty}</span>
+                                  <strong>{task.status === 'completed' ? task.xpAwarded : task.xpValue} XP</strong>
+                                </div>
                               </div>
                             </div>
                           );
